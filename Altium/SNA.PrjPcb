@@ -85,7 +85,7 @@ GenerateClassCluster=0
 DocumentUniqueId=
 
 [Document3]
-DocumentPath=Title.PcbDoc
+DocumentPath=SNA.PcbDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -102,7 +102,7 @@ GenerateClassCluster=0
 DocumentUniqueId=BYCFSWAB
 
 [Document4]
-DocumentPath=Title.PCBDwf
+DocumentPath=SNA.PCBDwf
 AnnotationEnabled=1
 AnnotateStartValue=1
 AnnotationIndexControlEnabled=0
@@ -170,7 +170,7 @@ Value=01
 
 [Parameter1]
 Name=STTNumber
-Value=STTxxxxxx
+Value=SNA
 
 [Parameter2]
 Name=SCHVersion
@@ -182,19 +182,19 @@ Value=dd.mm.yyyy
 
 [Parameter4]
 Name=SCHDrawnBy
-Value=YY
+Value=ML
 
 [Parameter5]
 Name=SCHCheckedBy
-Value=XX
+Value=ML
 
 [Parameter6]
 Name=Project
-Value=XXXXXXXXXX
+Value=SNA
 
 [Parameter7]
 Name=PCBVersion
-Value=A
+Value=
 
 [Parameter8]
 Name=PCBRelease
@@ -202,7 +202,7 @@ Value=dd.mm.yyyy
 
 [Parameter9]
 Name=PCBDrawnBy
-Value=YY
+Value=ML
 
 [Parameter10]
 Name=PCBDesign
@@ -210,15 +210,15 @@ Value=dd.mm.yyyy
 
 [Parameter11]
 Name=PCBCheckedBy
-Value=XX
+Value=ML
 
 [Parameter12]
 Name=Organization
-Value=Spacetek Technology AG
+Value=Spacetek Technology AG | Gibb
 
 [Parameter13]
 Name=GitLink
-Value=https://gitlab.spacetek.ch/stt/
+Value=https://github.com/ml3rc/SNA.git
 
 [Parameter14]
 Name=DWFVersion
@@ -230,31 +230,31 @@ Value=dd.mm.yyyy
 
 [Parameter16]
 Name=DWFDrawnBy
-Value=YY
+Value=ML
 
 [Parameter17]
 Name=DWFCheckedBy
-Value=XX
+Value=ML
 
 [Parameter18]
 Name=Board
-Value=XXXXX
+Value=SNA
 
 [Parameter19]
 Name=Address4
-Value=Email: info@spacetek.ch
+Value=
 
 [Parameter20]
 Name=Address3
-Value=Tel: +41 31 508 05 96
+Value=
 
 [Parameter21]
 Name=Address2
-Value=CH-3073 Guemligen
+Value=Gibb, Bern
 
 [Parameter22]
 Name=Address1
-Value=Brueggliweg 18
+Value=Spacetek, Gümligen
 
 [Configuration1]
 Name=Default Configuration
@@ -374,12 +374,22 @@ OutputName20=WireList Netlist
 OutputDocumentPath20=
 OutputVariantName20=
 OutputDefault20=0
+OutputType21=XSpiceNetlist
+OutputName21=Mixed Sim Netlist
+OutputDocumentPath21=
+OutputVariantName21=
+OutputDefault21=0
 
 [OutputGroup2]
 Name=Simulator Outputs
 Description=
 TargetPrinter=\\server-6\HP Color LaserJet MFP M480 PCL-6 (V4)
 PrinterOptions=Record=PrinterOptions|Copies=1|Duplex=1|TrueTypeOptions=3|Collate=1|PrintJobKind=1|PrintWhat=1
+OutputType1=AdvSimNetlist
+OutputName1=Mixed Sim
+OutputDocumentPath1=
+OutputVariantName1=
+OutputDefault1=0
 
 [OutputGroup3]
 Name=Documentation Outputs
@@ -668,6 +678,11 @@ OutputDocumentPath9=
 OutputVariantName9=[No Variations]
 OutputDefault9=0
 PageOptions9=Record=PageOptions|CenterHorizontal=True|CenterVertical=True|PrintScale=1.00|XCorrection=1.00|YCorrection=1.00|PrintKind=1|BorderSize=5000000|LeftOffset=0|BottomOffset=0|Orientation=2|PaperLength=1000|PaperWidth=1000|Scale=100|PaperSource=7|PrintQuality=-3|MediaType=1|DitherType=10|PrintScaleMode=1|PaperKind=A4|PaperIndex=9
+OutputType10=BOM_ReportManufacturing
+OutputName10=Manufacturing Data
+OutputDocumentPath10=
+OutputVariantName10=[No Variations]
+OutputDefault10=0
 
 [OutputGroup7]
 Name=Other Outputs
@@ -962,6 +977,18 @@ Type156=1
 Type157=1
 Type158=1
 Type159=1
+Type160=1
+Type161=1
+Type162=1
+Type163=1
+Type164=1
+Type165=1
+Type166=1
+Type167=1
+Type168=1
+Type169=1
+Type170=1
+Type171=1
 
 [Difference Levels]
 Type1=1
@@ -1051,6 +1078,14 @@ Type84=1
 Type85=1
 Type86=1
 Type87=1
+Type88=1
+Type89=1
+Type90=1
+Type91=1
+Type92=1
+Type93=1
+Type94=1
+Type95=1
 
 [Electrical Rules Check]
 Type1=1
@@ -1216,6 +1251,8 @@ Type160=0
 Type161=0
 Type162=1
 Type163=1
+Type164=1
+Type165=2
 
 [ERC Connection Matrix]
 L1=NNNNNNNNNNNWNNNWW
