@@ -167,7 +167,7 @@ ClassGenCCAutoRoomEnabled=0
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
-DocumentUniqueId=
+DocumentUniqueId=VBDKEFXQ
 
 [Document8]
 DocumentPath=3 RF Source.SchDoc
@@ -201,7 +201,7 @@ ClassGenCCAutoRoomEnabled=0
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
-DocumentUniqueId=
+DocumentUniqueId=KHZPQMLE
 
 [Document10]
 DocumentPath=5 RF Directional Coupler.SchDoc
@@ -218,7 +218,7 @@ ClassGenCCAutoRoomEnabled=0
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
-DocumentUniqueId=
+DocumentUniqueId=RCJTJCLJ
 
 [Document11]
 DocumentPath=6 RF Ports.SchDoc
@@ -235,7 +235,7 @@ ClassGenCCAutoRoomEnabled=0
 ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
-DocumentUniqueId=
+DocumentUniqueId=BZLALXCX
 
 [Document12]
 DocumentPath=SNA.BomDoc
