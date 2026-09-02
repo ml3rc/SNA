@@ -1,0 +1,29 @@
+Project Outputs Generation Report
+---------------------------------
+Start Output Generation At 23:22:11 On 02.09.2026
+
+Output: Gerber X2 Files
+Type  : GerberX2
+From  : PCB Document [SNA.PcbDoc]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Copper_Signal_Top.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Copper_Signal_1.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Copper_Signal_2.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Copper_Signal_Bot.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Soldermask_Top.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Soldermask_Bot.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Paste_Top.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Paste_Bot.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_M01_Board-Outline.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Profile.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_NPTH_Drill.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_PTH_Drill.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Drawing_1.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion_Drillmap_1.gbr]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion.EXTREP]
+   Generated File[SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion.REP]
+
+
+Files Generated   : 16
+Documents Printed : 0
+
+Finished Output Generation At 23:22:16 On 02.09.2026
