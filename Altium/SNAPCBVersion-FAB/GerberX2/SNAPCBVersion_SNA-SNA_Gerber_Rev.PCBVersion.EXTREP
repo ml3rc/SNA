@@ -1,0 +1,23 @@
+------------------------------------------------------------------------------------------
+Gerber File Extension Report For: SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion.GBR   02.09.2026  23:22:11
+------------------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------------------
+Layer Extension     Layer Description                      
+------------------------------------------------------------------------------------------
+.gbr                L1 Top Layer                            
+.gbr                L2 Inner 1                              
+.gbr                L3 Inner 2                              
+.gbr                L4 Bottom Layer                         
+.gbr                Top Solder 1                            
+.gbr                Bottom Solder 1                         
+.gbr                Top Paste                               
+.gbr                Bottom Paste                            
+.gbr                M01_Board-Outline                       
+.gbr                Profile                                 
+.gbr                Non-plated through-hole drill file      
+.gbr                Plated through-hole drill file          
+.gbr                Drill Drawing                           
+.gbr                Drill Guide                             
+------------------------------------------------------------------------------------------

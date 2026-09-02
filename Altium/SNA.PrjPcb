@@ -102,23 +102,6 @@ GenerateClassCluster=0
 DocumentUniqueId=BYCFSWAB
 
 [Document4]
-DocumentPath=SNA.PCBDwf
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=-1
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=0
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=OJEHYUKP
-
-[Document5]
 DocumentPath=0 Overview.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -135,7 +118,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=AAEHEXXI
 
-[Document6]
+[Document5]
 DocumentPath=1 Power.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=101
@@ -152,7 +135,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=HNWBVMJX
 
-[Document7]
+[Document6]
 DocumentPath=2 MCU.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=201
@@ -169,7 +152,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=VBDKEFXQ
 
-[Document8]
+[Document7]
 DocumentPath=3 RF Source.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=301
@@ -186,7 +169,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=RXRRIJVX
 
-[Document9]
+[Document8]
 DocumentPath=4 RF Attenuation Amp.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=401
@@ -203,7 +186,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=KHZPQMLE
 
-[Document10]
+[Document9]
 DocumentPath=5 RF Directional Coupler.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=501
@@ -220,7 +203,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=RCJTJCLJ
 
-[Document11]
+[Document10]
 DocumentPath=6 RF Ports.SchDoc
 AnnotationEnabled=1
 AnnotateStartValue=601
@@ -237,7 +220,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=BZLALXCX
 
-[Document12]
+[Document11]
 DocumentPath=SNA.BomDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -254,7 +237,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document13]
+[Document12]
 DocumentPath=3 RF Source.Harness
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -271,7 +254,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document14]
+[Document13]
 DocumentPath=4 RF Attenuation Amp.Harness
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -288,7 +271,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document15]
+[Document14]
 DocumentPath=5 RF Directional Coupler.Harness
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -305,7 +288,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document16]
+[Document15]
 DocumentPath=6 RF Ports.Harness
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -322,7 +305,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
 
-[Document17]
+[Document16]
 DocumentPath=2 MCU.Harness
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -338,6 +321,23 @@ ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=
+
+[Document17]
+DocumentPath=SNA.PCBDwf
+AnnotationEnabled=1
+AnnotateStartValue=1
+AnnotationIndexControlEnabled=0
+AnnotateSuffix=
+AnnotateScope=All
+AnnotateOrder=-1
+DoLibraryUpdate=1
+DoDatabaseUpdate=1
+ClassGenCCAutoEnabled=1
+ClassGenCCAutoRoomEnabled=0
+ClassGenNCAutoScope=None
+DItemRevisionGUID=
+GenerateClassCluster=0
+DocumentUniqueId=ESQISAQI
 
 [ProjectVariant1]
 UniqueId=CE73A7BB-A5B6-40E5-BD26-22108287BA79
@@ -357,6 +357,14 @@ Value=01
 
 [GeneratedDocument1]
 DocumentPath=Project Outputs for SNA\Design Rule Check - SNA.html
+DItemRevisionGUID=
+
+[GeneratedDocument2]
+DocumentPath=..\..\..\..\AppData\Local\Temp\Qjz3CF1.xls
+DItemRevisionGUID=
+
+[GeneratedDocument3]
+DocumentPath=Project Outputs for SNA\SNA.NET
 DItemRevisionGUID=
 
 [Parameter1]
@@ -470,48 +478,52 @@ OutputName1=PCAD Netlist
 OutputDocumentPath1=
 OutputVariantName1=
 OutputDefault1=0
-OutputType2=CadnetixNetlist
-OutputName2=Cadnetix Netlist
+OutputType2=TelesisNetlist
+OutputName2=Telesis Netlist
 OutputDocumentPath2=
 OutputVariantName2=
 OutputDefault2=0
-OutputType3=CalayNetlist
-OutputName3=Calay Netlist
+OutputType3=TangoNetlist
+OutputName3=Tango Netlist
 OutputDocumentPath3=
 OutputVariantName3=
 OutputDefault3=0
-OutputType4=EDIF
-OutputName4=EDIF for PCB
+OutputType4=SciCardsNetlist
+OutputName4=SciCards Netlist
 OutputDocumentPath4=
 OutputVariantName4=
 OutputDefault4=0
-OutputType5=EESofNetlist
-OutputName5=EESof Netlist
+OutputType5=RINFNetlist
+OutputName5=RINF Netlist
 OutputDocumentPath5=
 OutputVariantName5=
 OutputDefault5=0
-OutputType6=IntergraphNetlist
-OutputName6=Intergraph Netlist
+OutputType6=RacalNetlist
+OutputName6=Racal Netlist
 OutputDocumentPath6=
 OutputVariantName6=
 OutputDefault6=0
-OutputType7=MentorBoardStationNetlist
-OutputName7=Mentor BoardStation Netlist
+OutputType7=ProtelNetlist
+OutputName7=Protel
 OutputDocumentPath7=
 OutputVariantName7=
 OutputDefault7=0
-OutputType8=MultiWire
-OutputName8=MultiWire
+Configuration7_Name1=ForceUpdateSettings
+Configuration7_Item1=False
+Configuration7_Name2=OutputConfigurationParameter1
+Configuration7_Item2=NetlistVersion=0|Record=ProtelNetlistView|DocumentPath=[Project]
+OutputType8=Protel2Netlist
+OutputName8=Protel2 Netlist
 OutputDocumentPath8=
 OutputVariantName8=
 OutputDefault8=0
-OutputType9=OrCadPCB2Netlist
-OutputName9=Orcad/PCB2 Netlist
+OutputType9=PCADnltNetlist
+OutputName9=PCADnlt Netlist
 OutputDocumentPath9=
 OutputVariantName9=
 OutputDefault9=0
-OutputType10=PADSNetlist
-OutputName10=PADS ASCII Netlist
+OutputType10=WireListNetlist
+OutputName10=WireList Netlist
 OutputDocumentPath10=
 OutputVariantName10=
 OutputDefault10=0
@@ -520,48 +532,48 @@ OutputName11=Pcad for PCB
 OutputDocumentPath11=
 OutputVariantName11=
 OutputDefault11=0
-OutputType12=PCADnltNetlist
-OutputName12=PCADnlt Netlist
+OutputType12=OrCadPCB2Netlist
+OutputName12=Orcad/PCB2 Netlist
 OutputDocumentPath12=
 OutputVariantName12=
 OutputDefault12=0
-OutputType13=Protel2Netlist
-OutputName13=Protel2 Netlist
+OutputType13=MultiWire
+OutputName13=MultiWire
 OutputDocumentPath13=
 OutputVariantName13=
 OutputDefault13=0
-OutputType14=ProtelNetlist
-OutputName14=Protel
+OutputType14=MentorBoardStationNetlist
+OutputName14=Mentor BoardStation Netlist
 OutputDocumentPath14=
 OutputVariantName14=
 OutputDefault14=0
-OutputType15=RacalNetlist
-OutputName15=Racal Netlist
+OutputType15=IntergraphNetlist
+OutputName15=Intergraph Netlist
 OutputDocumentPath15=
 OutputVariantName15=
 OutputDefault15=0
-OutputType16=RINFNetlist
-OutputName16=RINF Netlist
+OutputType16=EESofNetlist
+OutputName16=EESof Netlist
 OutputDocumentPath16=
 OutputVariantName16=
 OutputDefault16=0
-OutputType17=SciCardsNetlist
-OutputName17=SciCards Netlist
+OutputType17=EDIF
+OutputName17=EDIF for PCB
 OutputDocumentPath17=
 OutputVariantName17=
 OutputDefault17=0
-OutputType18=TangoNetlist
-OutputName18=Tango Netlist
+OutputType18=CalayNetlist
+OutputName18=Calay Netlist
 OutputDocumentPath18=
 OutputVariantName18=
 OutputDefault18=0
-OutputType19=TelesisNetlist
-OutputName19=Telesis Netlist
+OutputType19=CadnetixNetlist
+OutputName19=Cadnetix Netlist
 OutputDocumentPath19=
 OutputVariantName19=
 OutputDefault19=0
-OutputType20=WireListNetlist
-OutputName20=WireList Netlist
+OutputType20=PADSNetlist
+OutputName20=PADS ASCII Netlist
 OutputDocumentPath20=
 OutputVariantName20=
 OutputDefault20=0
@@ -816,16 +828,22 @@ OutputDefault1=0
 PageOptions1=Record=PageOptions|CenterHorizontal=True|CenterVertical=True|PrintScale=1.00|XCorrection=1.00|YCorrection=1.00|PrintKind=1|BorderSize=5000000|LeftOffset=0|BottomOffset=0|Orientation=2|PaperLength=1000|PaperWidth=1000|Scale=100|PaperSource=7|PrintQuality=-4|MediaType=1|DitherType=10|PrintScaleMode=1|PaperKind=A4|PaperIndex=9
 Configuration1_Name1=ColumnNameFormat
 Configuration1_Item1=CaptionAsName
-Configuration1_Name2=Filter
-Configuration1_Item2=545046300E5446696C74657257726170706572000D46696C7465722E416374697665090F46696C7465722E43726974657269610A04000000000000000000
+Configuration1_Name2=ForceUpdateSettings
+Configuration1_Item2=False
 Configuration1_Name3=General
-Configuration1_Item3=OpenExported=True|AddToProject=False|ForceFit=False|NotFitted=False|Database=False|DatabasePriority=False|IncludePCBData=False|IncludeVaultData=False|IncludeAlternatives=False|ShowExportOptions=True|TemplateFilename=..\..\..\..\..\..\..\..\Groups\Elektronik\_Altium\Templates\BOM_Template_Stock_v2_withDatasheetLink.xlsx|BatchMode=5|FormWidth=1408|FormHeight=1115|SupplierProdQty=1|SupplierAutoQty=False|SupplierUseCachedPricing=False|SupplierCurrency=<none>
+Configuration1_Item3=OpenExported=True|AddToProject=False|ReportBOMViolationsInMessages=False|ForceFit=False|NotFitted=False|Database=False|DatabasePriority=False|IncludePcbData=False|IncludeVaultData=False|IncludeCloudData=False|IncludeDocumentData=False|IncludeAlternatives=True|ShowExportOptions=True|TemplateFilename=..\..\..\..\..\..\..\..\Groups\Elektronik\_Altium\Templates\BOM_Template_Stock_v2_withDatasheetLink.xlsx|TemplateVaultGuid=|TemplateItemGuid=|TemplateRevisionGuid=|BatchMode=5|FormWidth=1408|FormHeight=1115|SupplierProdQty=1|SupplierAutoQty=True|SupplierUseCachedPricing=False|SupplierCurrency=CHF|SolutionsPerItem=1|SuppliersPerSolution=1|ViewType=0|BomSetName=
 Configuration1_Name4=GroupOrder
-Configuration1_Item4=LibRef=True
+Configuration1_Item4=
 Configuration1_Name5=SortOrder
-Configuration1_Item5=Designator=Up|Comment=Up|Footprint=Up
+Configuration1_Item5=Supplier 1=Up
 Configuration1_Name6=VisibleOrder
-Configuration1_Item6=Comment=100|Description=100|Designator=100|LibRef=100|Package=100|Quantity=100|Remark=100|Supplier 1=100|Supplier Part Number 1=100|Value=100|Tolerance=100|Type=100
+Configuration1_Item6=Line #=54|Comment=110|Description=107|Designator=73|Revision ID=81|Revision State=91|Revision Status=93|Quantity=48|Footprint=184|Manufacturer 1=102|Manufacturer Part Number 1=169|Manufacturer Lifecycle 1=147|Supplier 1=75|Supplier Part Number 1=142|Supplier Unit Price 1=127|Supplier Subtotal 1=122
+Configuration1_Name7=VisibleOrder_Base
+Configuration1_Item7=Line #=54|Comment=110|Description=107|Designator=73|Revision ID=81|Revision State=91|Revision Status=93|Quantity=48|Footprint=184|Manufacturer 1=102|Manufacturer Part Number 1=169|Manufacturer Lifecycle 1=147|Supplier 1=75|Supplier Part Number 1=142|Supplier Unit Price 1=127|Supplier Subtotal 1=122
+Configuration1_Name8=VisibleOrder_Consolidated
+Configuration1_Item8=Line #=54|Comment=128|Description=100|Designator=80|Revision ID=120|Revision State=95|Revision Status=101|Quantity=67|Manufacturer 1=102|Manufacturer Part Number 1=169|Manufacturer Lifecycle 1=147|Supplier 1=75|Supplier Part Number 1=142|Supplier Unit Price 1=127|Supplier Subtotal 1=122|Quantity@EMS=72|Price@EMS=79
+Configuration1_Name9=VisibleOrder_Flat
+Configuration1_Item9=Line #=100|Comment=100|Description=100|Designator=100|Revision ID=100|Revision State=100|Revision Status=100|Manufacturer 1=102|Manufacturer Part Number 1=169|Manufacturer Lifecycle 1=147|Supplier 1=75|Supplier Part Number 1=142|Supplier Unit Price 1=127|Supplier Subtotal 1=122
 OutputType2=ComponentCrossReference
 OutputName2=Component Cross Reference Report
 OutputDocumentPath2=
