@@ -1,0 +1,21 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: SNA.PcbDoc   03.09.2026  15:35:01
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : L1 Top Layer to L4 Bottom Layer
+ASCII RoundHoles File : SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion-RoundHoles.TXT
+ASCII SlotHoles File : SNAPCBVersion_SNA-SNA_Gerber_Rev.PCBVersion-SlotHoles.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      8mil (0.201mm)                                            Round             4218      PTH        246.93inch (6272.04mm)
+T2      24mil (0.599mm)                                           Slot              4         PTH        1.46inch (36.96mm)
+T3      39mil (1.001mm)                                           Round             2         PTH        0.18inch (4.50mm)
+T4      51mil (1.3mm)                                             Round             2         PTH        0.28inch (7.00mm)
+T5      61mil (1.549mm)                                           Round             8         PTH        6.73inch (171.00mm)
+T6      94mil (2.4mm)                                             Round             23        PTH        23.32inch (592.42mm)
+T7      35mil (0.899mm)                                           Round             4         NPTH       0.42inch (10.75mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              4261
+
+Total Processing Time (hh:mm:ss) : 00:00:01

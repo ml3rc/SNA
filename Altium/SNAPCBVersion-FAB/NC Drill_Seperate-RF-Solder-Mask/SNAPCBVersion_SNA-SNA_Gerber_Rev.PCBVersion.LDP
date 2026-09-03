@@ -1,0 +1,3 @@
+Layer Pairs Export File for PCB: C:\Users\maell\repos\private\SNA\Altium\SNA.PcbDoc
+LayersSetName=Top_Bot_Thru_Holes|DrillFile=snapcbversion_sna-sna_gerber_rev.pcbversion-roundholes.txt|DrillLayers=gtl,g1,g2,gbl
+LayersSetName=Top_Bot_Slot_Holes|DrillFile=snapcbversion_sna-sna_gerber_rev.pcbversion-slotholes.txt|DrillLayers=gtl,g1,g2,gbl

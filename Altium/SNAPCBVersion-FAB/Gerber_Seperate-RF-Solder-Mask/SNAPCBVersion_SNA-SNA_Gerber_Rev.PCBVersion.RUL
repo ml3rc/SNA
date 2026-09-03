@@ -1,0 +1,21 @@
+DRC Rules Export File for PCB: C:\Users\maell\repos\private\SNA\Altium\SNA.PcbDoc
+RuleKind=Clearance|RuleName=Clearance_Diff_Pair|Scope=Board|Minimum=6.00
+RuleKind=Clearance|RuleName=Clearance_Room|Scope=Board|Minimum=6.00
+RuleKind=Clearance|RuleName=Clearance_75_SE_Via|Scope=Board|Minimum=6.26
+RuleKind=Clearance|RuleName=Clearance_50_SE_Via|Scope=Board|Minimum=14.09
+RuleKind=Clearance|RuleName=Clearance_75_SE|Scope=Board|Minimum=15.00
+RuleKind=Clearance|RuleName=Clearance_50_SE|Scope=Board|Minimum=10.00
+RuleKind=Width|RuleName=Width_75_SE|Scope=Board|Minimum=5.03
+RuleKind=Width|RuleName=Width_50_SE|Scope=Board|Minimum=12.61
+RuleKind=Width|RuleName=Width_Pwr_0.2A|Scope=Board|Minimum=10.00
+RuleKind=Width|RuleName=Width_Pwr_0.5A|Scope=Board|Minimum=10.00
+RuleKind=Width|RuleName=Width_Pwr_1A|Scope=Board|Minimum=15.00
+RuleKind=Clearance|RuleName=Schematic Clearance Constraint_1|Scope=Board|Minimum=7.00
+RuleKind=Clearance|RuleName=SN|Scope=Board|Minimum=3.94
+RuleKind=Width|RuleName=LOGO|Scope=Board|Minimum=3.94
+RuleKind=Width|RuleName=Width|Scope=Board|Minimum=6.00
+RuleKind=SolderMaskExpansion|RuleName=SolderMaskExpansionVia|Scope=Board|Minimum=0.00
+RuleKind=SolderMaskExpansion|RuleName=SolderMaskExpansion|Scope=Board|Minimum=3.94
+RuleKind=Clearance|RuleName=Clearance_main|Scope=Board|Minimum=7.00
+RuleKind=Clearance|RuleName=ClearanceDiffPairs|Scope=Board|Minimum=11.81
+RuleKind=ShortCircuit|RuleName=ShortCircuit|Scope=Board|Allowed=0
