@@ -1,0 +1,14 @@
+Project Outputs Generation Report
+---------------------------------
+Start Output Generation At 11:19:10 On 07.09.2026
+
+Output: Bill of Materials
+Type  : BOM
+From  : Variant [EMS] of Project [SNA.PrjPcb]
+   Generated File[SNAPCBVersion_SNA-Var_EMS_BOM_Rev.PCBVersion1.0.xlsx]
+
+
+Files Generated   : 1
+Documents Printed : 0
+
+Finished Output Generation At 11:19:20 On 07.09.2026
