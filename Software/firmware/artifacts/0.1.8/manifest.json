@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "file": "sna-dualcore-cp20.elf",
+      "sha256": "96C35D26BDE8D08E23285EAC5D379A35CDCAEC8292A76ADB988B0E8A49E2E507"
+    },
+    {
+      "file": "sna-dualcore.elf",
+      "sha256": "A8966C7941252FDA86D3CF647A69EED3AB22F9AFBA43172C599CBA318F13D0BD"
+    },
+    {
+      "file": "sna-dualcore-cp20.uf2",
+      "sha256": "661C7365514C602CA2363A4E959D3C6920EE3A29F4F303EA519DEFEC6ECC4AC5"
+    },
+    {
+      "file": "sna-dualcore.uf2",
+      "sha256": "DC1229D15126C784E7582D37389562066377554A761720136CD4A9373D5DF3D7"
+    }
+  ],
+  "firmware": "0.1.8",
+  "adc_samples": 16,
+  "source_gate": "OFF",
+  "cp_current_code": 15,
+  "detector_settle_us": 500
+}

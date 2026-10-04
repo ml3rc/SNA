@@ -1,0 +1,10 @@
+# Machine-local editor configuration and temporary telemetry tooling
+/.vscode/
+/tmp_temp_poller/
+
+# Generated host tests, caches, logs, and editor backups
+/firmware/build-host-tests/
+__pycache__/
+*.pyc
+*.log
+*.bkp

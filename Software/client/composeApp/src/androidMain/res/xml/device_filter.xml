@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Match the firmware's current development VID:PID CAFE:4001 (decimal 51966:16385).
+  Keep in sync with usb_descriptors.c and SnaUsbIdentity.kt when allocated IDs are assigned.
+-->
+<resources>
+    <usb-device vendor-id="51966" product-id="16385" />
+</resources>
