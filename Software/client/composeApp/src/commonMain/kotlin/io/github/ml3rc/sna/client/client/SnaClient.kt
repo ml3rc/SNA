@@ -60,7 +60,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 
 /**
- * Speaks the SNA wire protocol (see `Software/protocol/PROTOCOL.md`) over a [SerialTransport]:
+ * Speaks the SNA wire protocol (see `Software/docs/firmware/protocol/PROTOCOL.md`) over a [SerialTransport]:
  * one JSON object per line, request/response correlated by `id`, plus unsolicited `event` lines
  * and multi-line streamed responses (sweep points) for a given `id`. Every line in both directions
  * is recorded in [traffic].

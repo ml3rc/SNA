@@ -88,7 +88,7 @@ typedef enum {
 } rf_app_init_error_t;
 
 // Window for the parked detector (output terminated, attenuator 127): the
-// board reads a constant ~2621 counts / 2.11 V there (docs/generator-and-
+// board reads a constant ~2621 counts / 2.11 V there (docs-local/generator-and-
 // power-meter.md). Far outside it the detector is off, unpowered or the ADC
 // input is broken.
 #define RF_APP_DETECTOR_PARKED_MIN 2200u // 1.77 V

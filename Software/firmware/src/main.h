@@ -23,7 +23,7 @@ uint8_t get_init_errors(void);
 void update_status_leds(void);
 // BOOTED heartbeat (or the init error code); called wherever core 0 waits, so it keeps blinking.
 void update_heartbeat(void);
-// The front-panel SDI test result LEDs (green pass, red fail); writes only on a change.
+// The on-board SDI test result LEDs (green pass, red fail); writes only on a change.
 void set_sdi_leds(bool pass, bool fail);
 
 // The CDC line reader: hands every complete line to protocol_handle_line().

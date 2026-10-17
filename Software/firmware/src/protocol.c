@@ -625,7 +625,7 @@ static void cmd_bootsel(const cJSON *req) {
 
 // --- replies from core 1 ---
 
-// AD8318 usable range is about -55..0 dBm at the detector (docs/RF.drawio).
+// AD8318 usable range is about -55..0 dBm at the detector (docs-local/RF.drawio).
 static const char *dbm_range(double dbm) {
     return dbm < -55.0 ? "low" : (dbm > 0.0 ? "high" : "ok");
 }
@@ -882,7 +882,7 @@ static bool service_power_stream(void) {
 }
 
 // A mode never outlives its controlling host, nor does a USB sweep. The
-// front-panel SDI test is host-independent and leaves its mode itself.
+// on-board SDI test is host-independent and leaves its mode itself.
 static bool service_host_gone(void) {
     if (tud_cdc_connected()) return false;
     if (usb_sweep.active && !usb_sweep.stalled) {

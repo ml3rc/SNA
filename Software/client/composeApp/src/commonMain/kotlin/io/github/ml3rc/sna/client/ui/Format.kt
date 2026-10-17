@@ -9,7 +9,7 @@ import io.github.ml3rc.sna.client.session.ToolActivity
 import io.github.ml3rc.sna.client.session.blockReason
 
 /**
- * Bench measurement (docs/generator-and-power-meter.md, "Measured output level"): at 2 GHz the port level is about
+ * Bench measurement (docs-local/generator-and-power-meter.md, "Measured output level"): at 2 GHz the port level is about
  * -attenuation dBm (0 dB ≈ 0 dBm); it rises towards low frequencies (up to about +9-10 dB) and falls above 2 GHz.
  */
 const val OUTPUT_LEVEL_NOTE = "Output level varies over frequency: about −attenuation dBm at 2 GHz (0 dB ≈ 0 dBm), " +

@@ -9,5 +9,12 @@ __pycache__/
 *.log
 *.bkp
 
-# Project documents stay local
-/docs/
+# Project documents and working notes stay local (docs/ is the published documentation)
+/docs-local/
+
+# Presentation tooling (Manim venv and render cache; final videos live in animations/videos/)
+/docs/presentation/animations/.venv/
+/docs/presentation/animations/media/
+/docs/presentation/animations/media_*/
+# German draw.io sources are generated (SNA_LANG=de build_*.py); only the exports in de/ are kept
+/docs/presentation/de/drawio/

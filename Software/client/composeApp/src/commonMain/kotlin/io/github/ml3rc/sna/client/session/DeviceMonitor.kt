@@ -15,7 +15,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Polls `status` for as long as the connection lives, whatever tab is open. `status` is answered
  * by the device even during a sweep, so this is also how the client notices things it did not
- * start itself (front-panel button, a mode entered from the console).
+ * start itself (on-board button, a mode entered from the console).
  */
 class DeviceMonitor(
     private val client: SnaClient,

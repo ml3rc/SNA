@@ -25,7 +25,7 @@ void hal_ad8318_enable(bool en) {
 uint16_t hal_ad8318_read_raw(void) {
     // GPIO_DET_OUT_ADC (GPIO45, pkg pin 56) -> ADC channel 5, confirmed
     // against the RP2350 datasheet's QFN-80 pinout figure -- see
-    // boards/sna.h and Software/protocol/PINMAP.md.
+    // boards/sna.h and Software/docs/firmware/protocol/PINMAP.md.
     adc_select_input(ADC_CHANNEL_DET);
     return adc_read();
 }

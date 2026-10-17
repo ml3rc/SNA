@@ -32,7 +32,7 @@ fun parseFrequencyMhz(text: String): Long? {
 
 /**
  * CW generator control. On/off is never remembered locally: [active] is derived from the
- * device's own `status` (via [monitor]), because the front-panel button, a USB disconnect and
+ * device's own `status` (via [monitor]), because the on-board button, a USB disconnect and
  * the firmware's own interlocks can all switch the generator off behind the client's back.
  */
 class GeneratorState(

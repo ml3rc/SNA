@@ -41,7 +41,7 @@
 // pinout figure (Figure 3, section 1.2.1.2 "QFN-80 (RP2350B)") -- rendered
 // and read directly off the diagram, then cross-checked against a second
 // independent source (rp2350b.pinout.xyz) which matched exactly. Not a
-// placeholder -- see Software/protocol/PINMAP.md for the full annotated
+// placeholder -- see Software/docs/firmware/protocol/PINMAP.md for the full annotated
 // pin<->GPIO<->signal table and the cross-check notes. Regenerate PINMAP.md
 // (and this header) from the netlist if the schematic changes; the package
 // pin -> GPIO mapping itself is fixed silicon and never changes.
@@ -106,7 +106,7 @@
 #define I2C_BAUD                 400000
 #define EEPROM_I2C_ADDR          0x50  // 24AA32A default 7-bit address (A0-A2 tied GND)
 
-// --- SDI front-panel self-test ---
+// --- SDI on-board self-test ---
 #define GPIO_SDI_TEST_BUTTON     25  // pkg pin 26, active-low, pulled up
 #define GPIO_SDI_TEST_PASS_LED   26  // pkg pin 27, green
 #define GPIO_SDI_TEST_FAIL_LED   27  // pkg pin 28, red

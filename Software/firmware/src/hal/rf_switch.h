@@ -14,7 +14,7 @@
 // impedance switches are driven with opposite bits (0b01 / 0b10) to select a
 // side, and the port switch uses 0b00 to terminate every input -- see
 // rf_control/ports.c for the codes.
-// See Software/protocol/PINMAP.md for which instance is which.
+// See Software/docs/firmware/protocol/PINMAP.md for which instance is which.
 typedef struct {
     uint gpio_c1;
     uint gpio_c2;

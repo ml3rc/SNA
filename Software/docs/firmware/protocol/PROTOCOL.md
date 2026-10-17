@@ -11,7 +11,7 @@ USB CDC-ACM (virtual serial port), 115200 baud nominal (irrelevant over USB CDC 
 One JSON object per line, terminated by `\n`. PC → device is always a `{"cmd": ..., "id": N, ...}` request. Device → PC is either:
 - a **response** to a request, echoing the same `"id"`, always containing `"ok": true|false` (`"error": "..."` when false), or
 - a **stream** of intermediate results (sweep points), also echoing `"id"`, followed by a final response with `"done": true`, or
-- an **unsolicited event**, using `"event"` instead of `"id"`/`"cmd"` (continuous power readings, the front-panel SDI test result).
+- an **unsolicited event**, using `"event"` instead of `"id"`/`"cmd"` (continuous power readings, the on-board SDI test result).
 
 `id` is chosen by the client (any JSON value), used purely for request/response correlation — the device does not interpret it. Every request gets exactly one reply (a sweep: its points, then its final reply). Correlate by `id`: a request the device can answer at once (an invalid one, `ping`, `abort`, the EEPROM commands) may be answered before earlier requests that still run on the RF side, and points of a running sweep interleave with the replies to commands sent during it. Requests that reach the RF side are answered in the order they were sent.
 
@@ -32,7 +32,7 @@ re-enumerates.
 | `bad_request` | The line is not a JSON object with a string `cmd` |
 | `unknown_cmd` | Unknown `cmd` |
 | `bad_args` | A field is missing or invalid; `"field":"<name>"` names it |
-| `busy` | Not allowed while a sweep (or the front-panel SDI test) runs, or the device is saturated with requests |
+| `busy` | Not allowed while a sweep (or the on-board SDI test) runs, or the device is saturated with requests |
 | `mode_active` | `mode_enter` while not idle; carries `"mode"` |
 | `wrong_mode` | Command of another mode; carries `"mode"` |
 | `output_active` | `manual lpf`/`cplr`/`src_freq` while the source is on |
@@ -75,7 +75,7 @@ The RF hardware belongs to one mode at a time. The host enters a mode, uses it a
 - `set`, the housekeeping commands (`ping`, `status`, `src_temp_read`) and the EEPROM commands (`cal_*`,
   `sdi_test_*`) need no mode.
 - When the USB host disconnects, the device cancels the mode back to `idle`; `bootsel` does the same.
-- The front-panel SDI test starts only from `idle`; it enters `sweep` itself and leaves it when done.
+- The on-board SDI test starts only from `idle`; it enters `sweep` itself and leaves it when done.
 
 ## Commands
 
@@ -92,13 +92,13 @@ The RF hardware belongs to one mode at a time. The host enters a mode, uses it a
 ← {"id":2,"ok":true,"mode":"idle","sweeping":false,"z":50,"port":1,"atten":127,
    "gen_on":false,"pwr_on":false,"init_errors":[]}
 ```
-- `mode`: the current mode (see Modes). During the front-panel SDI test it is `sweep`.
-- `sweeping`: a sweep or the front-panel SDI test is running (other commands get `busy`).
+- `mode`: the current mode (see Modes). During the on-board SDI test it is `sweep`.
+- `sweeping`: a sweep or the on-board SDI test is running (other commands get `busy`).
 - `port`: the selected source port (1 or 2), also while the output is terminated.
 - `gen_f` (while `gen_on`), `pwr_port` (while `pwr_on`).
 - `init_errors`: boot self-test failures, empty when the device booted fine: `eeprom` (EEPROM not readable or
   writable), `source_lock` (synthesizer did not lock at boot), `detector` (parked detector reading implausible).
-  The front panel shows them as a blink code (see Front panel).
+  The red LED shows them as a blink code (see LEDs and SDI button).
 
 `status` is answered at all times, including during a sweep.
 
@@ -108,7 +108,7 @@ The RF hardware belongs to one mode at a time. The host enters a mode, uses it a
 ← {"id":3,"ok":true,"z":75,"atten":40}
 ```
 At least one of `z` (50|75) and `atten` (0..127, 0.25 dB steps relative to maximum output, not calibrated dBm;
-measured ≈ −atten dB in dBm at 2 GHz, roughly ±10 dB over frequency, see `docs/generator-and-power-meter.md`).
+measured ≈ −atten dB in dBm at 2 GHz, roughly ±10 dB over frequency, see `docs-local/generator-and-power-meter.md`).
 Works in every mode and during a sweep, and never changes the mode: `z` is switched immediately, also under a live
 output; `atten` changes a running output live and applies to a running sweep from its next point on. Whether a
 change in the middle of a measurement makes sense is the host's call. The reply carries the resulting settings.
@@ -183,7 +183,7 @@ points across `[f0, f1]`. `f0`/`f1` as for `sweep`. A failed write leaves that s
 The client computes the correction curve from raw Open/Short/Load/Thru sweeps and uploads the *result*; the device
 only stores, interpolates and subtracts one curve per set.
 
-### `sdi_test_set` / `sdi_test_get` — the standalone front-panel SDI test
+### `sdi_test_set` / `sdi_test_get` — the standalone on-board SDI test
 ```
 → {"cmd":"sdi_test_set","id":9,"points":[{"f":270000000,"thresh_db":-15,"s_param":"s11","cmp":"lt"},
                                          {"f":5940000000,"thresh_db":-12,"s_param":"s21","cmp":"gt"}]}
@@ -194,7 +194,7 @@ only stores, interpolates and subtracts one curve per set.
 ```
 0–15 points (an empty list disables the test). `f` as for `sweep`; `thresh_db` in [-327.68, 327.67];
 `s_param` one of `s11`/`s21`/`s12`/`s22`; `cmp` `lt` (measured value must be less than the threshold) or `gt`.
-See Front panel for the test itself.
+See LEDs and SDI button for the test itself.
 
 ### `manual` — single RF blocks, for bench diagnostics (mode `manual`)
 ```
@@ -291,12 +291,15 @@ The mode is cancelled to `idle` first; the device then disconnects and re-enumer
 ## Unsolicited events
 
 - `power`: continuous power meter readings, see `power_start`.
-- `sdi_test_result`, after a front-panel SDI test while a host is connected:
+- `sdi_test_result`, after a on-board SDI test while a host is connected:
 ```
 ← {"event":"sdi_test_result","pass":false,"results":[{"f":270000000,"s_param":"s11","val_db":-16.1,"pass":true}, ...]}
 ```
 
-## Front panel
+## LEDs and SDI button
+
+The LEDs and the SDI button sit on the PCB itself; there is no separate front panel. The milled aluminium case
+has vertical holes above them, so the LEDs show through and the button is pressed through the case.
 
 - **BOOTED** blinks fast while the device initializes, then gives one short pulse per second while the firmware runs.
 - **Init error:** BOOTED stays off and the red SDI LED repeats a blink code for every failed boot check, lowest first:
@@ -308,7 +311,7 @@ The mode is cancelled to `idle` first; the device then disconnects and re-enumer
 - **SDI test button:** runs the stored SDI points (from `idle` only; one short red blink otherwise). Without stored
   points (no `sdi_test_set` yet, or cleared) a press only gives one short orange blink (green and red together),
   checked before the idle check; nothing is measured. Otherwise: the same measurement as `sweep` at `atten` 0 (the level calibration curves are captured at, left
-  as the setting) and the current `z`, strict lock, calibrated if data exists. Then one green (pass) or red (fail)
+  as the setting) and `z` 75 (the SDI ports; also left as the setting), strict lock, calibrated if data exists. Then one green (pass) or red (fail)
   blink per point in order, once. Runs with or without a host; with one connected the device also sends
   `sdi_test_result`. `abort`/`mode_exit` cancel it (no result then).
 

@@ -1,5 +1,5 @@
 // Structured calibration/config storage layer: implements the byte layout
-// in Software/protocol/EEPROM_LAYOUT.md (header, cal grid, SDI thresholds,
+// in Software/docs/firmware/protocol/EEPROM_LAYOUT.md (header, cal grid, SDI thresholds,
 // 8 calibration tables) on top of the raw chip-level read/write primitives
 // in hal/eeprom_24aa32a.c. This file knows the *meaning* of the bytes; the
 // HAL module below it just knows how to move bytes in and out of a
@@ -13,7 +13,7 @@
 
 #include "hal/eeprom_24aa32a.h"
 
-// Layout offsets -- must match Software/protocol/EEPROM_LAYOUT.md exactly.
+// Layout offsets -- must match Software/docs/firmware/protocol/EEPROM_LAYOUT.md exactly.
 #define OFF_HEADER            0x000
 #define OFF_CAL_GRID          0x020
 #define OFF_SDI_CONFIG         0x038

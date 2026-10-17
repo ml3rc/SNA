@@ -507,9 +507,9 @@ static void test_invalid_commands_and_storage(void) {
     puts("PASS: invalid commands name their field, EEPROM errors, calibration and SDI storage, ping");
 }
 
-// Front-panel SDI test.
+// On-board SDI test.
 static void test_sdi_front_panel(void) {
-    exit_mode(); // the front-panel test only starts from idle
+    exit_mode(); // the on-board test only starts from idle
     sdi_test_point_t threshold = {.freq_hz = 100000000, .thresh_db_x100 = -500, .s_param = 0};
     assert(eeprom_sdi_test_set(&threshold, 1));
     // It sweeps at 0 dB attenuation, the calibration level, whatever the current setting is
@@ -560,7 +560,7 @@ static void test_sdi_front_panel(void) {
     sdi_test_update_leds(t0); assert(pins[GPIO_SDI_TEST_FAIL_LED] && !pins[GPIO_SDI_TEST_PASS_LED]);
     sdi_test_update_leds(t0 + 200); assert(!pins[GPIO_SDI_TEST_FAIL_LED]);
     exit_mode();
-    puts("PASS: front-panel SDI test runs from idle at 0 dB with or without a host, busy meanwhile, pulses per point, abortable");
+    puts("PASS: on-board SDI test runs from idle at 0 dB with or without a host, busy meanwhile, pulses per point, abortable");
 }
 
 static void test_oversized_line(void) {

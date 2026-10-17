@@ -25,9 +25,9 @@ Package-pin column extracted and resolved (through series/damping resistors) fro
 | 22 | GPIO22 | `RF_Attenuator.D1` | Digital attenuator, bit 1 |
 | 23 | GPIO23 | `RF_Attenuator.D0` | Digital attenuator, bit 0 (LSB) |
 | 25 | GPIO24 | `RF_Attenuator.LE` | Digital attenuator, latch enable |
-| 26 | GPIO25 | `SDI_Test_Button` | Front-panel SDI self-test button (input) |
-| 27 | GPIO26 | `SDI_Test_Pass` | Front-panel SDI self-test LED, green (output) |
-| 28 | GPIO27 | `SDI_Test_Fail` | Front-panel SDI self-test LED, red (output) |
+| 26 | GPIO25 | `SDI_Test_Button` | On-board SDI self-test button (input) |
+| 27 | GPIO26 | `SDI_Test_Pass` | On-board SDI self-test LED, green (output) |
+| 28 | GPIO27 | `SDI_Test_Fail` | On-board SDI self-test LED, red (output) |
 | 30 | XIN | `XIN` | 12 MHz crystal (dedicated pin, not GPIO) |
 | 31 | XOUT | `XOUT` | 12 MHz crystal (dedicated pin, not GPIO) |
 | 33 | SWCLK | `SWCLK` | Debug (J202) (dedicated pin, not GPIO) |

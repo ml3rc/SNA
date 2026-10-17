@@ -8,7 +8,7 @@
 // Microchip 24AA32A I2C EEPROM (U203, 32Kbit/4096 bytes) -- raw chip-level
 // byte read/write only. The structured calibration/config layout on top of
 // this (header, cal grid, SDI thresholds, 8 calibration tables) lives one
-// level up, in eeprom.h/eeprom.c (per Software/protocol/
+// level up, in eeprom.h/eeprom.c (per Software/docs/firmware/protocol/
 // EEPROM_LAYOUT.md), not here.
 
 #define HAL_EEPROM_24AA32A_SIZE_BYTES 4096

@@ -3,7 +3,7 @@ package io.github.ml3rc.sna.client.data
 import io.github.ml3rc.sna.client.protocol.SweepPoint
 
 /**
- * Touchstone .s1p/.s2p export, per `Software/protocol/PROTOCOL.md`'s data-export section --
+ * Touchstone .s1p/.s2p export, per `Software/docs/firmware/protocol/PROTOCOL.md`'s data-export section --
  * for interop with other RF tools, notably comparing against LibreVNA reference measurements.
  *
  * This instrument measures scalar amplitude only (no phase). Touchstone's DB format still

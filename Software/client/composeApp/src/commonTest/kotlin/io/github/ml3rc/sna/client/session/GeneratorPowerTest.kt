@@ -40,7 +40,7 @@ private class FakeDevice : SerialTransport {
     var z = 50
     var atten = 127
     var lockFails = false
-    var mode = "idle" // device mode, entered/left by the client's tools (or "sweep" for a front-panel test)
+    var mode = "idle" // device mode, entered/left by the client's tools (or "sweep" for a on-board test)
     var sweeping = false
     var initErrors = "" // JSON array contents of status.init_errors
     var rejectSetField: String? = null // `set` answers bad_args naming this field
@@ -161,7 +161,7 @@ class GeneratorPowerTest {
         val sweep = ToolActivity(sweeping = true, ownedMode = DeviceMode.SWEEP, deviceMode = DeviceMode.SWEEP, deviceSweeping = true)
         for (tool in listOf(Tool.GENERATOR, Tool.POWER, Tool.CALIBRATION, Tool.SDI, Tool.DIAGNOSTICS, Tool.CONSOLE)) assertNotNull(blockReason(tool, sweep), tool.name)
         assertNull(blockReason(Tool.SWEEP, sweep)) // its own button already reads "Sweeping"
-        assertTrue(!sweep.frontPanelBusy)
+        assertTrue(!sweep.onBoardTestBusy)
 
         val power = ToolActivity(powerReading = true, ownedMode = DeviceMode.POWER_METER, deviceMode = DeviceMode.POWER_METER)
         assertNotNull(blockReason(Tool.SWEEP, power))
@@ -173,10 +173,10 @@ class GeneratorPowerTest {
         assertNotNull(blockReason(Tool.GENERATOR, calibration))
         assertTrue(calibration.isRunning(Tool.CALIBRATION) && !calibration.isRunning(Tool.SDI))
 
-        // Something this client did not start (front-panel button) is shown on the self-test tab and respected.
-        val frontPanel = ToolActivity(deviceMode = DeviceMode.SWEEP, deviceSweeping = true)
-        assertTrue(frontPanel.isRunning(Tool.SDI))
-        for (tool in Tool.entries) assertNotNull(blockReason(tool, frontPanel), tool.name)
+        // Something this client did not start (on-board button) is shown on the self-test tab and respected.
+        val onBoard = ToolActivity(deviceMode = DeviceMode.SWEEP, deviceSweeping = true)
+        assertTrue(onBoard.isRunning(Tool.SDI))
+        for (tool in Tool.entries) assertNotNull(blockReason(tool, onBoard), tool.name)
 
         // Manual RF control holds the device until it is left.
         val manual = ToolActivity(ownedMode = DeviceMode.MANUAL, deviceMode = DeviceMode.MANUAL)
@@ -445,7 +445,7 @@ class GeneratorPowerTest {
     @Test
     fun rawSweepOccupiesTheDeviceLikeASweep() {
         val raw = ToolActivity(rawSweeping = true, ownedMode = DeviceMode.SWEEP, deviceMode = DeviceMode.SWEEP, deviceSweeping = true)
-        assertTrue(raw.isRunning(Tool.SWEEP) && !raw.isRunning(Tool.SDI)) // ours, not the front panel
+        assertTrue(raw.isRunning(Tool.SWEEP) && !raw.isRunning(Tool.SDI)) // ours, not the on-board test
         for (tool in listOf(Tool.CALIBRATION, Tool.GENERATOR, Tool.POWER, Tool.SDI, Tool.DIAGNOSTICS, Tool.CONSOLE)) assertNotNull(blockReason(tool, raw), tool.name)
         assertEquals("Raw detector sweep", raw.label)
     }

@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// Storage layout implemented here matches Software/protocol/EEPROM_LAYOUT.md
+// Storage layout implemented here matches Software/docs/firmware/protocol/EEPROM_LAYOUT.md
 // exactly -- update that doc first if this changes.
 
 #define EEPROM_CAL_POINTS_MAX 240

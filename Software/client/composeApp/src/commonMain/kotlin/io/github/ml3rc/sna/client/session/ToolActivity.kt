@@ -22,15 +22,15 @@ data class ToolActivity(
     val ownedMode: DeviceMode? = null,
     /** `status.mode`; null for a mode this client does not know. */
     val deviceMode: DeviceMode? = DeviceMode.IDLE,
-    /** `status.sweeping`: a sweep or the front-panel self-test runs. */
+    /** `status.sweeping`: a sweep or the on-board self-test runs. */
     val deviceSweeping: Boolean = false,
     /** `status.gen_on`. */
     val deviceGenOn: Boolean = false,
 ) {
     private val ownSweep: Boolean get() = sweeping || rawSweeping || calibrating
 
-    /** The front-panel self-test: the device sweeps, but none of this client's tools started it. */
-    val frontPanelBusy: Boolean get() = deviceSweeping && !ownSweep
+    /** The on-board self-test: the device sweeps, but none of this client's tools started it. */
+    val onBoardTestBusy: Boolean get() = deviceSweeping && !ownSweep
 
     /** The generator this client switched on. */
     val generatorOn: Boolean get() = deviceGenOn && ownedMode == DeviceMode.GENERATOR
@@ -40,14 +40,14 @@ data class ToolActivity(
 
     /** The device is in a mode none of this client's tools holds: entered from the console. */
     val foreignMode: DeviceMode?
-        get() = deviceMode?.takeIf { it != DeviceMode.IDLE && ownedMode == null && !ownSweep && !frontPanelBusy }
+        get() = deviceMode?.takeIf { it != DeviceMode.IDLE && ownedMode == null && !ownSweep && !onBoardTestBusy }
 
     fun isRunning(tool: Tool): Boolean = when (tool) {
         Tool.SWEEP -> sweeping || rawSweeping
         Tool.CALIBRATION -> calibrating
         Tool.GENERATOR -> generatorOn || probing
         Tool.POWER -> powerReading
-        Tool.SDI -> frontPanelBusy
+        Tool.SDI -> onBoardTestBusy
         Tool.DIAGNOSTICS -> manualControl
         Tool.CONSOLE -> foreignMode != null
     }
@@ -63,7 +63,7 @@ data class ToolActivity(
             generatorOn -> "Generator on"
             powerReading -> "Reading power"
             probing -> "Probe reading"
-            frontPanelBusy -> "Front-panel test running"
+            onBoardTestBusy -> "On-board test running"
             manualControl -> "Manual RF control"
             foreignMode != null -> "${foreignMode!!.label.replaceFirstChar { it.uppercase() }} mode (console)"
             else -> "Connected"
@@ -83,7 +83,7 @@ fun blockReason(tool: Tool, a: ToolActivity): String? {
     val foreign = a.foreignMode
     val reasons = listOf(
         // Owner null: locks out every tool, also the self-test settings (EEPROM commands answer busy during it).
-        Triple(a.frontPanelBusy, null, "A front-panel self-test is running on the device."),
+        Triple(a.onBoardTestBusy, null, "A on-board self-test is running on the device."),
         Triple(a.sweeping, Tool.SWEEP, "A sweep is running."),
         Triple(a.rawSweeping, Tool.SWEEP, "A raw detector sweep is running."),
         Triple(a.calibrating, Tool.CALIBRATION, "A calibration capture is running."),

@@ -53,7 +53,7 @@ private fun <T> SimpleDropdown(label: String, selected: T, options: List<T>, opt
     }
 }
 
-/** The front-panel SDI self-test: its stored thresholds, and the last result the device reported. */
+/** The on-board SDI self-test: its stored thresholds, and the last result the device reported. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SdiScreen(session: Session, compactUi: Boolean = false) {
@@ -68,8 +68,8 @@ fun SdiScreen(session: Session, compactUi: Boolean = false) {
     val editable = gate.idleEditable && !busy
 
     ScreenColumn("SDI self-test thresholds", compactUi,
-        "Configures the standalone front-panel button test (works with no PC connected once uploaded). It measures at " +
-            "maximum level and the current impedance, calibrated if data exists.") {
+        "Configures the standalone on-board button test (works with no PC connected once uploaded). It measures at " +
+            "maximum level on the 75 Ω ports, calibrated if data exists.") {
         Panel(title = "Thresholds (${rows.size} of ${ProtocolLimits.SDI_POINTS_MAX})", modifier = Modifier.fillMaxWidth()) {
             if (rows.isEmpty()) Hint("No threshold points yet — add a row, or load the device's list. Uploading an empty list disables the test.")
             rows.forEach { row ->
@@ -98,7 +98,7 @@ fun SdiScreen(session: Session, compactUi: Boolean = false) {
             }
         }
         Spacer(Modifier.height(8.dp))
-        Panel(title = "Last front-panel result", modifier = Modifier.fillMaxWidth().testTag("sdi-result")) {
+        Panel(title = "Last on-board result", modifier = Modifier.fillMaxWidth().testTag("sdi-result")) {
             val result = lastResult
             if (result == null) Hint("None since connecting. Press the SDI button on the device; the result shows up here.")
             else {

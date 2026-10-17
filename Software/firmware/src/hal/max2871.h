@@ -6,7 +6,7 @@
 
 // Analog Devices/Maxim MAX2871 wideband PLL/VCO synthesizer (U301), driven
 // via a bit-banged 4-wire interface (CLK/DATA/LE) plus CE/RFOUT_EN/MUX/LD.
-// See Software/protocol/PINMAP.md for the pin map this binds to.
+// See Software/docs/firmware/protocol/PINMAP.md for the pin map this binds to.
 
 void hal_max2871_init(void);
 

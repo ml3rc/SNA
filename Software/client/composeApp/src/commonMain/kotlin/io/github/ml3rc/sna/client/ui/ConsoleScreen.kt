@@ -96,7 +96,7 @@ fun ConsoleScreen(session: Session, compactUi: Boolean = false) {
     Column(Modifier.fillMaxSize().padding(if (compactUi) 8.dp else 14.dp)) {
         Text("Protocol console", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(4.dp))
-        Hint("Newline-delimited JSON as in protocol/PROTOCOL.md. Leave out \"id\": the console adds one. " +
+        Hint("Newline-delimited JSON as in docs/firmware/protocol/PROTOCOL.md. Leave out \"id\": the console adds one. " +
             "Up/Down recall earlier lines.")
         Spacer(Modifier.height(8.dp))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

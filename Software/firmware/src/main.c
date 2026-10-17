@@ -42,7 +42,7 @@ _Static_assert(INIT_ERR_USB == 1u << (INIT_ERROR_CODES - 1), "INIT_ERROR_CODES m
 // Board-level GPIOs that aren't part of any chip driver in src/hal/ --
 // everything RF-chip-specific (attenuator, switches, MAX2871, detector,
 // amp, EEPROM/I2C, ADC) is initialized by its own HAL module instead, via
-// rf_task_start() (on core 1) / eeprom_init() below. This is just the front-panel
+// rf_task_start() (on core 1) / eeprom_init() below. This is just the on-board
 // LEDs and the SDI self-test button.
 static void board_gpio_init(void) {
     const uint out_pins[] = {

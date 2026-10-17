@@ -4,11 +4,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 /**
- * Data shapes and constants mirroring `Software/protocol/PROTOCOL.md`. Keep this file in sync
+ * Data shapes and constants mirroring `Software/docs/firmware/protocol/PROTOCOL.md`. Keep this file in sync
  * with that document -- it's the wire-format source of truth for both firmware and client.
  */
 
-/** The 8 calibration sets (see `protocol/EEPROM_LAYOUT.md`) -- fixed storage order on-device. */
+/** The 8 calibration sets (see `docs/firmware/protocol/EEPROM_LAYOUT.md`) -- fixed storage order on-device. */
 enum class CalSet(val wireName: String, val sParam: SParam, val z: Impedance) {
     S11_50("s11_50", SParam.S11, Impedance.FIFTY), S21_50("s21_50", SParam.S21, Impedance.FIFTY),
     S12_50("s12_50", SParam.S12, Impedance.FIFTY), S22_50("s22_50", SParam.S22, Impedance.FIFTY),
@@ -51,7 +51,7 @@ enum class SdiCmp(val wireName: String) {
     }
 }
 
-/** Calibration curves are captured (and the front-panel SDI test runs) at this attenuation: maximum output. */
+/** Calibration curves are captured (and the on-board SDI test runs) at this attenuation: maximum output. */
 const val CAL_CAPTURE_ATTEN = 0
 
 @Serializable
@@ -129,7 +129,7 @@ data class SdiTestResultEvent(
 data class DeviceStatus(
     /** The current mode: "idle" | "sweep" | "generator" | "power_meter" | "manual" -- see [DeviceMode]. */
     val mode: String = "idle",
-    /** A sweep or the front-panel SDI test is running (most other commands get `busy`). */
+    /** A sweep or the on-board SDI test is running (most other commands get `busy`). */
     val sweeping: Boolean = false,
     val z: Int,
     /** The selected source port (1 or 2), also while the output is terminated. */

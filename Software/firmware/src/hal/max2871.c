@@ -189,7 +189,7 @@ bool hal_max2871_set_freq(uint64_t freq_hz) {
     // the LD pin reports unlock in the other CP modes even when the output
     // is locked -- the same false-unlock symptom seen on this board with
     // CPL=0. Validated on hardware
-    // (docs/history/sweep-profiles/cp20-validation-20261003.md).
+    // (docs-local/history/sweep-profiles/cp20-validation-20261003.md).
     uint32_t reg1 = (2u << 29)   // CPL = CP20
                    | (1u << 15)   // P = 1
                    | (m << 3)

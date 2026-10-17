@@ -5,12 +5,12 @@
 
 #include "cJSON.h"
 
-// The host protocol (Software/protocol/PROTOCOL.md) on core 0. Commands are
+// The host protocol (Software/docs/firmware/protocol/PROTOCOL.md) on core 0. Commands are
 // validated here and turned into rf_task requests; their replies come back
 // asynchronously and are answered from protocol_poll(), so USB keeps being
 // serviced while core 1 works.
 
-// True while a USB sweep or the front-panel SDI test runs (BUSY LED, `busy`).
+// True while a USB sweep or the on-board SDI test runs (BUSY LED, `busy`).
 bool protocol_is_sweeping(void);
 
 // The mode in core 1's latest final reply is idle (it may be changing right now:

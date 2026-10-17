@@ -26,7 +26,7 @@ data class SdiRow(
 )
 
 /**
- * The front-panel SDI self-test: the threshold list being edited, loading/uploading it, and the
+ * The on-board SDI self-test: the threshold list being edited, loading/uploading it, and the
  * last `sdi_test_result` the device reported. Owned by the session, so edits survive tab changes.
  */
 class SdiState(private val client: SnaClient, private val scope: CoroutineScope) {
@@ -47,7 +47,7 @@ class SdiState(private val client: SnaClient, private val scope: CoroutineScope)
     val message: StateFlow<String?> = _message.asStateFlow()
 
     private val _lastResult = MutableStateFlow<SdiTestResultEvent?>(null)
-    /** The latest front-panel test result while connected. */
+    /** The latest on-board test result while connected. */
     val lastResult: StateFlow<SdiTestResultEvent?> = _lastResult.asStateFlow()
 
     init {

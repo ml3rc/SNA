@@ -6,7 +6,7 @@
 
 #include "rf_task.h"
 
-// The standalone front-panel SDI test (PROTOCOL.md "Front panel") on core 0:
+// The standalone on-board SDI test (PROTOCOL.md "LEDs and SDI button") on core 0:
 // enters the sweep mode, sweeps the stored threshold points at attenuation 0,
 // leaves the mode, sends `sdi_test_result` if a host is connected and blinks
 // one green/red pulse per point. Non-blocking: driven by rf_task replies and

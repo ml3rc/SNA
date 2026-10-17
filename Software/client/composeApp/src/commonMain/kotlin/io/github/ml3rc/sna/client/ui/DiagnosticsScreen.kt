@@ -208,7 +208,7 @@ internal fun toolTitle(tool: Tool): String = when (tool) {
     Tool.GENERATOR -> "Generator"
     Tool.POWER -> "Power meter"
     Tool.CALIBRATION -> "Calibration"
-    Tool.SDI -> "Self-test (front panel)"
+    Tool.SDI -> "Self-test (on-board button)"
     Tool.DIAGNOSTICS -> "Manual RF control"
     Tool.CONSOLE -> "Console (mode entered by hand)"
 }

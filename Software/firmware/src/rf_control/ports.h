@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 // Block layer: port-select switch and 50/75 ohm impedance switch, each with
-// its front-panel LED. Called only by the state layer (rf_state_set_source(),
+// its on-board LED. Called only by the state layer (rf_state_set_source(),
 // rf_state_set_port(), rf_state_set_z()), which keeps the
 // attenuate-then-terminate ordering and the remembered port/impedance.
 

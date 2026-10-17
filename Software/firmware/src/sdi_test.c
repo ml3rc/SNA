@@ -15,6 +15,7 @@
 #define RESULT_OFF_MS 150
 #define REFUSED_MS 50     // one red pulse: not idle
 #define NO_CONFIG_MS 50     // one orange pulse: no config
+#define SDI_Z 75            // SDI is 75 ohm (BNC); left as the setting afterwards
 
 
 typedef enum {
@@ -39,7 +40,6 @@ static struct {
     uint8_t sparams[EEPROM_SDI_POINTS_MAX];
     bool pass[EEPROM_SDI_POINTS_MAX];
     double val_db[EEPROM_SDI_POINTS_MAX];
-    uint8_t z;
 } sdi;
 
 static uint32_t now_ms(void) { return to_ms_since_boot(get_absolute_time()); }
@@ -73,19 +73,18 @@ bool sdi_test_running(void) {
     return sdi.state == SDI_ENTERING || sdi.state == SDI_SWEEPING || sdi.state == SDI_EXITING;
 }
 
-static void start_sweep(uint8_t z) {
+static void start_sweep(void) {
     for (size_t i = 0; i < sdi.count; i++) {
         sdi.freqs[i] = sdi.points[i].freq_hz;
         sdi.sparams[i] = (uint8_t) (1u << sdi.points[i].s_param); // < MEASUREMENT_SPARAMS, checked by eeprom_sdi_test_get()
         sdi.pass[i] = false; // a point without a reading fails
         sdi.val_db[i] = 0.0;
     }
-    sdi.z = z;
     eeprom_cal_prefetch();
     // 0 dB attenuation: the level the calibration curves are captured at.
     rf_req_t req = { .kind = RF_REQ_SWEEP, .arg.sweep = {
         .f0 = sdi.freqs[0], .f1 = sdi.freqs[sdi.count - 1], .points = (uint32_t) sdi.count,
-        .z = z, .atten = 0, .allow_unlocked = false, .continue_on_failure = true,
+        .z = SDI_Z, .atten = 0, .allow_unlocked = false, .continue_on_failure = true,
         .frequencies = sdi.freqs, .point_sparams = sdi.sparams,
     } };
     sdi.state = SDI_SWEEPING;
@@ -124,7 +123,7 @@ static void handle_point(const rf_reply_t *r) {
     uint32_t i = r->data.point.index;
     if (i >= sdi.count) return;
     uint8_t sp = sdi.points[i].s_param;
-    measurement_t m = measurement_process(&r->data.point.raw, r->data.point.freq_hz, sdi.z, (uint8_t) (1u << sp));
+    measurement_t m = measurement_process(&r->data.point.raw, r->data.point.freq_hz, SDI_Z, (uint8_t) (1u << sp));
     double threshold = sdi.points[i].thresh_db_x100 / 100.0;
     sdi.val_db[i] = m.db[sp];
     sdi.pass[i] = m.locked && (sdi.points[i].cmp_gt ? m.db[sp] > threshold : m.db[sp] < threshold);
@@ -140,7 +139,7 @@ bool sdi_test_handle_reply(const rf_reply_t *r) {
         case SDI_ENTERING:
             if (r->result != RF_APP_OK) show(SDI_REFUSED);
             else if (sdi.aborted) exit_mode();
-            else start_sweep(r->status.z);
+            else start_sweep();
             break;
         case SDI_SWEEPING:
             if (!r->final) { handle_point(r); break; }

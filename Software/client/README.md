@@ -2,7 +2,7 @@
 
 Kotlin Multiplatform + Compose Multiplatform app for the SNA scalar network analyzer: desktop
 (Windows/Linux/macOS on the JVM) and Android. No iOS target. It speaks the wire protocol in
-[`../protocol/PROTOCOL.md`](../protocol/PROTOCOL.md) over USB CDC-ACM.
+[`../docs/firmware/protocol/PROTOCOL.md`](../docs/firmware/protocol/PROTOCOL.md) over USB CDC-ACM.
 
 | | Version | Needs |
 |---|---|---|
@@ -28,12 +28,12 @@ The workspace has seven tabs. A green square on a tab means its tool is running 
   running output live; port and frequency through "Apply changes". The **detector probe** reads
   all four coupler paths under the running output and explains suspicious readings.
 - **Power meter** — continuous reading of the signal arriving at a port (approximate,
-  uncalibrated dBm; `docs/generator-and-power-meter.md`).
+  uncalibrated dBm; `docs-local/generator-and-power-meter.md`).
 - **Calibration** — SLOT wizard per impedance: Open/Short at each port and Thru, compute, upload,
   verify. Detects and locks the device's existing grid (all 8 sets share one). Captures run in the
   background and can be aborted.
-- **Self-test** — the front-panel SDI thresholds (load, edit, upload; an empty list disables the
-  test) and the last front-panel result the device reported.
+- **Self-test** — the on-board SDI thresholds (load, edit, upload; an empty list disables the
+  test) and the last on-board result the device reported.
 - **Diagnostics** — device info, tool states, live `status`, boot self-test errors, synthesizer
   temperature; **manual RF control** (output port/termination, source on/off, LPF, coupler path,
   synthesizer frequency, one-shot detector readout); reboot into the UF2 bootloader.
@@ -46,7 +46,7 @@ The workspace has seven tabs. A green square on a tab means its tool is running 
 
 Only one tool drives the RF hardware at a time (`session/ToolActivity.kt`, `blockReason`). A tool
 that would take over another is refused with the reason shown, and the device's own `status`
-reveals what the client did not start (the front-panel test, a mode entered from the console).
+reveals what the client did not start (the on-board test, a mode entered from the console).
 
 While a test runs, controls that would not reach the hardware are disabled:
 

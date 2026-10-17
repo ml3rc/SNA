@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 # Custom board: RP2350B (QFN, 48 GPIO) SNA hardware -- not a stock Pico/Pico 2.
-# See boards/sna.h and Software/protocol/PINMAP.md.
+# See boards/sna.h and Software/docs/firmware/protocol/PINMAP.md.
 set(PICO_BOARD_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR}/boards)
 set(PICO_BOARD sna CACHE STRING "Board type")
 set(PICO_PLATFORM rp2350-arm-s CACHE STRING "Platform")
