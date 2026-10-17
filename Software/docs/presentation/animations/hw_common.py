@@ -1,4 +1,4 @@
-"""Helpers for hardware_scenes.py (wires, resistors, travelling pulses)."""
+"""Helpers for hardware_scenes.py (wires, travelling pulses). Resistor/ground/amplifier symbols live in sna_style."""
 from sna_style import *
 
 
@@ -43,34 +43,6 @@ def travel_anim(points, color=RF, run_time=1.5, r=0.1):
     p = path_of(points)
     g.move_to(p.get_start())
     return g, MoveAlongPath(g, p, run_time=run_time, rate_func=linear)
-
-
-def resistor(start, end, color=TEXT, zigs=6, amp=0.13, lead=0.25, stroke=3):
-    """Zig-zag resistor between two points (any orientation)."""
-    s, e = np.array(start, dtype=float), np.array(end, dtype=float)
-    if len(s) == 2:
-        s = np.append(s, 0)
-        e = np.append(e, 0)
-    d = e - s
-    L = np.linalg.norm(d)
-    u = d / L
-    n = np.array([-u[1], u[0], 0])
-    pts = [s, s + u * lead]
-    body = L - 2 * lead
-    for i in range(zigs):
-        t = lead + body * (i + 0.5) / zigs
-        pts.append(s + u * t + n * amp * (1 if i % 2 == 0 else -1))
-    pts += [s + u * (L - lead), e]
-    return VMobject(color=color, stroke_width=stroke).set_points_as_corners(pts)
-
-
-def ground(at, color=TEXT, w=0.36):
-    p = np.array([at[0], at[1], 0])
-    return VGroup(
-        Line(p + LEFT * w / 2, p + RIGHT * w / 2, color=color, stroke_width=3),
-        Line(p + LEFT * w / 3 + DOWN * 0.08, p + RIGHT * w / 3 + DOWN * 0.08, color=color, stroke_width=3),
-        Line(p + LEFT * w / 6 + DOWN * 0.16, p + RIGHT * w / 6 + DOWN * 0.16, color=color, stroke_width=3),
-    )
 
 
 def chip(text, color, size=22):

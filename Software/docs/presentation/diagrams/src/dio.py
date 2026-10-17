@@ -4,13 +4,8 @@ The .drawio files in ../ are the deliverable and can be edited in draw.io direct
 build_*.py scripts are only how the first version was produced. If you edit a .drawio by hand, don't re-run
 its build script (it would overwrite your edit).
 """
-import os
-import sys
 from html import escape
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # docs/presentation: shared i18n
-from i18n import LANG, tr, tr_html  # noqa: E402
 
 BG = "#121417"
 PANEL = "#1C2128"
@@ -28,8 +23,7 @@ BAD = "#FF7B72"
 FONT = "Segoe UI"
 MONO = "Consolas"
 
-# English sources are the deliverable (../*.drawio); other languages are build output, exported only.
-OUT = Path(__file__).resolve().parent.parent if LANG == "en" else Path(__file__).resolve().parents[2] / LANG / "drawio"
+OUT = Path(__file__).resolve().parent.parent
 
 
 def _fmt(title, sub=None, title_size=None, sub_size=12, sub_color=MUTED):
@@ -44,7 +38,7 @@ def _fmt(title, sub=None, title_size=None, sub_size=12, sub_color=MUTED):
 
 
 def _label_attr(label):
-    return escape(tr_html(escape(label or "").replace("\n", "<br>")), quote=True)
+    return escape(escape(label or "").replace("\n", "<br>"), quote=True)
 
 
 class Diagram:
@@ -59,7 +53,7 @@ class Diagram:
 
     def _cell(self, cid, value, style, x, y, w, h, vertex=True, parent="1"):
         self.cells.append(
-            f'<mxCell id="{cid}" value="{escape(tr_html(value), quote=True)}" style="{style}" vertex="1" parent="{parent}">'
+            f'<mxCell id="{cid}" value="{escape(value, quote=True)}" style="{style}" vertex="1" parent="{parent}">'
             f'<mxGeometry x="{x}" y="{y}" width="{w}" height="{h}" as="geometry"/></mxCell>')
         return cid
 

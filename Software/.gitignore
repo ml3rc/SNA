@@ -16,5 +16,3 @@ __pycache__/
 /docs/presentation/animations/.venv/
 /docs/presentation/animations/media/
 /docs/presentation/animations/media_*/
-# German draw.io sources are generated (SNA_LANG=de build_*.py); only the exports in de/ are kept
-/docs/presentation/de/drawio/

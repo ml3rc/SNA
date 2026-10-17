@@ -44,10 +44,13 @@ class PllSynthesis(Scene):
         cap = caption("A 100 MHz crystal oscillator is the reference")
         self.play(FadeIn(ref), FadeIn(cap))
         self.play(Create(w_ref), FadeIn(rdiv), Create(w_r), FadeIn(pfd))
+        self.next_section()
         self.play(Transform(cap, caption("The phase detector compares reference and feedback")))
         self.play(Create(w_pfd), FadeIn(cp), Create(w_cp), FadeIn(lf))
+        self.next_section()
         self.play(Transform(cap, caption("Charge pump + loop filter turn the phase error into a tuning voltage")))
         self.play(Create(w_lf), FadeIn(vco))
+        self.next_section()
         self.play(Transform(cap, caption("The VCO frequency is divided by N and fed back")))
         self.play(Create(w_fb), FadeIn(ndiv), Create(w_n))
         self.wait(0.5)
@@ -79,6 +82,7 @@ class PllSynthesis(Scene):
         ld_dot = Dot(radius=0.14, color=BAD).move_to(at(0.0, -2.35))
         ld_txt = label("LD: low", 24, BAD).next_to(ld_dot, RIGHT, buff=0.2)
 
+        self.next_section()
         self.play(Transform(cap, caption("Closing the loop: the VCO is pulled onto N × f_PFD")))
         self.play(FadeIn(readout), FadeIn(target), FadeIn(err_lbl), FadeIn(err_bar), FadeIn(ld_dot), FadeIn(ld_txt))
         self.play(t.animate.set_value(1.0), run_time=4.5, rate_func=linear)
@@ -87,10 +91,12 @@ class PllSynthesis(Scene):
         self.wait(0.8)
 
         # Output divider
+        self.next_section()
         self.play(Transform(cap, caption("The output divider reaches the low frequencies")))
         self.play(Create(w_vco), FadeIn(odiv), Create(w_out), FadeIn(out_lbl))
         travel(self, [(3.05, bot), (5.45, bot), (5.45, -1.8)], RF, run_time=1.2)
 
+        self.next_section()
         eq1 = VGroup(label("f_out = f_VCO ÷ DIV = 4 GHz ÷ 4 =", 26, TEXT),
                      label("1 GHz", 26, RF, weight=BOLD)).arrange(RIGHT, buff=0.15)
         eq1.move_to(at(-2.0, -2.35)).align_to(readout, LEFT)
@@ -112,15 +118,15 @@ class DirectionalCoupler(Scene):
 
         # ---- Part A: principle -------------------------------------------------
         y_main, y_cpl = 0.85, 0.45
-        box = RoundedRectangle(corner_radius=0.12, width=3.6, height=2.1, stroke_color=MEAS,
-                               stroke_width=3, fill_color=PANEL, fill_opacity=1).move_to(at(0, 0.55))
+        box = RoundedRectangle(corner_radius=0.12, width=3.6, height=2.3, stroke_color=MEAS,
+                               stroke_width=3, fill_color=PANEL, fill_opacity=1).move_to(at(0, 0.45))
         name = label("SEDC-10-63+", 20, MUTED).move_to(at(0, 1.35))
         main = Line(at(-1.8, y_main), at(1.8, y_main), color=RF, stroke_width=4)
         cline = Line(at(-1.0, y_cpl), at(1.0, y_cpl), color=MEAS, stroke_width=3)
-        cpl_out = Line(at(-1.0, y_cpl), at(-1.0, -0.5), color=MEAS, stroke_width=3)
-        term = resistor(at(1.0, y_cpl), at(1.0, -0.12), MUTED, zigs=4, amp=0.08, lead=0.08)
-        gnd = ground(at(1.0, -0.14), MUTED, 0.3)
-        term_lbl = label("50 Ω", 20, MUTED).move_to(at(1.45, 0.15))
+        cpl_out = Line(at(-1.0, y_cpl), at(-1.0, -0.7), color=MEAS, stroke_width=3)
+        term = resistor(at(1.0, y_cpl), at(1.0, -0.45), MUTED)
+        gnd = ground(at(1.0, -0.45), MUTED)
+        term_lbl = label("50 Ω", 20, MUTED).move_to(at(1.48, 0.0))
         lbl_in = label("IN", 20, MUTED).move_to(at(-1.55, 1.1))
         lbl_out = label("OUT", 20, MUTED).move_to(at(1.45, 1.1))
         lbl_cpl = label("CPL", 20, MEAS).move_to(at(-0.65, -0.3))
@@ -131,7 +137,7 @@ class DirectionalCoupler(Scene):
         w1 = Line(at(-4.2, y_main), at(-1.8, y_main), color=RF, stroke_width=4)
         w2 = Line(at(1.8, y_main), at(4.2, y_main), color=RF, stroke_width=4)
         det = block("Detector", "AD8318", MEAS, 2.2, 0.85, sub_size=20).move_to(at(-1.0, -1.65))
-        w_det = Line(at(-1.0, -0.5), at(-1.0, -1.225), color=MEAS, stroke_width=3)
+        w_det = Line(at(-1.0, -0.7), at(-1.0, -1.225), color=MEAS, stroke_width=3)
 
         self.play(FadeIn(src), FadeIn(dut), Create(w1), Create(w2), FadeIn(coupler))
         self.play(FadeIn(det), Create(w_det))
@@ -148,11 +154,12 @@ class DirectionalCoupler(Scene):
         self.play(flash_fill(det, MEAS), FadeIn(hit))
         self.wait(0.5)
 
+        self.next_section()
         self.play(Transform(cap, caption("Reflected wave (DUT → source): coupled into the internal 50 Ω, CPL stays dark")),
                   FadeOut(hit))
         travel(self, [(4.2, y_main), (1.0, y_main)], POWER, run_time=1.0)
         g1, a1 = travel_anim([(1.0, y_main), (-4.2, y_main)], POWER, run_time=1.3)
-        g2, a2 = travel_anim([(1.0, y_cpl), (1.0, -0.1)], POWER, run_time=0.7, r=0.07)
+        g2, a2 = travel_anim([(1.0, y_cpl), (1.0, -0.4)], POWER, run_time=0.7, r=0.07)
         self.add(g1, g2)
         self.play(a1, a2)
         self.play(FadeOut(g2), run_time=0.3)
@@ -161,6 +168,7 @@ class DirectionalCoupler(Scene):
         self.play(FadeIn(no))
         self.wait(1.0)
 
+        self.next_section()
         # ---- Part B: one coupler, six switches ---------------------------------
         part_a = VGroup(coupler, src, dut, w1, w2, det, w_det, no)
         title2 = title_card("One coupler, six SP4T switches")
@@ -218,6 +226,7 @@ class DirectionalCoupler(Scene):
             c = chip(name, MEAS, 24).move_to(at(xe, 2.55))
             return c
 
+        self.next_section()
         # P1_FWD
         tag = show_path("P1_FWD  ·  source on port 1")
         self.play(FadeIn(tag), Transform(cap, caption("Reference: the wave going out of port 1")))
@@ -232,6 +241,7 @@ class DirectionalCoupler(Scene):
         r1.move_to(at(-4.3, -2.55))
         self.play(flash_fill(detector, MEAS), FadeIn(r1))
 
+        self.next_section()
         # P1_BWD
         cpl_b = make_coupler(-1).move_to(at(xe, y1))
         tag2 = show_path("P1_BWD  ·  source on port 1")
@@ -248,6 +258,7 @@ class DirectionalCoupler(Scene):
         reads.add(r2)
         self.play(flash_fill(detector, MEAS), FadeIn(r2))
 
+        self.next_section()
         # P2_BWD: coupler moves to port 2's line, pad to port 1's line
         tag3 = show_path("P2_BWD  ·  source on port 1")
         cpl_new = make_coupler(-1).move_to(at(xe, y2))
@@ -268,6 +279,7 @@ class DirectionalCoupler(Scene):
         self.play(flash_fill(detector, MEAS), FadeIn(r3))
         self.wait(0.8)
 
+        self.next_section()
         # Formulas
         f1 = VGroup(label("S11 = P1_BWD − P1_FWD", 26, TEXT, weight=BOLD),
                     label("S21 = P2_BWD − P1_FWD", 26, TEXT, weight=BOLD)).arrange(RIGHT, buff=1.0)
@@ -315,6 +327,7 @@ class LogDetector(Scene):
         rng = label("usable: −55 … 0 dBm", 22, MEAS).move_to(c2p(-27, 2.3))
         self.play(FadeIn(rng))
 
+        self.next_section()
         p = ValueTracker(-50)
         dot = always_redraw(lambda: Dot(c2p(p.get_value(), self.v_of(p.get_value())), radius=0.11, color=RF))
         vguide = always_redraw(lambda: DashedLine(c2p(p.get_value(), 0),
@@ -339,6 +352,7 @@ class LogDetector(Scene):
         self.play(p.animate.set_value(-5), run_time=3.5, rate_func=smooth)
         self.play(p.animate.set_value(-30), run_time=2.0, rate_func=smooth)
 
+        self.next_section()
         facts = VGroup(
             label("more power → lower voltage", 24, TEXT),
             label("slope −24.5 mV/dB", 24, MEAS),
@@ -348,6 +362,7 @@ class LogDetector(Scene):
             self.play(FadeIn(f, shift=RIGHT * 0.2), run_time=0.7)
         self.wait(2)
 
+        self.next_section()
         # ---- Median of 16 ------------------------------------------------------
         self.play(*[FadeOut(m) for m in [ax, xl, yl, curve, tail_l, tail_r, rng, dot, vguide, hguide, info, facts]])
         self.play(Transform(title, title_card("16 samples → median")))
@@ -374,6 +389,7 @@ class LogDetector(Scene):
         self.play(FadeIn(cap))
         self.wait(1.2)
 
+        self.next_section()
         order = sorted(range(n), key=lambda i: samples[i])
         self.play(Transform(cap, caption("Sort the 16 values …")))
         self.play(*[bars[i].animate.move_to(at(xs[k], bars[i].get_center()[1])) for k, i in enumerate(order)],
@@ -390,6 +406,7 @@ class LogDetector(Scene):
         self.play(FadeIn(mean_lbl))
         self.wait(2)
 
+        self.next_section()
         # ---- dB math is a subtraction ----------------------------------------
         self.play(*[FadeOut(m) for m in bars + [baseline, bracket, med_lbl, mean_lbl, cap]])
         self.play(Transform(title, title_card("Ratios become subtractions")))
@@ -401,6 +418,7 @@ class LogDetector(Scene):
         rows = VGroup(a, b).arrange(DOWN, aligned_edge=LEFT, buff=0.35).move_to(at(0, 1.3))
         self.play(FadeIn(a))
         self.play(FadeIn(b))
+        self.next_section()
         eq = VGroup(label("S11 = (1520 − 1216) ÷ (−30.4 counts/dB) =", 30, TEXT),
                     label("−10.0 dB", 30, MEAS, weight=BOLD)).arrange(RIGHT, buff=0.2).move_to(at(0, -0.4))
         self.play(Write(eq[0]), run_time=1.5)
@@ -436,10 +454,12 @@ class ImpedancePads(Scene):
         cap = caption("50 Ω mode: straight to the SMA jack")
         self.play(FadeIn(cap))
         travel(self, [(-6.6, yc), (-1.7, yc + 0.25), (-1.0, yc + 0.25), (-1.0, 1.1), (3.35, 1.1)], RF, run_time=1.8)
+        self.next_section()
         self.play(Transform(cap, caption("75 Ω mode: through the pad to the BNC jack")))
         travel(self, [(-6.6, yc), (-1.7, yc - 0.25), (-1.0, yc - 0.25), (-1.0, -1.5), (3.35, -1.5)], RF, run_time=1.8)
         self.wait(0.8)
 
+        self.next_section()
         # ---- Part B: the pad --------------------------------------------------
         part_a = VGroup(inp, w_in, sw, up, dn, pad, dn2, sma, bnc)
         self.play(FadeOut(part_a), FadeOut(cap), Transform(title, title_card("Minimum-loss pad: 50 Ω ↔ 75 Ω")))
@@ -451,9 +471,9 @@ class ImpedancePads(Scene):
         l50 = label("50 Ω side", 24, RF).next_to(left_t, UP, buff=0.25)
         l75 = label("75 Ω side", 24, HOST).next_to(right_t, UP, buff=0.25)
         w_l = Line(left_t.get_center(), A, color=TEXT, stroke_width=3)
-        r_ser = resistor(A, B, POWER)
+        r_ser = resistor(A, B, POWER, wire=TEXT)
         w_r = Line(B, right_t.get_center(), color=TEXT, stroke_width=3)
-        r_sh = resistor(A, at(-1.6, -0.8), POWER)
+        r_sh = resistor(A, at(-1.6, -0.8), POWER, wire=TEXT)
         g = ground(at(-1.6, -0.8), TEXT)
         node = Dot(A, radius=0.08, color=TEXT)
         ls = label("43.2 Ω", 24, POWER).move_to(at(0.3, y + 0.45))
@@ -463,9 +483,10 @@ class ImpedancePads(Scene):
         self.play(FadeIn(l50), FadeIn(l75), FadeIn(ls), FadeIn(lp))
         self.wait(0.8)
 
+        self.next_section()
         # Direction 1: from the 50 Ω side, with 75 Ω load
         load = VGroup(Line(at(4.8, y), at(5.6, y), color=TEXT, stroke_width=3),
-                      resistor(at(5.6, y), at(5.6, -0.8), HOST), ground(at(5.6, -0.8), TEXT),
+                      resistor(at(5.6, y), at(5.6, -0.8), HOST, wire=TEXT), ground(at(5.6, -0.8), TEXT),
                       label("75 Ω", 22, HOST).move_to(at(6.25, 0.05)))
         eye1 = Arrow(at(-6.2, y), at(-4.75, y), buff=0, color=RF, stroke_width=4, tip_length=0.2)
         self.play(FadeIn(load), GrowArrow(eye1))
@@ -476,9 +497,10 @@ class ImpedancePads(Scene):
         self.play(FadeIn(eq1[2], scale=1.3))
         self.wait(1.5)
 
+        self.next_section()
         # Direction 2: from the 75 Ω side, with 50 Ω source
         src = VGroup(Line(at(-4.6, y), at(-5.4, y), color=TEXT, stroke_width=3),
-                     resistor(at(-5.4, y), at(-5.4, -0.8), RF), ground(at(-5.4, -0.8), TEXT),
+                     resistor(at(-5.4, y), at(-5.4, -0.8), RF, wire=TEXT), ground(at(-5.4, -0.8), TEXT),
                      label("50 Ω", 22, RF).move_to(at(-6.05, 0.05)))
         eye2 = Arrow(at(6.6, y), at(4.95, y), buff=0, color=HOST, stroke_width=4, tip_length=0.2)
         self.play(FadeOut(load), FadeOut(eye1), FadeIn(src), GrowArrow(eye2))
@@ -488,6 +510,7 @@ class ImpedancePads(Scene):
         self.play(FadeIn(eq2[0]), Write(eq2[1]))
         self.play(FadeIn(eq2[2], scale=1.3))
         self.wait(1.0)
+        self.next_section()
         loss = label("matched both ways — price: 5.7 dB insertion loss (removed by calibration)", 22, POWER)
         loss.move_to(at(0, -3.45))
         self.play(FadeIn(loss))
@@ -539,19 +562,23 @@ class PowerTree(Scene):
         self.play(FadeIn(cap), Create(w_ub), FadeIn(boost))
         self.play(*flash(w_ub))
         self.wait(0.5)
+        self.next_section()
         self.play(Transform(cap, step("2. 5 V LDOs per area")))
         self.play(*[Create(b) for b in bus5], *[FadeIn(l) for l in ldo5])
         self.play(*flash(*bus5))
         self.wait(0.5)
+        self.next_section()
         self.play(Transform(cap, step("3. one LDO per RF circuit")))
         self.play(*[Create(b) for b in bus3], *[FadeIn(l) for l in ldo3], run_time=1.5)
         self.play(*flash(*bus3))
         self.wait(0.8)
+        self.next_section()
         self.play(Transform(cap, step("4. digital: its own buck")))
         self.play(Create(w_buck), FadeIn(buck), Create(w_dig), FadeIn(dig))
         self.play(*flash(w_buck, w_dig))
         self.wait(0.5)
 
+        self.next_section()
         msg = VGroup(label("boost + LDOs", 26, RF, weight=BOLD), label("→ quiet RF rails", 26, RF),
                      label("buck", 26, CORE0, weight=BOLD), label("→ efficient, digital only", 26, CORE0))             .arrange(DOWN, aligned_edge=LEFT, buff=0.12).move_to(at(-4.4, 2.0))
         self.play(FadeOut(cap), FadeIn(msg))

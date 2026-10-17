@@ -156,8 +156,9 @@ class MeasurementFlow(Scene):
                           max_tip_length_to_length_ratio=0.08)
         self.play(FadeIn(val), GrowArrow(val_arrow))
         self.wait(0.8)
+        self.next_section()
         self.play(FadeOut(val), FadeOut(val_arrow))
-        cap.show("…repeated for every frequency of the sweep: ≈ 2 ms per point")
+        cap.show("…repeated for every frequency of the sweep: ≈ 2 ms per point", step=False)
         f = lambda x: -8.16 + 5 * math.cos(2.2 * x) - 1.2 * x
         rest = VGroup(*[Dot(ax.c2p(x, f(x)), radius=0.05, color=HOST)
                         for x in np.linspace(0.1, 5.9, 45) if abs(x - 1) > 0.08])
@@ -251,8 +252,9 @@ class SweepPipeline(Scene):
         self.wait(2)
 
         # --- C: queue + chart ---------------------------------------------------------
+        self.next_section()
         self.play(FadeOut(VGroup(lane1, lane0, axis, ticks, ms_l, p1, p0, links, hl, hl_l, note)))
-        cap.show("Every point travels through a reply queue with 8 places")
+        cap.show("Every point travels through a reply queue with 8 places", step=False)
         yb = 2.2
         c1 = block("Core 1", "measures", CORE1, w=2.0, h=0.95).move_to([-5.6, yb, 0])
         c0 = block("Core 0", "sends", CORE0, w=2.0, h=0.95).move_to([3.0, yb, 0])
@@ -516,7 +518,7 @@ class SourceSafety(Scene):
         y = 0.3
         synth = block("MAX2871", "synth", RF, w=1.8, h=0.9, title_size=22).move_to([-6.0, y, 0])
         att = block("Attenuator", "atten 0", RF, w=2.0, h=0.9, title_size=22).move_to([-3.6, y, 0])
-        amp = block("Amplifier", "+12 dB", RF, w=1.8, h=0.9, title_size=22).move_to([-1.2, y, 0])
+        amp = amplifier("+12 dB", RF).move_to([-1.2, y, 0])
         piv = np.array([1.4, y, 0])
         piv_d = Dot(piv, radius=0.08, color=TEXT)
         c_p1 = np.array([3.0, y + 1.0, 0])
@@ -527,16 +529,10 @@ class SourceSafety(Scene):
         port2 = block("Port 2", None, LINE, w=1.4, h=0.6, title_size=22).move_to([4.6, y, 0])
         w1 = Line(c_p1, port1.get_left(), color=LINE, stroke_width=3)
         w2 = Line(c_p2, port2.get_left(), color=LINE, stroke_width=3)
-        # termination resistor (zigzag) to ground
-        zz = [c_t, c_t + RIGHT * 0.5]
-        for k in range(6):
-            zz.append(c_t + RIGHT * (0.6 + 0.15 * k) + UP * (0.18 if k % 2 == 0 else -0.18))
-        zz += [c_t + RIGHT * 1.6, c_t + RIGHT * 1.9]
-        res = VMobject(color=LINE, stroke_width=3).set_points_as_corners(zz)
-        gnd_x = c_t + RIGHT * 1.9
-        gnd = VGroup(Line(gnd_x, gnd_x + DOWN * 0.35, color=LINE, stroke_width=3),
-                     Line(gnd_x + DOWN * 0.35 + LEFT * 0.25, gnd_x + DOWN * 0.35 + RIGHT * 0.25, color=LINE, stroke_width=3),
-                     Line(gnd_x + DOWN * 0.45 + LEFT * 0.15, gnd_x + DOWN * 0.45 + RIGHT * 0.15, color=LINE, stroke_width=3))
+        # termination resistor to ground
+        res = resistor(c_t, c_t + RIGHT * 1.6, LINE)
+        gnd_x = c_t + RIGHT * 1.6
+        gnd = VGroup(Line(gnd_x, gnd_x + DOWN * 0.35, color=LINE, stroke_width=3), ground(gnd_x + DOWN * 0.35, LINE))
         res_l = label("50 Ω termination", 20, MUTED).next_to(res, DOWN, buff=0.45)
         sw_l = label("port switch", 20, MUTED).move_to(piv + DOWN * 1.6 + RIGHT * 0.2)
         lever = Line(piv, c_p1, color=TEXT, stroke_width=5)
@@ -562,17 +558,18 @@ class SourceSafety(Scene):
         hot = label("+13 dBm into the 50 Ω resistor!", 24, BAD, weight=BOLD).next_to(res_l, DOWN, buff=0.2)
         glow = VGroup(*[Circle(radius=0.3 + 0.18 * k, color=BAD, stroke_width=3).move_to(res.get_center())
                         .set_stroke(opacity=0.8 - 0.25 * k) for k in range(3)])
-        self.play(res.animate.set_color(BAD).set_stroke(width=6), FadeIn(hot), FadeIn(glow))
+        self.play(res.animate.set_stroke(BAD, width=6), FadeIn(hot), FadeIn(glow))
         self.play(Wiggle(res), glow.animate.scale(1.25).set_stroke(opacity=0.2), run_time=1.2)
         cross = label("✗", 64, BAD, weight=BOLD).move_to([-4.0, -1.6, 0])
         self.play(FadeIn(cross, scale=1.5))
         self.wait(1)
+        self.next_section()
         # back to ON
-        self.play(FadeOut(VGroup(hot, glow, cross)), res.animate.set_color(LINE).set_stroke(width=3),
+        self.play(FadeOut(VGroup(hot, glow, cross)), res.animate.set_stroke(LINE, width=3),
                   Rotate(lever, angle=(math.atan2(1.0, 1.6) * 2), about_point=piv), FadeIn(p1_lvl))
 
         # --- correct parking --------------------------------------------------------------
-        cap.show("Parking the right way: 1. attenuator to 127 (−31.75 dB) …", MEAS)
+        cap.show("Parking the right way: 1. attenuator to 127 (−31.75 dB) …", MEAS, step=False)
         self.play(set_att(127, "atten 127"), sig2.animate.set_stroke(width=2), sig3.animate.set_stroke(width=2),
                   Transform(lvl, label("−19 dBm", 24, RF, weight=BOLD).move_to(lvl)),
                   Transform(p1_lvl, label("−19 dBm out", 20, RF).move_to(p1_lvl)), run_time=1.2)
@@ -597,10 +594,11 @@ class SourceSafety(Scene):
         self.play(FadeIn(code_l))
         self.wait(2)
 
+        self.next_section()
         # --- power-up double write -----------------------------------------------------------
         self.play(FadeOut(VGroup(synth, att, amp, piv_d, cdots, port1, port2, w1, w2, res, gnd, res_l, sw_l, lever,
                                  sig1, sig2, sig3, lvl, p1_lvl2, code_l, sm)))
-        cap.show("After a power-up (OFF → PARKED) the MAX2871 needs its registers written twice")
+        cap.show("After a power-up (OFF → PARKED) the MAX2871 needs its registers written twice", step=False)
         yy = 0.6
         ax_line = Arrow([-6.4, yy - 0.9, 0], [6.6, yy - 0.9, 0], color=LINE, stroke_width=2, buff=0,
                         max_tip_length_to_length_ratio=0.02)

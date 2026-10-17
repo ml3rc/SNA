@@ -12,7 +12,9 @@ class Captions:
         self.size = size
         self.cur = None
 
-    def show(self, text, color=TEXT, run_time=0.5):
+    def show(self, text, color=TEXT, run_time=0.5, step=True):
+        if step and self.cur is not None:
+            self.scene.next_section()   # one clip per caption step (render.sh saves the sections)
         new = label(text, self.size, color).move_to([0, self.y, 0])
         if new.width > 13.4:
             new.scale_to_fit_width(13.4)

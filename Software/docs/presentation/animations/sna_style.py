@@ -69,3 +69,42 @@ def title_card(text, sub=None):
 
 def pulse_dot(color=RF, r=0.09):
     return Dot(radius=r, color=color).set_z_index(10)
+
+
+# IEC symbols, same size everywhere (and in the draw.io diagrams: 90 x 30 px resistor, 40 px ground)
+R_LEN, R_WID = 0.8, 0.27
+GND_W = 0.36
+
+
+def resistor(start, end, color=TEXT, stroke=3, wire=None):
+    """IEC resistor (rectangle) centred between two points, any orientation; the leads (colour `wire`, default
+    `color`) take up the rest."""
+    s, e = np.array(start, dtype=float), np.array(end, dtype=float)
+    if len(s) == 2:
+        s = np.append(s, 0)
+        e = np.append(e, 0)
+    d = e - s
+    L = np.linalg.norm(d)
+    u = d / L
+    mid = (s + e) / 2
+    body = Rectangle(width=R_LEN, height=R_WID, stroke_color=color, stroke_width=stroke,
+                     fill_color=BG, fill_opacity=1).rotate(np.arctan2(u[1], u[0])).move_to(mid)
+    lead_a = Line(s, mid - u * R_LEN / 2, color=wire or color, stroke_width=stroke)
+    lead_b = Line(mid + u * R_LEN / 2, e, color=wire or color, stroke_width=stroke)
+    return VGroup(lead_a, lead_b, body)
+
+
+def ground(at, color=TEXT):
+    """Ground symbol hanging below the given point."""
+    p = np.array([at[0], at[1], 0])
+    return VGroup(*[Line(p + LEFT * GND_W * k / 2 + DOWN * 0.08 * i, p + RIGHT * GND_W * k / 2 + DOWN * 0.08 * i,
+                         color=color, stroke_width=3)
+                    for i, k in enumerate((1, 2 / 3, 1 / 3))])
+
+
+def amplifier(text, color=RF, w=1.3, h=1.0, size=20):
+    """Amplifier triangle pointing right, like the draw.io RF chain."""
+    tri = Polygon(LEFT * w / 2 + UP * h / 2, LEFT * w / 2 + DOWN * h / 2, RIGHT * w / 2, stroke_color=color,
+                  stroke_width=3, fill_color=PANEL, fill_opacity=1)
+    t = label(text, size, TEXT, weight=BOLD).move_to(tri.get_center() + LEFT * w * 0.12)
+    return VGroup(tri, t)

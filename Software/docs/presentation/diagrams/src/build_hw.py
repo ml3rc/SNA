@@ -191,13 +191,22 @@ def coupler_paths():
     return d.save()
 
 
-def resistor(d, x, y, w, h, val, color=HOST):
-    return d.box(x, y, w, h, val, None, color, size=13, bold=True, fill=PANEL_2, rounded=False)
+R_LEN, R_WID = 90, 30   # IEC resistor, same size everywhere (the animations use the same symbol)
+
+
+def resistor(d, cx, cy, val, color=HOST, vertical=False):
+    """IEC resistor centred on (cx, cy), drawn over a continuous wire; value written beside it."""
+    w, h = (R_WID, R_LEN) if vertical else (R_LEN, R_WID)
+    d.shape(cx - w / 2, cy - h / 2, w, h, f"rounded=0;html=1;fillColor={BG};strokeColor={color};strokeWidth=2;")
+    if vertical:
+        d.text(cx + w / 2 + 8, cy - 14, 90, 28, val, color, 15, True, "left")
+    else:
+        d.text(cx - 60, cy - h / 2 - 32, 120, 28, val, color, 15, True)
 
 
 def gnd(d, x, y):
-    for i, ww in enumerate((40, 26, 12)):
-        d.line(x - ww / 2, y + i * 7, x + ww / 2, y + i * 7, LINE, 2, end="none")
+    for i, ww in enumerate((40, 27, 13)):
+        d.line(x - ww / 2, y + i * 9, x + ww / 2, y + i * 9, LINE, 2, end="none")
 
 
 def pads():
@@ -207,13 +216,11 @@ def pads():
     d.group(40, 120, 740, 480, "50 Ω → 75 Ω minimum-loss pad (each port)", HOST)
     d.box(70, 250, 120, 60, "50 Ω side", "switch", HOST, size=14, sub_size=11)
     d.box(630, 250, 120, 60, "75 Ω side", "BNC", HOST, size=14, sub_size=11)
-    d.line(190, 280, 450, 280, LINE, 2, end="none")
-    resistor(d, 450, 262, 110, 36, "43.2 Ω")
-    d.line(560, 280, 630, 280, LINE, 2, end="none")
-    d.line(320, 280, 320, 340, LINE, 2, end="none")
-    resistor(d, 284, 340, 72, 90, "86.6 Ω")
-    d.line(320, 430, 320, 465, LINE, 2, end="none")
-    gnd(d, 320, 465)
+    d.line(190, 280, 630, 280, LINE, 2, end="none")
+    d.line(320, 280, 320, 460, LINE, 2, end="none")
+    resistor(d, 480, 280, "43.2 Ω")
+    resistor(d, 320, 375, "86.6 Ω", vertical=True)
+    gnd(d, 320, 460)
     d.html(70, 520, 700, 120,
            f'<span style="color:{TEXT}">Looking in from 50 Ω side: 86.6 ∥ (43.2 + 75) = <b>50.0 Ω</b><br>'
            f'Looking in from 75 Ω side: 43.2 + (86.6 ∥ 50) = <b>74.9 Ω</b><br>'
@@ -222,15 +229,12 @@ def pads():
     d.group(820, 120, 740, 480, "5.6 dB T-pad (coupler bank, unused port)", MEAS)
     d.box(850, 250, 110, 60, "50 Ω", None, MEAS, size=14)
     d.box(1420, 250, 110, 60, "50 Ω", None, MEAS, size=14)
-    d.line(960, 280, 1010, 280, LINE, 2, end="none")
-    resistor(d, 1010, 262, 100, 36, "15.4 Ω", MEAS)
-    d.line(1110, 280, 1270, 280, LINE, 2, end="none")
-    resistor(d, 1270, 262, 100, 36, "15.4 Ω", MEAS)
-    d.line(1370, 280, 1420, 280, LINE, 2, end="none")
-    d.line(1190, 280, 1190, 340, LINE, 2, end="none")
-    resistor(d, 1154, 340, 72, 90, "71.5 Ω", MEAS)
-    d.line(1190, 430, 1190, 465, LINE, 2, end="none")
-    gnd(d, 1190, 465)
+    d.line(960, 280, 1420, 280, LINE, 2, end="none")
+    d.line(1190, 280, 1190, 460, LINE, 2, end="none")
+    resistor(d, 1075, 280, "15.4 Ω", MEAS)
+    resistor(d, 1305, 280, "15.4 Ω", MEAS)
+    resistor(d, 1190, 375, "71.5 Ω", MEAS, vertical=True)
+    gnd(d, 1190, 460)
     d.html(850, 520, 700, 120,
            f'<span style="color:{TEXT}">Input impedance: 15.4 + 71.5 ∥ 65.4 = <b>49.6 Ω</b><br>'
            f'Attenuation: <b style="color:{POWER}">5.6 dB</b> = loss of 2 switches + coupler<br>'
