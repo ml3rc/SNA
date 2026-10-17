@@ -11,14 +11,14 @@
 // level up, in eeprom.h/eeprom.c (per Software/protocol/
 // EEPROM_LAYOUT.md), not here.
 
-#define EEPROM_24AA32A_SIZE_BYTES 4096
-#define EEPROM_24AA32A_PAGE_SIZE  32
+#define HAL_EEPROM_24AA32A_SIZE_BYTES 4096
+#define HAL_EEPROM_24AA32A_PAGE_SIZE  32
 
-void eeprom_24aa32a_init(void); // I2C0 peripheral + pin setup
-bool eeprom_24aa32a_read(uint16_t addr, uint8_t *data, size_t len);
+void hal_eeprom_24aa32a_init(void); // I2C0 peripheral + pin setup
+bool hal_eeprom_24aa32a_read(uint16_t addr, uint8_t *data, size_t len);
 
 // Handles page-boundary splitting and the datasheet write-cycle delay
 // internally -- callers don't need to think about the 32-byte page size.
-bool eeprom_24aa32a_write(uint16_t addr, const uint8_t *data, size_t len);
+bool hal_eeprom_24aa32a_write(uint16_t addr, const uint8_t *data, size_t len);
 
 #endif

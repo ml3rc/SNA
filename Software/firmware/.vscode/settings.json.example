@@ -1,8 +1,0 @@
-{
-    "comment": "Copy this to settings.json (gitignored) and adjust paths -- or just install the official Raspberry Pi Pico VS Code extension, open this firmware/ folder, and let it manage these for you (recommended, see README.md).",
-    "cmake.configureOnOpen": true,
-    "cmake.generator": "Ninja",
-    "cmake.environment": {
-        "PICO_SDK_PATH": "/path/to/pico-sdk"
-    }
-}

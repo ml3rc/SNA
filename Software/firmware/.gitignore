@@ -1,12 +1,14 @@
 build/
-build2/
-build3/
+build-host-tests/
 cmake-build-*/
 .toolchain/
-.vscode/*
-!.vscode/settings.json.example
+.vscode/
 *.uf2
 *.elf
 *.bin
 *.hex
 *.map
+# devenv (devenv.lock is committed: it pins nixpkgs and the Pico SDK commit)
+.devenv*
+devenv.local.nix
+.direnv

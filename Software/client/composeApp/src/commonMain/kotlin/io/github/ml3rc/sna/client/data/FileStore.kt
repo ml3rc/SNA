@@ -7,7 +7,7 @@ package io.github.ml3rc.sna.client.data
  * files directory rather than prompting a proper Storage Access Framework document picker, so
  * there's no "pick a real save location" UX yet and saved files aren't visible in e.g. Downloads
  * or easily shareable. Replace with an ACTION_CREATE_DOCUMENT / ACTION_OPEN_DOCUMENT activity
- * result flow before shipping -- see AndroidFileContext.kt.
+ * result flow before shipping -- see FileStore.android.kt.
  */
 expect object FileStore {
     /** Returns true if the user completed the save (false if they cancelled). */

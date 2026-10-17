@@ -11,14 +11,15 @@ import io.github.ml3rc.sna.client.protocol.SweepPoint
  * measurement. Flagged with a comment line in the file itself so nobody mistakes it for one.
  */
 object Touchstone {
+    /** Every point measured (no placeholders) and carrying all four S-parameters. */
     fun hasCompleteTwoPortData(points: List<SweepPoint>): Boolean = points.isNotEmpty() &&
-        points.all { it.s11_db != null && it.s21_db != null && it.s12_db != null && it.s22_db != null }
+        points.all { it.measured && it.s11_db != null && it.s21_db != null && it.s12_db != null && it.s22_db != null }
 
     fun formatS1P(points: List<SweepPoint>, referenceOhms: Int): String = buildString {
         appendLine("! SNA scalar network analyzer export")
         appendLine("! Amplitude only (no phase) -- angle column is always 0.0, not a measurement")
         appendLine("# Hz S DB R $referenceOhms")
-        points.sortedBy { it.f }.forEach { p ->
+        points.filter { it.measured }.sortedBy { it.f }.forEach { p ->
             val s11 = p.s11_db ?: return@forEach
             if (!p.locked) appendLine("! Source lock unconfirmed at ${p.f} Hz")
             appendLine("${p.f} $s11 0.0")

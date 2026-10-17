@@ -1,260 +1,232 @@
 # SNA firmware
 
-Firmware **0.1.10** forces a 250 ms USB detach at startup so Windows detects
-a fresh device after SWD reset/flashing. It also supports optional sweep
-`raw_adc:true` for per-source detector diagnostics. Calibration storage and
-normal sweep dB values retain their existing behavior.
-
-Firmware **0.1.9** supports **50 MHz–6 GHz** for sweeps, manual source control,
-demo sweeps and new calibration grids. `ping` advertises both limits. Existing
-format-2 calibration is preserved and can still be used within the supported
-band. SDI supports 50 MHz through UINT32_MAX Hz with its current storage format.
-
-The normal build must use `SNA_PLL_CP20_EXPERIMENT=ON` for this board. CP20 is now
-the default, and the variant-build script leaves `build3/sna_firmware.elf` on CP20.
-Existing CMake caches retain their previous setting: configure them explicitly
-with `cmake -S . -B build3 -DSNA_PLL_CP20_EXPERIMENT=ON` before rebuilding.
-The CP20-off artifact is retained only for controlled comparison, not normal flashing.
-
 RP2350B firmware, Raspberry Pi Pico SDK (C, bare-metal + TinyUSB), implementing
 [`../protocol/PROTOCOL.md`](../protocol/PROTOCOL.md) over USB CDC-ACM.
+Current version: **0.4.1** (protocol 3). 0.4.1 adds the robustness fixes below to 0.4.0; the
+protocol is unchanged. It passes the host tests but is **not yet tested on hardware**.
 
-## Status
+## Overview
 
-Firmware version **0.1.6** implements USB CDC commands, MAX2871 tuning,
-independent source-port/coupler/impedance/filter control, scalar measurement,
-calibration storage and front-panel SDI tests/demo sweeps.
+- **Measurement:** scalar S11/S21/S12/S22 from 50 MHz to 6 GHz, 50 or 75 ohm,
+  with the 8 calibration sets stored in EEPROM and applied on the device.
+  S11/S21 use source port 1, S12/S22 source port 2; receiver readings from
+  different source states are never mixed.
+- **Modes:** the RF hardware belongs to one mode at a time (`sweep`,
+  `generator`, `power_meter`, `manual`). The host enters it with
+  `mode_enter`, uses it and leaves it with `mode_exit`; a mode can only be
+  entered from idle. A USB disconnect cancels the mode back to idle. See
+  `PROTOCOL.md` "Modes".
+- **Dual core:** core 1 owns all RF hardware in every mode: it runs the
+  application layer (`rf_app_*`) and everything below it, nothing else.
+  Core 0 owns USB, JSON, EEPROM, calibration and the front panel. The only
+  link is `src/rf_task.c`: core 0 sends requests, core 1 answers each with
+  one final reply (a sweep streams its points first, with backpressure).
+  Core 0 converts and calibrates point N while core 1 measures point N+1;
+  calibration curves are prefetched into RAM, so core 0 needs no I2C during
+  a sweep. Design: [`../docs/dual-core-design.md`](../docs/dual-core-design.md).
+- **Robustness (0.4.1):** a watchdog (8 s) resets the device when core 0
+  stops looping or core 1 sits in one step for 6 s (`main.c`,
+  `service_watchdog()`); cJSON nesting is limited to 8 levels, so a line of
+  `[[[[...` is `bad_request` instead of recursing through core 0's stack into
+  core 1's; a write that gives up partway is followed by a newline, so the
+  host loses one junk line, not the next reply; a host that stops reading
+  costs one 2 s stall, after which output is dropped until it reads again;
+  unread input and unsent output of a USB session are discarded on
+  disconnect; the reply loop handles one queue's worth per pass, so `abort`
+  is read during fast sweeps; EEPROM I2C transfers have timeouts and the bus
+  is clocked free at boot; a failed calibration-table read is retried on the
+  next prefetch, and the EEPROM header is read twice before an unrecognized
+  one is reformatted. Review: `docs/firmware-review.md`, 2026-10-17.
+- **Settings:** `set` changes impedance and attenuation in any mode, also
+  between sweep points; every sweep and generator start brings its own `z`
+  and `atten`.
+- **RF source:** the MAX2871, amplifier and attenuator are controlled together
+  (`rf_state_set_source()`: OFF / PARKED / ON). The source boots PARKED (tuned to
+  1 GHz, attenuator 127, port switch terminated) and stays running between
+  sweeps so its temperature (and VCO/PLL behaviour) stays stable; only
+  `manual src_en:false` turns it off. Parking always sets the attenuator to
+  127 before terminating the port switch; switching it on does the reverse. The
+  50/75 ohm switch may be changed while the source is on.
+- **Filters and detector:** sweeps and the generator pick the lowest LPF whose
+  cutoff x 0.8 still passes the frequency (947 MHz filter up to 757.6 MHz,
+  1747 MHz up to 1397.6 MHz, 3500 MHz up to 2800 MHz, none above). The
+  detector is on from boot; each coupler-path reading waits 100 us after the
+  switch and takes the median of 16 ADC samples, plus 200 us after PLL lock
+  on a new frequency. The PLL
+  runs in CP20 charge-pump linearity mode (taken from LibreVNA: other modes
+  give false unlock indications on LD), 100 MHz PFD, charge-pump code 15.
+- **Lock handling:** retunes allow up to 20 ms for lock and require LD to stay
+  high for 500 us; sweep start and generator start allow up to two seconds.
+  Both waits give up when the request is cancelled (`abort`, `mode_exit`,
+  `bootsel`, host gone). By default an unlocked point is still measured and
+  flagged `locked:false`; `allow_unlocked:false` makes the sweep fail with
+  the stage, point and frequency instead.
+- **Other functions:** CW generator, single and continuous power meter
+  (`power` events), detector probe, MAX2871 temperature (`src_temp_read`,
+  cached during a sweep or with the source on) and a front-panel SDI test
+  that runs the stored threshold points without a PC.
+- **Boot self-test:** core 1 checks PLL lock at 1 GHz and a parked detector
+  reading inside 2200..3000 counts (window based on the single parked
+  measurement in `docs/generator-and-power-meter.md`, not characterized);
+  core 0 checks EEPROM and USB init. Failures appear in
+  `status.init_errors` and as a blink code.
+- **LEDs:** port/impedance LEDs follow their switches; BUSY/READY show the
+  load of both cores (linear PWM brightness, 1 ms windows: idle = READY only, 50 % = both at 50 %,
+  full load = BUSY only); BOOTED blinks fast during init, then once per
+  second while the firmware is alive. After a failed boot check BOOTED stays
+  off and the red SDI LED repeats N short blinks per failed check
+  (1 EEPROM, 2 source lock, 3 detector, 4 USB).
 
-USB sweeps and SDI acquisition run on core 1. Core 0 owns USB, EEPROM,
-conversion and calibration, processing each queued point while core 1 acquires
-the next. Calibration curves are cached in RAM. Idle manual/demo controls keep
-exclusive RF access on core 0 after acknowledged worker shutdown. See
-[`../docs/dual-core-design.md`](../docs/dual-core-design.md) for ownership,
-validation and prepared baseline/CP20 artifacts. Version 0.1.4 was profiled;
-0.1.5 is built but not flashed. USB sweeps now return fresh provisional values
-after LD timeout with `locked:false`; `allow_unlocked:false` retains strict
-behavior. Client calibration captures and SDI remain strict. See
-[`../docs/pll-lock-research.md`](../docs/pll-lock-research.md) for findings,
-fallback semantics and the 0.1.5 images.
+**Accuracy limits:** the detector slope is one fixed value across the band;
+PLL/switch settling budgets and the LPF selection boundaries still need bench
+characterization. Scalar calibration cannot correct errors requiring phase.
+SDI thresholds support 50 MHz through UINT32_MAX Hz (their storage format).
 
-Version 0.1.6 implements the user-confirmed MAX2871 design: 100 MHz PFD and
-charge-pump code 15 (about 5.11 mA at RSET=5.1 kohm). The external filter is
-designed for 450 kHz bandwidth; there is no firmware bandwidth register.
-Client 1.1.5 calibration capture/verification uses `atten:0` (+5 dBm RFOUTA,
-0 dB attenuator setting) and firmware restores the preceding attenuation after
-RF shutdown, including failure and cancellation. Artifacts are under
-`artifacts/0.1.6/`. The authorized CP20 image flash verified; seven strict hardware
-sweeps passed (2207 points), including 1001 points in 2.031 s at maximum level.
-No calibration tables were modified. See
-[`../docs/sweep-profiles/cp20-validation-20261003.md`](../docs/sweep-profiles/cp20-validation-20261003.md).
+## Building
 
-The source port stays fixed across a reference/response pair: S11/S21 use
-source port 1; S12/S22 use source port 2. Receiver readings from different
-source states are captured separately. Port/impedance LEDs update when their
-controls change; BUSY/READY cover USB and SDI measurements.
+The firmware is built with [devenv](https://devenv.sh) (Nix) in WSL or on
+Linux. `devenv.nix` / `devenv.yaml` describe the whole toolchain: CMake,
+Ninja, `gcc-arm-embedded`, host gcc (the Pico SDK builds picotool with it),
+Python 3 and the Pico SDK **2.2.0** with its submodules. Nix fetches all of
+it, and `devenv.lock` pins the exact versions, so every machine builds with
+the same toolchain. Nothing has to be installed by hand besides Nix and devenv.
 
-The GPIO map and port, coupler and LPF switch tables retain the board mappings
-confirmed during bring-up. See `boards/sna.h` and `../protocol/PINMAP.md`.
-The MAX2871 register programming retains the previously verified board constants
-(100 MHz reference, RSET 5.1 kohm); this review did not retune the PLL.
+### One-time setup (WSL)
 
-**2026-10-03 audit:** corrected source/receiver conflation, per-source reading
-reuse, blocked Abort handling, invalid-input conversions, lock-failure reporting,
-USB stall/disconnect shutdown, EEPROM write-error reporting and oversized CDC
-line handling. Built for RP2350B and tested against simulated hardware; see
-[`../docs/firmware-review.md`](../docs/firmware-review.md) for evidence and limits.
-The 0.1.3 and 0.1.4 images were flashed and measured; 0.1.5 awaits confirmation.
+1. Install Ubuntu for WSL (from Windows: `wsl --install -d Ubuntu`) and open it.
+   systemd must be running (`ps -p 1 -o comm=` prints `systemd`; it is the
+   default on current Ubuntu images).
+2. Install Nix (multi-user; asks for your sudo password):
+   ```sh
+   sh <(curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install) --daemon
+   ```
+3. Close and reopen the Ubuntu terminal, then install devenv:
+   ```sh
+   nix-env --install --attr devenv -f https://github.com/NixOS/nixpkgs/tarball/nixpkgs-unstable
+   ```
+4. Optional, lets devenv use its binary cache (faster first setup):
+   ```sh
+   echo "trusted-users = root $USER" | sudo tee -a /etc/nix/nix.conf && sudo systemctl restart nix-daemon
+   ```
 
-**Bring-up gate:** `SNA_BRINGUP_NO_RF_SOURCE` is ON by default and keeps
-MAX2871 CE/RFOUT_EN low. The existing `build3` cache is OFF, matching the
-previous real-device bring-up build; rebuilding does not change that setting.
-Retunes allow up to 20 ms for lock and require LD to remain high for 100 us.
-This is a bounded fallback, not a fixed delay or a measured board specification.
-Startup still allows up to two seconds. Lock errors include startup/retune stage,
-point index and requested frequency.
+### Build
 
-Optional full-sweep profiling extends the retune deadline (2 seconds by default)
-and records frequency programming, routing/settling, lock, ADC and processing
-times. Timed-out points are marked invalid and profiling continues. See
-[`../docs/sweep-profiling.md`](../docs/sweep-profiling.md) for capture commands
-and the definitions of each timing field.
+From this `firmware/` directory (in WSL, e.g.
+`cd /mnt/c/Users/<you>/repos/private/SNA/Software/firmware`):
 
-With the gate ON, the source cannot emit RF; strict acquisition reports failure,
-and provisional acquisition still carries `locked:false`. No build command flashes
-the device.
+```sh
+devenv shell fw-build   # configure if needed, build -> build/sna_firmware.uf2
+devenv shell            # or enter the environment and run:
+fw-build                #   build
+fw-clean                #   delete build/
+```
 
-**Accuracy limits:** detector slope is approximated with one fixed value across
-the band; PLL/switch settling budgets and the LPF selection boundaries still
-need bench characterization. Scalar calibration cannot correct errors requiring
-phase. Existing transmission calibration must be recaptured after installing
-the corrected source-routing implementation. EEPROM format remains 2; the audit
-introduces no automatic calibration wipe. SDI thresholds currently support only
-50 MHz through UINT32_MAX Hz; higher frequencies are explicitly rejected.
+Output: `build/sna_firmware.uf2` (plus `.elf`/`.bin`/`.map`, see
+`pico_add_extra_outputs` in `CMakeLists.txt`). The first run downloads the
+toolchain and SDK and builds picotool, which takes a while; later builds are
+incremental. `fw-build` reconfigures from scratch when the cached
+`PICO_SDK_PATH` no longer matches the SDK of the environment (CMake caches it).
 
-Host regression tests (GCC and PowerShell, no device access):
+Notes:
+
+- Builds on `/mnt/c/...` work but are slow; a clone inside the WSL file system is much faster.
+- Commit `devenv.lock` whenever it changes (`devenv update` refreshes the pinned versions).
+- Flash from Windows (see below); it reads `build/` directly. From WSL the USB
+  device would have to be passed through with `usbipd-win`.
+
+## Tests
+
+Host regression tests, run on Windows with a host GCC (no device access):
 
 ```powershell
 .\tests\run-host-tests.ps1
 ```
 
-## Building
-
-### Option A: Raspberry Pi Pico VS Code extension (recommended)
-
-Install the official **Raspberry Pi Pico** extension in VS Code, then open
-this `firmware/` folder. The extension handles installing the ARM toolchain,
-the Pico SDK (pick an SDK version with RP2350 support, 2.0.0 or newer),
-CMake, Ninja, and OpenOCD/picotool for you, on Windows, Linux, and macOS —
-this is by far the least friction path, especially for getting a matching
-toolchain/SDK version pinned down.
-
-When prompted for a board, there is no "SNA" entry in the extension's board
-list (it's a custom board) — configure the project manually instead: set
-`PICO_BOARD=sna` and point `PICO_SDK_PATH` at the SDK it installed, then let
-it drive CMake/Ninja as usual. `.vscode/settings.json.example` shows the
-CMake environment variable shape; copy it to `.vscode/settings.json` (which
-is gitignored, since the real path is machine-specific) and fill in the
-real `PICO_SDK_PATH`.
-
-### Option B: manual CLI build
-
-Requires: `arm-none-eabi-gcc` toolchain, CMake ≥ 3.13, Ninja (or Make),
-Python 3 (the SDK's build-time scripts need it), and a checkout of
-[pico-sdk](https://github.com/raspberrypi/pico-sdk) at a version with RP2350
-support (2.0.0+), with its submodules initialized (`git submodule update
---init`).
-
-Known-working combination (2026-09-30): pico-sdk **2.2.0**, ARM GNU
-Toolchain **15.2.1** (`gcc-arm-none-eabi` via scoop, or the official ARM
-installer), Ninja, CMake 3.30. `scoop` commands below work the same in any
-shell; the rest is shown for both PowerShell (this project's actual
-day-to-day shell on Windows -- not WSL/Git Bash, despite earlier revisions
-of this doc assuming that) and POSIX sh (Git Bash/WSL/Linux/macOS).
-
-```powershell
-scoop bucket add extras
-scoop install ninja make gcc-arm-none-eabi
-git clone --depth 1 --branch 2.2.0 https://github.com/raspberrypi/pico-sdk.git .toolchain/pico-sdk
-cd .toolchain/pico-sdk; git submodule update --init --depth 1; cd ../..
-```
-
-Then, from this `firmware/` directory:
-
-```powershell
-$env:PATH = "$(Resolve-Path ~\scoop\apps\gcc-arm-none-eabi\current\bin);$env:PATH"
-cmake -S . -B build3 -G Ninja -DPICO_SDK_PATH="$(Resolve-Path .toolchain/pico-sdk)"
-cmake --build build3
-```
-
-<details>
-<summary>POSIX sh (Git Bash/WSL/Linux/macOS) equivalent</summary>
-
-```sh
-scoop bucket add extras
-scoop install ninja make gcc-arm-none-eabi
-git clone --depth 1 --branch 2.2.0 https://github.com/raspberrypi/pico-sdk.git .toolchain/pico-sdk
-cd .toolchain/pico-sdk && git submodule update --init --depth 1 && cd ../..
-
-export PATH="$HOME/scoop/apps/gcc-arm-none-eabi/current/bin:$PATH"
-cmake -S . -B build3 -G Ninja -DPICO_SDK_PATH="$(pwd)/.toolchain/pico-sdk"
-cmake --build build3
-```
-</details>
-
-`PICO_SDK_PATH` is a **cached** CMake variable -- once `build3`'s cache has
-it, a plain environment-variable change on a later `cmake --build` is
-silently ignored (CMake only reads the env var when the cache entry doesn't
-already exist). This matters concretely on this project: if you also have
-the Raspberry Pi Pico **VS Code extension** installed and ever open this
-folder in VS Code, it may auto-reconfigure `build3` against its own
-globally-managed SDK copy (`~/.pico-sdk/sdk/<version>`), which has a
-different internal layout than the 2.2.0 tree pinned here and fails with
-`add_subdirectory`/`memmap_default.cmake` errors. If that happens, delete
-`build3` and reconfigure with the explicit `-DPICO_SDK_PATH=...` command
-above (the `-D` forces the cache, unlike a bare env var) -- no need to
-touch anything VS Code-related, just redo the one command.
-
-Output: `build3/sna_firmware.uf2` (plus `.elf`/`.bin`/`.map` — see
-`pico_add_extra_outputs` in `CMakeLists.txt`). First configure also builds
-`picotool` from source (pico-sdk 2.x no longer bundles a prebuilt one) — this
-adds a couple of minutes to the first `cmake --build` only.
+They use Win32 threads and critical sections (`rf_task_test`,
+`tests/stubs/queue_stub.c`), so they don't run in WSL. What each test covers:
+[`tests/README.md`](tests/README.md).
 
 ## Flashing
 
-### Via SWD (J202) — the only option when USB isn't connected to a host
+### Via SWD (J202)
 
-If the board's USB-C is powered from something other than a PC (bench
-supply, etc.) and only the SWD debug header is actually connected to the
-development machine, flash over SWD instead of BOOTSEL/UF2.
-
-**OpenOCD** is the one that actually works in this environment — the stock
-`scoop install openocd` build predates RP2350 support, so a separate build
-from `raspberrypi/pico-sdk-tools` is vendored at
-`.toolchain/openocd-rp2350/` (gitignored, not part of the repo):
+Works without a USB host connection (e.g. the board powered from a bench
+supply). The stock `scoop install openocd` has no RP2350 support; use the
+Raspberry Pi build from `raspberrypi/pico-sdk-tools`, kept locally in
+`.toolchain/openocd-rp2350/` (gitignored):
 
 ```powershell
 .\.toolchain\openocd-rp2350\openocd.exe -s .toolchain\openocd-rp2350\scripts `
   -f interface/cmsis-dap.cfg -f target/rp2350.cfg `
-  -c "adapter speed 4000" -c "program build3/sna_firmware.elf verify reset exit"
+  -c "adapter speed 4000" -c "program build/sna_firmware.elf verify reset exit"
 ```
 
-(the backtick line-continuations are PowerShell syntax — in Git Bash/WSL,
-use `\` instead and forward slashes throughout. `adapter speed 4000` isn't
-required but speeds up flashing a lot over the ~100kHz OpenOCD otherwise
-defaults to; back off to 1000–2000 if it ever causes verify failures.)
+In Git Bash/WSL use `\` line continuations and forward slashes.
+`adapter speed 4000` is optional but much faster than OpenOCD's default
+(~100 kHz); lower it to 1000–2000 if verification fails.
 
-**probe-rs** would be simpler/more modern, but doesn't currently work with
-the debug probe connected to this board — its firmware (v1.0.1) predates
-probe-rs 0.32.0's minimum (2.2.0). If the probe's own firmware ever gets
-updated (see the Status section above), the equivalent would be:
+probe-rs does not work with the current debug probe: its firmware (v1.0.1)
+is older than probe-rs 0.32.0 requires (2.2.0). After a probe firmware
+update it would be:
+
 ```powershell
-probe-rs download build3/sna_firmware.elf --chip RP2350B --protocol swd
+probe-rs download build/sna_firmware.elf --chip RP2350B --protocol swd
 probe-rs reset --chip RP2350B
 ```
 
-### Via BOOTSEL/UF2 — once USB is connected to a PC
+### Via BOOTSEL/UF2
 
-Hold BOOTSEL while plugging in USB (or, once firmware is already running,
-send the protocol's `{"cmd":"bootsel"}` command — see PROTOCOL.md) to make
-the board enumerate as a USB mass-storage drive, then copy
-`build3/sna_firmware.uf2` onto it. It reboots into the new firmware
-automatically. `picotool load build3/sna_firmware.uf2 -f` does the same
-without manual drag-and-drop, once picotool is built (see above) or on PATH.
+Hold BOOTSEL while plugging in USB (or send `{"cmd":"bootsel"}` to running
+firmware, see `PROTOCOL.md`); the board enumerates as a USB drive. Copy
+`build/sna_firmware.uf2` onto it and it reboots into the new firmware.
+`picotool load build/sna_firmware.uf2 -f` does the same from the command line.
 
 ## Debugging
 
-SWD via the J202 header. With a probe whose firmware is new enough for
-probe-rs (see above — not the case for the probe currently in use here),
-`probe-rs attach --chip RP2350B build3/sna_firmware.elf` gives an
-interactive RTT/register session. Otherwise, run OpenOCD (same invocation
-as the Flashing section, swapping the `-c "program ..."` for nothing) as a
-GDB server and point `arm-none-eabi-gdb build3/sna_firmware.elf` at
-`target remote localhost:3333`. The RP2350B's dual Cortex-M33 cores debug
-the same way as any other RP2350-based board once `PICO_PLATFORM=rp2350-arm-s`
-is set correctly (done in `CMakeLists.txt`).
+SWD via J202: run OpenOCD as above without the `-c "program ..."` argument
+as a GDB server, then `arm-none-eabi-gdb build/sna_firmware.elf` and
+`target remote localhost:3333`. With a probe new enough for probe-rs,
+`probe-rs attach --chip RP2350B build/sna_firmware.elf` also works.
 
 ## Source layout
 
-Two layers below `protocol.c`: `src/hal/` is one driver module per chip
-(knows a chip's registers/GPIO protocol, nothing about how it's wired on
-this board); `rf_control.c`/`eeprom.c` compose those into the
-board-level/application-facing API (knows the wiring — which switches gang
-together for a port selection, the EEPROM's byte layout, safe startup
-state — but not chip register details). `protocol.c` only ever calls into
-the composition layer, never into `hal/` directly.
+Each layer calls only the one directly below it, and every layer has its own
+prefix (functions lower case, macros/enum values/types upper case):
+
+| Layer | Prefix | Where | Knows |
+|---|---|---|---|
+| Application | `rf_app_` / `RF_APP_` | `src/rf_control/application.c` | which application owns the RF hardware (IDLE / SWEEP / GENERATOR / PWR_DETECTOR / MANUAL), raw measurements, boot self-test, pure count/dB conversions |
+| State | `rf_state_` / `RF_STATE_` | `src/rf_control/state.c` | the current hardware configuration and the safe order of every change (park/route, power-up double write, LPF choice) |
+| Block (rf_control) | `rf_ctrl_` / `RF_CTRL_` | `src/rf_control/{source,coupler,detector,ports}.c` | the board wiring: switch truth tables, which chips form a block |
+| HAL | `hal_` / `HAL_` | `src/hal/` | one chip each: registers and GPIO protocol, nothing about the board |
+
+The application layer runs on core 1 only and depends on nothing above it
+(cancellation comes in through `rf_app_hooks_t`); `application.h` exposes
+none of the layers below. Core 0 code (`main.c`, `protocol.c`,
+`sdi_test.c`, `measurement.c`) reaches the RF hardware only through
+`rf_task_*` requests and uses `rf_app_*` directly only for types and the
+pure conversions. `eeprom.c` is the storage counterpart of `rf_control/` on
+top of `hal/eeprom_24aa32a.c` and is used on core 0 only.
+
+How a request travels through these layers and the two cores:
+[`../docs/firmware-dataflow.md`](../docs/firmware-dataflow.md).
 
 | File | Purpose |
 |---|---|
 | `boards/sna.h` | Custom board header — pin map (real GPIO numbers, verified against the datasheet), flash size, crystal config |
-| `src/main.c` | Init sequencing, USB CDC line reader, SDI test button poll loop, front-panel LED/button GPIOs (the only GPIOs not owned by a `hal/` module) |
-| `src/protocol.c` | Command dispatch implementing `PROTOCOL.md` |
-| `src/rf_control.c` | Board-level RF composition — which switches/HAL calls implement `rf_set_port`/`rf_set_z`/`rf_select_coupler_path`/etc, plus `rf_measure_point()` (per-source acquisition and scalar dB conversion) |
-| `src/eeprom.c` | Structured calibration/config storage (header, cal grid, SDI thresholds, 8 cal tables, interpolation) per `../protocol/EEPROM_LAYOUT.md`, built on `hal/eeprom_24aa32a.c` |
+| `src/main.c` | Core 0: boot sequence (board GPIO, boot blink timer, core 1 start, EEPROM/USB init, init error code), main loop, USB CDC line reader, SDI button debounce, front-panel LED/button GPIOs (the only GPIOs not owned by a `hal/` module) |
+| `src/protocol.c` | Core 0: JSON parse and validation per `PROTOCOL.md`, requests to core 1 (pending table of 8), replies and sweep points to JSON, continuous power meter events, abort/stall/host-gone cancellation, EEPROM commands |
+| `src/rf_task.c` | The only link between the cores: request and reply queues (8 each), the core-1 loop (requests, sweep points, backpressure, cancellation by sequence number) |
+| `src/measurement.c` | Core 0: raw detector codes to S-parameters in dB, minus the EEPROM calibration from the RAM cache |
+| `src/sdi_test.c` | Core 0: non-blocking front-panel SDI test (mode enter, sweep, mode exit, `sdi_test_result` event, result LED pulses) |
+| `src/rf_control/` | Board-level RF control on core 1, three layers (see `rf_control.h`, the only header other code includes). Application: `application.c` (mode state machine, sweep sessions and points, generator, power meter, manual control, probe, boot self-test, pure conversions). State: `state.c` (source OFF/PARKED/ON, port, impedance, attenuation, frequency, LPF, coupler path, detector). Blocks, the only HAL callers: `source.c` (PLL, LPF bank, attenuator, amp), `coupler.c`, `detector.c`, `ports.c` (port/impedance switches and their LEDs) |
+| `src/eeprom.c` | Core 0: structured calibration/config storage (header, cal grid, SDI thresholds, 8 cal tables, RAM cache and interpolation; format 3) per `../protocol/EEPROM_LAYOUT.md`, built on `hal/eeprom_24aa32a.c` |
 | `src/hal/max2871.c` | MAX2871 synthesizer driver (bit-banged 4-wire, enable/lock-detect, frequency-set register programming) |
 | `src/hal/ad8318.c` | AD8318 log detector driver (enable + ADC read) |
 | `src/hal/trf37a73.c` | TRF37A73 amp driver (PWDN control) |
 | `src/hal/hmc1119.c` | HMC1119 digital attenuator driver (7-bit parallel + latch) |
 | `src/hal/rf_switch.c` | Generic 2-line RF switch driver, shared by the LPF/coupler/port/impedance switch banks |
 | `src/hal/eeprom_24aa32a.c` | Raw 24AA32A I2C byte read/write (page-write-aware), no knowledge of what the bytes mean |
-| `src/third_party/cJSON/` | Vendored cJSON v1.7.19 (unmodified upstream, own CMake target so it's exempt from our `-Wall -Wextra`) — replaced the project's original hand-written JSON parser/writer once the toolchain was actually working and a real library could be fetched and verified by compiling, not reproduced from memory; see that folder's own `README.md` |
+| `src/third_party/cJSON/` | Vendored cJSON v1.7.19 (unmodified upstream, own CMake target so it's exempt from our `-Wall -Wextra`), see its `README.md` |
+| `tests/` | Host regression tests and the SDK/TinyUSB stubs they compile against, see `tests/README.md` |
 | `src/usb_descriptors.c`, `src/tusb_config.h` | TinyUSB CDC-only device descriptors |

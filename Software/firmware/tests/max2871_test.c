@@ -20,22 +20,18 @@ void gpio_put(uint pin, bool value) {
 }
 void sleep_us(uint64_t us) { (void)us; }
 int main(void) {
-    max2871_init();
+    hal_max2871_init();
     const uint64_t frequencies[]={23500000,46875000,93750000,187500000,375000000,
         750000000,1500000000,2354335000ULL,3000000000ULL,6000000000ULL};
     for(unsigned int i=0;i<count_of(frequencies);i++) {
-        writes=0; assert(max2871_set_freq(frequencies[i])); assert(writes==6);
+        writes=0; assert(hal_max2871_set_freq(frequencies[i])); assert(writes==6);
         assert(((registers[2]>>9)&15)==15); // 5.11 mA with board RSET=5.1 kohm.
         assert(((registers[2]>>14)&1023)==1); // 100 MHz PFD.
         assert(((registers[1]>>3)&4095)==4095);
         assert(((registers[4]>>3)&3)==3 && (registers[4]&(1u<<5))); // +5 dBm RFOUTA enabled.
-#ifdef SNA_PLL_CP20_EXPERIMENT
-        assert(((registers[1]>>29)&3)==2);
-#else
-        assert(((registers[1]>>29)&3)==0);
-#endif
+        assert(((registers[1]>>29)&3)==2); // CP20 linearity mode (from LibreVNA).
     }
-    assert(!max2871_set_freq(23499999)); assert(!max2871_set_freq(6000000001ULL));
-    puts("PASS: actual PLL register output, write order, frequency range and isolated CP20 setting");
+    assert(!hal_max2871_set_freq(23499999)); assert(!hal_max2871_set_freq(6000000001ULL));
+    puts("PASS: actual PLL register output, write order, frequency range and CP20 linearity mode");
     return 0;
 }

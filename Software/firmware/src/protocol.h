@@ -3,28 +3,37 @@
 
 #include <stdbool.h>
 
-// Command dispatch implementing Software/protocol/PROTOCOL.md. `eeprom.h` is
-// included for sdi_test_point_t / EEPROM_SDI_POINTS_MAX, shared between the
-// wire protocol and on-device storage.
-#include "eeprom.h"
+#include "cJSON.h"
 
-void protocol_init(void);
+// The host protocol (Software/protocol/PROTOCOL.md) on core 0. Commands are
+// validated here and turned into rf_task requests; their replies come back
+// asynchronously and are answered from protocol_poll(), so USB keeps being
+// serviced while core 1 works.
 
-// True while a USB sweep or a front-panel SDI measurement is in progress -- lets
-// main.c's BUSY/READY status LEDs reflect USB-driven sweeps too, not just
-// the front-panel button's own demo-sweep mode.
+// True while a USB sweep or the front-panel SDI test runs (BUSY LED, `busy`).
 bool protocol_is_sweeping(void);
-// RF lock waits use this to service Abort/disconnect during long profiling waits.
-bool protocol_measurement_cancelled(void);
+
+// The mode in core 1's latest final reply is idle (it may be changing right now:
+// core 1 still decides).
+bool protocol_rf_idle(void);
 
 // Parses one line (a single JSON object, NUL-terminated, no trailing '\n')
-// and writes its response(s) directly to the USB CDC connection.
+// and answers it, now or once core 1 has replied.
 void protocol_handle_line(const char *line);
 
-// Runs the standalone front-panel SDI test: sweeps the stored threshold
-// points, blinks the pass/fail LEDs in sequence, and -- if a PC happens to
-// be connected -- also emits an unsolicited "sdi_test_result" event.
-// Called from the main loop on a button-press edge.
-void protocol_run_sdi_self_test(void);
+// Answers a line that was too long to read (its id is lost): bad_request.
+void protocol_reject_line(void);
+
+// Main loop work: the replies from core 1 (also for the SDI test), the
+// continuous power meter's events, and cancelling what a vanished host left
+// running. True if anything was done.
+bool protocol_poll(void);
+
+// Writes an unsolicited event (no "id") to the host, if one is connected; frees `evt`.
+void protocol_send_event(cJSON *evt);
+
+// The USB host went away (main.c, on the connected -> disconnected edge): the next
+// session starts with a clean output line.
+void protocol_host_disconnected(void);
 
 #endif

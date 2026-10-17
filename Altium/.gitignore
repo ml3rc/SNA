@@ -30,3 +30,7 @@ scripts/__pycache__/
 *.bak
 *.dwl
 *.dwl2
+
+# Not published: contains machine/user names (Draftsman stamps the hostname), BOM has vault data
+SNA.BomDoc
+SNA.PCBDwf

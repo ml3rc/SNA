@@ -47,7 +47,7 @@
 // pin -> GPIO mapping itself is fixed silicon and never changes.
 // ============================================================================
 
-// --- MAX2871 RF source (4-wire, bit-banged -- see rf_control.c) ---
+// --- MAX2871 RF source (4-wire, bit-banged -- see hal/max2871.c) ---
 #define GPIO_RF_SRC_CLK        38  // pkg pin 47
 #define GPIO_RF_SRC_DATA       39  // pkg pin 48
 #define GPIO_RF_SRC_LE         37  // pkg pin 46
@@ -121,7 +121,7 @@
 // --- RF-Attenuation/Amp amplifier power-down control ---
 #define GPIO_RF_AMP_PWDN         14  // pkg pin 13 -- active-high PWDN (confirmed): high disables the amp, low enables it.
                                      // No external pull resistor on this net, but the TRF37A73 has an INTERNAL
-                                     // pulldown on PWDN (confirmed by the user against the amp IC's datasheet) --
+                                     // pulldown on PWDN (per the amp IC's datasheet) --
                                      // so with no firmware driving this GPIO, PWDN floats low and the amp is
                                      // enabled by default at power-up, before any firmware runs.
 

@@ -1,130 +1,130 @@
 # SNA client
 
-Desktop **1.2.2** / Android **0.2.2** refines the instrument workspace for a class
-presentation: charcoal surfaces, restrained blue interaction accents, simple
-panel borders, sans-serif UI text and monospace readouts. Startup puts USB
-connection first and briefly explains reflection/transmission measurements.
-Desktop uses a navigation rail when space permits; smaller windows and phones
-use tabs. Trace colors identify the plotted signals, secondary actions have
-quieter buttons, and larger plot labels improve readability. Exports and plot
-view controls are grouped with the response display, leaving acquisition
-controls focused on starting/stopping sweeps. Calibration and self-test controls
-wrap for phone widths, with scrolling for settings and diagnostics.
-
-Both clients only list and open USB devices with the
-firmware's existing **CAFE:4001** vendor/product ID. Android's USB attachment
-filter uses the same pair, so unrelated USB devices no longer offer to launch
-the app. No firmware update is required. These are development IDs shared with
-TinyUSB examples, rather than an allocated SNA-exclusive identity; keep the
-firmware descriptor, `SnaUsbIdentity.kt` and `device_filter.xml` in sync when
-allocated IDs are assigned. Connection still requires a successful protocol `ping`.
-
-The client defaults to **50 MHz–6 GHz** and validates
-sweep and calibration ranges before sending them. Calibration grids from older
-firmware are preserved; the wizard explains when an old grid must be cleared
-explicitly before recapture. SDI uses 50 MHz through UINT32_MAX Hz.
-
-Kotlin Multiplatform + Compose Multiplatform app targeting desktop (Windows/Linux/macOS via the
-JVM) and Android. No iOS target (out of scope for the SNA project). Speaks the protocol in
+Kotlin Multiplatform + Compose Multiplatform app for the SNA scalar network analyzer: desktop
+(Windows/Linux/macOS on the JVM) and Android. No iOS target. It speaks the wire protocol in
 [`../protocol/PROTOCOL.md`](../protocol/PROTOCOL.md) over USB CDC-ACM.
 
-## Prerequisites
+| | Version | Needs |
+|---|---|---|
+| Desktop | **1.4.0** | protocol **3** (firmware 0.4.x) |
+| Android | **0.4.0** (versionCode 9) | protocol **3** (firmware 0.4.x) |
 
-- JDK 17 or 21 recommended (project targets Java 17; installed JDK 20 was also tested).
-  Android Studio's bundled Java 25 is incompatible with this pinned build; choose a
-  compatible Gradle JDK in Android Studio or set `JAVA_HOME` in the terminal.
-- For the Android target: Android SDK (compileSdk 35, minSdk 26) — either via Android Studio or
-  the standalone `cmdline-tools` + `sdkmanager`, with `ANDROID_HOME`/`local.properties` pointing
-  at it
-- No system-wide Gradle needed — `./gradlew` / `gradlew.bat` bootstrap their own (pinned in
-  `gradle/wrapper/gradle-wrapper.properties`); first run downloads it
+The client refuses firmware reporting any other `proto` (older firmware: update the firmware;
+newer: update the client), and any frequency range other than 50 MHz–6 GHz.
 
-## Build & run — desktop
+## Features
 
-```
-./gradlew :composeApp:run          # Linux/macOS
-gradlew.bat :composeApp:run        # Windows
-```
+The workspace has seven tabs. A green square on a tab means its tool is running on the device.
 
-Packaged installers (native per-OS, built on that OS — no cross-packaging):
+- **Sweep** — S11/S21/S12/S22 magnitude, 1–4096 points, **linear or logarithmic spacing**
+  (the chart's X axis follows the grid, so a log sweep reads as a log frequency axis), 50/75 Ω,
+  single or loop sweeps, relative output level (also changed live during a sweep, from the next
+  point on). Merged or separate charts with hover values, min/max search markers, a held
+  reference shown as overlay or difference, Touchstone (`.s1p`/`.s2p`) and JSON export. Points of a
+  repeated sweep are updated in place; the part not yet re-measured is drawn faded.
+  The **Raw detector** view sweeps the four coupler states (port 1/2 forward/backward) from either
+  source port, as detector dBm or ADC counts, with CSV export.
+- **Generator** — CW output: port, impedance, level, frequency. Level and impedance change a
+  running output live; port and frequency through "Apply changes". The **detector probe** reads
+  all four coupler paths under the running output and explains suspicious readings.
+- **Power meter** — continuous reading of the signal arriving at a port (approximate,
+  uncalibrated dBm; `docs/generator-and-power-meter.md`).
+- **Calibration** — SLOT wizard per impedance: Open/Short at each port and Thru, compute, upload,
+  verify. Detects and locks the device's existing grid (all 8 sets share one). Captures run in the
+  background and can be aborted.
+- **Self-test** — the front-panel SDI thresholds (load, edit, upload; an empty list disables the
+  test) and the last front-panel result the device reported.
+- **Diagnostics** — device info, tool states, live `status`, boot self-test errors, synthesizer
+  temperature; **manual RF control** (output port/termination, source on/off, LPF, coupler path,
+  synthesizer frequency, one-shot detector readout); reboot into the UF2 bootloader.
+- **Console** — every line sent and received, with timestamps (background polling and sweep
+  points hidden unless switched on; the log keeps the newest 3000 lines). Lines can be typed and
+  sent while no test runs; a JSON object without `"id"` gets `"id":"console-N"`, which never
+  collides with the client's own integer ids. Up/Down recall earlier lines.
 
-```
-./gradlew :composeApp:packageDmg   # macOS
-./gradlew :composeApp:packageMsi   # Windows
-./gradlew :composeApp:packageDeb   # Linux
-```
+### Interlock and locked controls
 
-Unsigned for now (see project decisions) — expect an "unknown publisher" warning on first run.
+Only one tool drives the RF hardware at a time (`session/ToolActivity.kt`, `blockReason`). A tool
+that would take over another is refused with the reason shown, and the device's own `status`
+reveals what the client did not start (the front-panel test, a mode entered from the console).
 
-## Build & run — Android
+While a test runs, controls that would not reach the hardware are disabled:
 
-```
-./gradlew :composeApp:assembleDebug
-```
+- the running tool's settings that only apply when it starts (sweep range, points, spacing,
+  impedance, parameters, calibration grid, ...);
+- every input of the tools that are locked out, the console prompt included.
 
-On this Windows PC, the verified command is:
+Controls that act on the running test stay enabled: the output level during sweeps and generator
+output, the generator's impedance/port/frequency, the power meter's port and impedance, Abort and
+Stop, manual control while it is active. Display-only choices (chart layout, markers, reference
+view, dBm/counts, console filters) never touch the device and stay usable.
 
-```powershell
-$env:JAVA_HOME = 'C:\Program Files\Java\jdk-20'
-.\gradlew.bat :composeApp:assembleDebug
-```
+A mode entered from the console is adopted by the tool of that mode (e.g. the generator tab can
+switch off a generator started by hand) and locks out the others until `mode_exit`.
 
-Builds a debug-key-signed APK at `composeApp/build/outputs/apk/debug/composeApp-debug.apk`.
-To install on a connected Android device with USB debugging enabled, run
-`gradlew.bat :composeApp:installDebug`. Building alone does not install the app.
-Needs `android.hardware.usb.host` (declared in the manifest) —
-most phones support USB host mode but check yours if deploying to a specific device.
-
-The Android USB transport asserts DTR for the SNA's TinyUSB CDC connection, uses
-the serial library's `start()` API, and registers its permission receiver with
-the explicit export flag required by current Android versions. USB operation
-still requires testing on an actual phone with the SNA attached.
-
-Android 0.1.1 retains the USB session in an activity ViewModel across rotation and
-window resizing. Sweep inputs and the selected tab use saved UI state. Phone layouts
-use smaller typography, wrapping controls, a scrollable sweep page, and vertically
-stacked separate charts, while keeping system font scaling and touch targets.
-
-## Structure
+## Code layout
 
 ```
 composeApp/src/
-  commonMain/     shared: protocol models, SnaClient, UI (Compose), Touchstone/JSON export
-  desktopMain/    entry point, jSerialComm-backed SerialTransport, native file dialogs
-  androidMain/    Activity, usb-serial-for-android-backed SerialTransport, manifest
+  commonMain/kotlin/io/github/ml3rc/sna/client/
+    protocol/   wire data classes and limits (mirror PROTOCOL.md), SweepGrid (the firmware's grid)
+    client/     SnaClient (requests, streams, events, mode holding), TrafficLog (console)
+    session/    plain StateFlow state, no Compose:
+                AppState (ports, connect, handshake) -> Session (one per connection) owning
+                DeviceMonitor, ToolActivity/blockReason and one state class per tool
+                (SweepState, RawSweepState, GeneratorState, PowerMeterState, ProbeState,
+                CalibrationWizardState, SdiState, ManualState, HousekeepingState, ConsoleState)
+    ui/         Compose screens (one per tab), Controls (shared widgets), SnaChart, Format
+    data/       Touchstone/JSON export, FileStore (expect/actual file dialogs)
+    transport/  SerialTransport (the platform seam), SnaUsbIdentity
+  desktopMain/  entry point, jSerialComm transport, native file dialogs
+  androidMain/  Activity, usb-serial-for-android transport, manifest
 ```
 
-`SerialTransport` (commonMain) is the platform-abstraction seam — `SnaClient` and the UI never
-touch jSerialComm or usb-serial-for-android directly.
+Everything that belongs to a connection lives in `Session`, so running tests, settings and
+results survive tab changes; screens only read and drive it. New screens get their own state
+class in `session/` rather than growing a shared one. Never create one chart-model producer per
+changing key, and keep missing points `null` (gaps) all the way into `SnaChart`.
 
-**UI, once connected**: a 4-tab session (`ui/App.kt`) — Sweep (all 4 S-parameters, Canvas chart
-with hover values, merged/separate views, single/loop sweeps, relative output attenuation,
-Touchstone/JSON export), Calibration (SLOT wizard: Open/Short/Thru capture per impedance mode,
-shared-grid detection/locking, compute+upload+verify — `ui/CalibrationScreen.kt` +
-`ui/CalibrationWizardState.kt`), SDI (editable front-panel self-test threshold list, with
-S-parameter/comparison per point — `ui/SdiConfigScreen.kt`), and HK (device status, MAX2871
-temperature, detector ADC, manual refresh — `ui/HkScreen.kt`). Each new screen owns its own small
-plain state class (same style as `ui/SnaViewModel.kt` — StateFlow fields, no androidx ViewModel)
-rather than growing `SnaViewModel` into a God object.
+Long sessions: streamed sweep points are collected into their grid slots and published at most
+about every 16 ms, 60 Hz (`LivePoints`; the console refreshes at the same rate), so long loop sweeps neither copy the list per point nor recompose the
+chart per point; the console log is bounded.
 
-Desktop regression tests: `gradlew.bat :composeApp:desktopTest`. The reconnect test uses a
-simulated serial transport and needs no connected device. The desktop UI test
-covers discovery, connection, trace selection, workspace navigation and disconnect.
-It saves actual rendered previews under `composeApp/build/ui-previews/`, including
-a response curve generated by the test's simulated transport (not measured RF data).
+## Prerequisites
 
-Android regression tests: `gradlew.bat :composeApp:connectedDebugAndroidTest`
-with an emulator or test device available. These check session identity across
-activity recreation and portrait/landscape rotation, plus sweep input restoration
-and scrolling at phone width using a simulated transport. They do not replace
-testing real USB hardware on the phone.
+- JDK 17–21 (the project targets Java 17; Temurin 21 is used here). Android Studio's bundled
+  Java 25 and newer JDKs break the pinned build: pick a compatible Gradle JDK or set `JAVA_HOME`.
+- Android target: Android SDK (compileSdk 35, minSdk 26) via Android Studio or `cmdline-tools`,
+  with `ANDROID_HOME`/`local.properties` pointing at it.
+- No system Gradle: `gradlew` / `gradlew.bat` bootstrap the pinned version.
 
-## Known scaffold simplifications (see inline `// TODO` / doc comments)
+## Build, run, test
 
-- `FileStore`'s Android implementation writes to app-private storage rather than prompting a
-  proper Storage Access Framework picker — fine for bring-up, replace before shipping.
-- Material3's "Exposed" dropdown family (`ExposedDropdownMenuBox`/`ExposedDropdownMenu`) turned
-  out to have the same kind of cross-version API volatility Vico's chart API has — `ui/
-  SdiConfigScreen.kt` uses a plain `Box` + `OutlinedButton` + `DropdownMenu` combo instead (see
-  `SimpleDropdown` in that file), which has been stable for a long time. Prefer that pattern over
-  the "Exposed" family for any future dropdown in this app.
+```
+gradlew.bat :composeApp:run                # desktop app
+gradlew.bat :composeApp:desktopTest        # unit + desktop UI tests, no hardware needed
+gradlew.bat :composeApp:packageMsi         # Windows installer (packageDmg / packageDeb on macOS / Linux)
+gradlew.bat :composeApp:assembleDebug      # Android APK -> composeApp/build/outputs/apk/debug/
+gradlew.bat :composeApp:installDebug       # ... onto a connected phone with USB debugging
+gradlew.bat :composeApp:connectedDebugAndroidTest   # Android UI tests (emulator or device)
+```
+
+Installers are unsigned (expect an "unknown publisher" warning). Bump `packageVersion` for every
+installer meant to be installed: Windows Installer can treat the same version as a no-op.
+
+The tests use simulated serial transports. The desktop UI test saves rendered previews (from
+simulated data, not measurements) under `composeApp/build/ui-previews/`. They do not replace
+testing with the real device.
+
+## Platform notes
+
+- USB identity: both clients list only the firmware's **CAFE:4001** VID:PID (TinyUSB development
+  IDs). Keep `firmware/src/usb_descriptors.c`, `transport/SnaUsbIdentity.kt` and Android's
+  `res/xml/device_filter.xml` (decimal IDs) in sync.
+- Desktop serial uses `TIMEOUT_READ_SEMI_BLOCKING` and asserts DTR; the firmware only talks to a
+  host that asserts DTR. Android asserts DTR too and splits lines on raw bytes.
+- Android keeps the USB session in an activity ViewModel across rotation and window resizing.
+- Android's `FileStore` writes to app-private storage instead of a Storage Access Framework
+  picker; replace it before shipping to other users.
+- Dropdowns use a plain `Box` + `OutlinedButton` + `DropdownMenu` (Material3's "Exposed"
+  dropdown API has changed between Compose Multiplatform versions).

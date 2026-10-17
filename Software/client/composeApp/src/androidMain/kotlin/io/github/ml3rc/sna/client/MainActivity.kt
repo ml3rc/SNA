@@ -12,14 +12,14 @@ import androidx.lifecycle.ViewModelProvider
 import io.github.ml3rc.sna.client.data.AndroidFileContext
 import io.github.ml3rc.sna.client.transport.AndroidSerialTransport
 import io.github.ml3rc.sna.client.ui.App
-import io.github.ml3rc.sna.client.ui.SnaViewModel
+import io.github.ml3rc.sna.client.session.AppState
 
 /** Owns the USB session across activity recreation, without retaining an old Activity. */
 class SnaSessionViewModel(application: Application) : AndroidViewModel(application) {
-    val session = SnaViewModel(AndroidSerialTransport(application))
+    val app = AppState(AndroidSerialTransport(application))
 
     override fun onCleared() {
-        session.close()
+        app.close()
         super.onCleared()
     }
 }
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
         AndroidFileContext.appContext = applicationContext
         val owner = ViewModelProvider(this)[SnaSessionViewModel::class.java]
         setContent {
-            App(viewModel = owner.session, compactUi = true,
+            App(app = owner.app, compactUi = true,
                 modifier = Modifier.safeDrawingPadding().imePadding())
         }
     }

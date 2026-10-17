@@ -1,0 +1,8 @@
+inputs:
+  nixpkgs:
+    url: github:cachix/devenv-nixpkgs/rolling
+  # Pico SDK 2.2.0 with its submodules (TinyUSB etc.); devenv.lock pins the
+  # exact commit.
+  pico-sdk:
+    url: git+https://github.com/raspberrypi/pico-sdk?ref=refs/tags/2.2.0&submodules=1
+    flake: false

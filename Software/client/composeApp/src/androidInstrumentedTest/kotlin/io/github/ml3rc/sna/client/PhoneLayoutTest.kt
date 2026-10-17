@@ -26,7 +26,7 @@ import java.io.File
 import io.github.ml3rc.sna.client.transport.SerialPortInfo
 import io.github.ml3rc.sna.client.transport.SerialTransport
 import io.github.ml3rc.sna.client.ui.App
-import io.github.ml3rc.sna.client.ui.SnaViewModel
+import io.github.ml3rc.sna.client.session.AppState
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.serialization.json.Json
@@ -43,7 +43,7 @@ class PhoneLayoutTest {
 
     @Test fun startupShowsConnectionScreenWithoutOpeningTransport() {
         val transport = PhoneTransport()
-        val session = SnaViewModel(transport)
+        val session = AppState(transport)
         try {
             compose.setContent { Box(Modifier.size(360.dp, 640.dp)) { App(session, compactUi = true) } }
             compose.onNodeWithText("Scalar network analyzer").assertIsDisplayed()
@@ -56,11 +56,11 @@ class PhoneLayoutTest {
 
     @Test fun usbSessionOwnerSurvivesActivityRecreation() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            lateinit var original: SnaViewModel
-            scenario.onActivity { original = ViewModelProvider(it)[SnaSessionViewModel::class.java].session }
+            lateinit var original: AppState
+            scenario.onActivity { original = ViewModelProvider(it)[SnaSessionViewModel::class.java].app }
             repeat(2) {
                 scenario.recreate()
-                scenario.onActivity { assertSame(original, ViewModelProvider(it)[SnaSessionViewModel::class.java].session) }
+                scenario.onActivity { assertSame(original, ViewModelProvider(it)[SnaSessionViewModel::class.java].app) }
             }
             listOf(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE to Configuration.ORIENTATION_LANDSCAPE,
                 ActivityInfo.SCREEN_ORIENTATION_PORTRAIT to Configuration.ORIENTATION_PORTRAIT).forEach { (request, expected) ->
@@ -70,14 +70,14 @@ class PhoneLayoutTest {
                     scenario.onActivity { matches = it.resources.configuration.orientation == expected }
                     matches
                 }
-                scenario.onActivity { assertSame(original, ViewModelProvider(it)[SnaSessionViewModel::class.java].session) }
+                scenario.onActivity { assertSame(original, ViewModelProvider(it)[SnaSessionViewModel::class.java].app) }
             }
         }
     }
 
     @Test fun phoneSweepScrollsAndRestoresSettingsWithoutReopeningTransport() {
         val transport = PhoneTransport()
-        val session = SnaViewModel(transport)
+        val session = AppState(transport)
         try {
             session.connect(SerialPortInfo("test", "Simulated SNA")) {}
             compose.waitUntil(5000) { session.connected.value && !session.connecting.value }
@@ -89,7 +89,7 @@ class PhoneLayoutTest {
             restoration.emulateSavedInstanceStateRestore()
             compose.onNodeWithText("100000000").assertIsDisplayed()
             compose.onNodeWithText("Start sweep").performScrollTo().performClick()
-            compose.waitUntil(5000) { session.points.value.size == 201 && !session.sweeping.value }
+            compose.waitUntil(5000) { session.session.value!!.sweep.points.value.size == 201 && !session.session.value!!.sweep.running.value }
             compose.onNodeWithText("100000000").performScrollTo()
             saveScreenshot("phone-sweep-controls.png")
             compose.onNodeWithTag("sweep-results").performScrollTo().assertIsDisplayed()
@@ -148,8 +148,8 @@ class PhoneLayoutTest {
                 return
             }
             lines.send(if (request.getValue("cmd").jsonPrimitive.content == "cal_get")
-                """{"id":$id,"ok":false,"err":"not_calibrated"}"""
-            else """{"id":$id,"ok":true,"fw":"test","hw_rev":1,"proto":1}""")
+                """{"id":$id,"ok":false,"error":"not_calibrated"}"""
+            else """{"id":$id,"ok":true,"fw":"test","proto":3,"hw_rev":1,"freq_min_hz":50000000,"freq_max_hz":6000000000}""")
         }
     }
 }

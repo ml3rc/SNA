@@ -12,7 +12,7 @@
 // Synthesizer/VCO", Register and Bit Descriptions section, Tables 3-8) --
 // not guessed or reconstructed from memory. Board-specific constants (fREF,
 // RSET, which RFOUT is wired up) are from the "RF Source" Altium schematic
-// sheet (Altium/SNAPCBVersion-INT's exported PDF), read directly, 2026-10-01.
+// sheet (Altium/SNAPCBVersion-INT's exported PDF).
 
 // U302 (LMK6CE10000CDLFR) feeds REF_IN, labeled "100MHz REF Clk." on the
 // schematic. R divider = 1, no doubler/div-by-2 (DBR=0, RDIV2=0) -- so the
@@ -23,7 +23,7 @@
 
 // RSET = R305 = 5.1kOhm -- confirmed by both the schematic's own design note
 // ("Rset = 5.1kOhm as per datasheet") and R305's value next to the RSET pin.
-// User-confirmed design: fPFD=100 MHz, ICP=5.11 mA, loop BW=450 kHz.
+// Design: fPFD=100 MHz, ICP=5.11 mA, loop BW=450 kHz.
 // ICP = 1.63/5100 x (1+15) = 5.1137 mA. Bandwidth is set by the
 // external loop-filter components, not a programmable MAX2871 BW field.
 #define MAX2871_CP_DEFAULT 15u
@@ -34,17 +34,18 @@
 // sweep/scalar-VNA's purposes.
 #define MAX2871_MODULUS 4095u
 
-// Cached from the last max2871_set_freq() call (0 before the first one),
-// so max2871_read_die_id() below can temporarily overlay the MUX=1100
+// Cached from the last hal_max2871_set_freq() call (0 before the first one),
+// so hal_max2871_read_die_id() below can temporarily overlay the MUX=1100
 // ("Read SPI registers 06") bits onto registers 2/5 and restore exactly
 // what was there before afterward, without disturbing N/FRAC/DIVA/etc
 // (registers 0/1/3/4, untouched by the readback procedure) or needing to
 // re-derive what those two registers should otherwise contain.
+static bool regs_cached; // last_reg* hold a register set written by hal_max2871_set_freq()
 static uint32_t last_reg2 = 0;
 static uint32_t last_reg3 = 0;
 static uint32_t last_reg5 = 0;
 
-void max2871_init(void) {
+void hal_max2871_init(void) {
     gpio_init(GPIO_RF_SRC_CLK);
     gpio_set_dir(GPIO_RF_SRC_CLK, GPIO_OUT);
     gpio_init(GPIO_RF_SRC_DATA);
@@ -63,33 +64,18 @@ void max2871_init(void) {
     gpio_set_dir(GPIO_RF_SRC_LD, GPIO_IN);
 }
 
-void max2871_enable(bool en) {
-#ifdef SNA_BRINGUP_NO_RF_SOURCE
-    // Bring-up safety gate (CMakeLists.txt option of the same name, ON by
-    // default): keeps CE/RFOUT_EN low no matter what the caller asks for.
-    // See feedback_sna_bringup_priority in project memory -- the MAX2871 is
-    // the one RF block considered risky enough to bring up in isolation,
-    // not fold into general testing. Register programming (max2871_set_freq
-    // below) still works while this is set -- the datasheet's own power
-    // mode section says the SPI block stays alive with CE low, only the
-    // synthesizer itself is shut down -- so the bit-bang/register-math path
-    // is exercisable without the chip ever actually putting out RF.
-    (void) en;
-    gpio_put(GPIO_RF_SRC_CE, 0);
-    gpio_put(GPIO_RF_SRC_RFOUT_EN, 0);
-#else
+void hal_max2871_enable(bool en) {
     gpio_put(GPIO_RF_SRC_CE, en);
     gpio_put(GPIO_RF_SRC_RFOUT_EN, en);
-#endif
 }
 
-bool max2871_locked(void) {
+bool hal_max2871_locked(void) {
     return gpio_get(GPIO_RF_SRC_LD);
 }
 
 // Bit-banged, MSB first, latched on LE -- the standard MAX2871 programming
 // interface (Figure 1, SPI Timing Diagram).
-static void max2871_write_reg(uint32_t reg32) {
+static void hal_max2871_write_reg(uint32_t reg32) {
     for (int i = 31; i >= 0; i--) {
         gpio_put(GPIO_RF_SRC_DATA, (reg32 >> i) & 1);
         gpio_put(GPIO_RF_SRC_CLK, 1);
@@ -102,7 +88,7 @@ static void max2871_write_reg(uint32_t reg32) {
     gpio_put(GPIO_RF_SRC_LE, 0);
 }
 
-bool max2871_set_freq(uint64_t freq_hz) {
+bool hal_max2871_set_freq(uint64_t freq_hz) {
     // RFOUT_ output divider (DIVA, register 4 bits 22:20, Table 4/7): keeps
     // the VCO itself always within its native 3000-6000MHz fundamental
     // range. Bands are contiguous per the datasheet's own table, so a
@@ -147,29 +133,34 @@ bool max2871_set_freq(uint64_t freq_hz) {
     // BS = fPFD/50kHz, clamped to 1023 if larger ("VCO Autoselect (VAS)
     // State Machine" section) -- fPFD is fixed here, so this is a constant.
     uint32_t pfd_div_50k = (uint32_t) (MAX2871_FPFD_HZ / 50000ULL);
-    uint32_t bs = pfd_div_50k > 1023 ? 1023 : pfd_div_50k;
-
+    uint32_t bs;
+    if (pfd_div_50k > 1023) {
+         bs = 1023;
+    } else {
+         bs = pfd_div_50k;
+    }
+    
     // Register 5 (addr 101): LD=01 (digital lock detect out on the LD pin,
-    // matching max2871_locked() below). Everything else left at its
-    // power-up default (0) -- MUX/ADC features aren't used.
+    // matching hal_max2871_locked() below). Everything else left at its
+    // power-up default (0) -- MUX/ADC are only set temporarily by
+    // hal_max2871_read_die_id()/hal_max2871_read_temp_c(), which restore this value.
     uint32_t reg5 = (0b01u << 22) | 0b101u;
 
     // Register 4 (addr 100): reserved bits 31:29 must be 011 per the
     // datasheet. RFA_EN=1 (RFOUTA is the output actually wired to the RF
     // chain -- RFOUTB's pins are marked no-connect on the schematic) at
-    // max output power (APWR=11); the external RFOUT_EN pin -- gated by
-    // max2871_enable()/the bring-up flag above -- is still the deciding
+    // max output power (APWR=11); the external RFOUT_EN pin is still the deciding
     // factor on whether RF actually comes out, same as CE gates the rest of
     // the chip. DIVA is double-buffered by register 0 (REG4DB=1, set in
     // register 2 below) so a divider change only takes effect glitch-free
     // together with the N/FRAC update in register 0.
     uint32_t reg4 = (0b011u << 29)
                    | (((bs >> 8) & 0x3u) << 24)  // BS[9:8]
-                   | (1u << 23)                   // FB = Fundamental
-                   | (diva << 20)                 // DIVA
-                   | ((bs & 0xFFu) << 12)          // BS[7:0]
-                   | (1u << 5)                     // RFA_EN = 1
-                   | (0b11u << 3)                  // APWR = +5dBm (max)
+                   | (1u << 23)                  // FB = Fundamental
+                   | (diva << 20)                // DIVA
+                   | ((bs & 0xFFu) << 12)        // BS[7:0]
+                   | (1u << 5)                   // RFA_EN = 1
+                   | (0b11u << 3)                // APWR = +5dBm (max)
                    | 0b100u;
 
     // Register 3 (addr 011): VAS (VCO autoselect) enabled -- simpler than
@@ -191,17 +182,18 @@ bool max2871_set_freq(uint64_t freq_hz) {
                    | (1u << 6)                  // PDP = positive
                    | 0b010u;
 
-    // Register 1 (addr 001): P=1 (recommended phase value, no phase offset
-    // needed -- single synth, not phase-synchronized to another MAX2871);
-    // M = the fixed modulus above.
-    uint32_t reg1 = (1u << 15)   // P = 1
+    // Register 1 (addr 001): CPL=2 (CP20 charge-pump linearity mode);
+    // P=1 (recommended phase value, no phase offset needed -- single synth,
+    // not phase-synchronized to another MAX2871); M = the fixed modulus above.
+    // CPL=2 is taken from LibreVNA's MAX2871 driver, whose comment notes
+    // the LD pin reports unlock in the other CP modes even when the output
+    // is locked -- the same false-unlock symptom seen on this board with
+    // CPL=0. Validated on hardware
+    // (docs/history/sweep-profiles/cp20-validation-20261003.md).
+    uint32_t reg1 = (2u << 29)   // CPL = CP20
+                   | (1u << 15)   // P = 1
                    | (m << 3)
                    | 0b001u;
-#ifdef SNA_PLL_CP20_EXPERIMENT
-    // Isolated comparison with LibreVNA's CP20 linearity mode. CP current,
-    // reference/PFD, modulus and VCO selection remain unchanged.
-    reg1 |= (2u << 29);
-#endif
 
     // Register 0 (addr 000): INT=0 (frac-N mode), N/FRAC computed above.
     // Written LAST -- several fields in the other registers are double-
@@ -213,21 +205,19 @@ bool max2871_set_freq(uint64_t freq_hz) {
     last_reg2 = reg2;
     last_reg3 = reg3;
     last_reg5 = reg5;
+    regs_cached = true;
 
-    max2871_write_reg(reg5);
-    max2871_write_reg(reg4);
-    max2871_write_reg(reg3);
-    max2871_write_reg(reg2);
-    max2871_write_reg(reg1);
-    max2871_write_reg(reg0);
+    hal_max2871_write_reg(reg5);
+    hal_max2871_write_reg(reg4);
+    hal_max2871_write_reg(reg3);
+    hal_max2871_write_reg(reg2);
+    hal_max2871_write_reg(reg1);
+    hal_max2871_write_reg(reg0);
 
-    // TODO: the datasheet additionally recommends writing the full register
-    // set TWICE with >=20ms between writes, specifically right after power-
-    // up (CE low->high): "the first write ensures the device is enabled,
-    // the second starts VCO selection". Not done automatically in here --
-    // a caller doing a fresh rf_max2871_enable(true) should call this
-    // function twice with a >=20ms gap itself, rather than every retune
-    // during a sweep paying a cost that's only needed once per power-up.
+    // The datasheet's power-up double write (twice, >=20 ms apart, after
+    // CE low->high) is not done here but in rf_state_set_freq(), which
+    // knows when CE was last switched on -- every retune during a sweep
+    // would otherwise pay a cost that's only needed once per power-up.
     return true;
 }
 
@@ -236,13 +226,13 @@ bool max2871_set_freq(uint64_t freq_hz) {
 // actual timing diagram, not just the text description, since the two
 // didn't fully agree on their own). Caller must already have MUX=1100
 // ("Read SPI registers 06", register 5 bit 18 + register 2 bits 28:26)
-// programmed via a prior max2871_write_reg() before calling this -- see
-// max2871_read_die_id() below for a full example. Returns register 6's
+// programmed via a prior hal_max2871_write_reg() before calling this -- see
+// hal_max2871_read_die_id() below for a full example. Returns register 6's
 // bits [31:3] (the 29 bits actually shifted out) left-aligned into a
 // uint32_t at the same bit positions as the datasheet's own numbering,
 // bits [2:0] left 0 (those are the fixed address bits, not part of the
 // readback stream).
-static uint32_t max2871_read_reg6(void) {
+static uint32_t hal_max2871_read_reg6(void) {
     // Step 1: LE low, shift out 32 bits where the last 3 are 1,1,0 (selects
     // register 6 -- the address bits, same position as any other register
     // write); the first 29 "don't care" bits are sent as 0.
@@ -281,11 +271,10 @@ static uint32_t max2871_read_reg6(void) {
     return bits31to3 << 3;
 }
 
-uint8_t max2871_read_die_id(void) {
-    if (last_reg2 == 0) return 0; // no cached register set to safely restore yet
-    // MUX pin is routed on this board specifically to support this (suited
-    // for a MISO role), confirmed by the user directly, 2026-10-01 --
-    // previously just wired as a plain input with no particular use.
+uint8_t hal_max2871_read_die_id(void) {
+    if (!regs_cached) return 0; // no cached register set to safely restore yet
+    // The MUX pin is routed on this board specifically to support this
+    // (suited for a MISO role).
     //
     // Temporarily overlay MUX=1100 onto the last-written registers 2/5 (see
     // the `last_reg2`/`last_reg5` comment above), read register 6, then
@@ -298,28 +287,28 @@ uint8_t max2871_read_die_id(void) {
     uint32_t reg2_read = (last_reg2 & ~(0x7u << 26)) | ((mux_read_reg6 & 0x7u) << 26);
     uint32_t reg5_read = (last_reg5 & ~(1u << 18)) | (((mux_read_reg6 >> 3) & 1u) << 18);
 
-    max2871_write_reg(reg5_read);
-    max2871_write_reg(reg2_read);
+    hal_max2871_write_reg(reg5_read);
+    hal_max2871_write_reg(reg2_read);
 
-    uint32_t reg6 = max2871_read_reg6();
+    uint32_t reg6 = hal_max2871_read_reg6();
 
-    max2871_write_reg(last_reg5); // restore normal operation
-    max2871_write_reg(last_reg2);
+    hal_max2871_write_reg(last_reg5); // restore normal operation
+    hal_max2871_write_reg(last_reg2);
 
     return (uint8_t) ((reg6 >> 28) & 0xFu); // 0111 = MAX2871, 0110 = MAX2870
 }
 
-bool max2871_read_temp_c(double *temp_c_out) {
-    if (last_reg2 == 0) return false;
+bool hal_max2871_read_temp_c(double *temp_c_out) {
+    if (!regs_cached) return false;
     // Datasheet "Temperature Sensor" procedure: set CDIV (register 3) to
     // clock the on-chip ADC at fPFD/100kHz, select the temperature sensor
     // and start a conversion (register 5's ADCM/ADCS), wait >=100us, then
-    // read register 6 the same way as max2871_read_die_id() (needs the
+    // read register 6 the same way as hal_max2871_read_die_id() (needs the
     // same MUX=1100 overlay -- the datasheet's procedure doesn't mention
     // this explicitly for the temperature read, but register 6 can only
     // ever be read out via the MUX pin, same as everywhere else in this
     // file, so it must still apply). Restores registers 2/3/5 to whatever
-    // max2871_set_freq() last programmed, same pattern as read_die_id().
+    // hal_max2871_set_freq() last programmed, same pattern as read_die_id().
     const uint32_t mux_read_reg6 = 0b1100;
 
     uint32_t cdiv = (uint32_t) (MAX2871_FPFD_HZ / 100000ULL); // = 1000 at 100MHz
@@ -336,24 +325,24 @@ bool max2871_read_temp_c(double *temp_c_out) {
     // own numbered procedure writes CDIV (register 3) BEFORE triggering
     // ADCS (register 5) -- "1) Set CDIV ... 2) Set ADCM ... 3) Set ADCS=1
     // to start the ADC conversion process. 4) Wait 100us." Confirmed on
-    // real hardware, 2026-10-01: with the two writes the other way around
-    // (as this used to be), src_temp_read returned a frozen, non-live value
+    // real hardware: with the two writes the other way around,
+    // src_temp_read returned a frozen, non-live value
     // across many reads spanning minutes of continuous operation --
     // consistent with the conversion starting against whatever CDIV
-    // max2871_set_freq() last left in register 3 (0, "unused" per the
+    // hal_max2871_set_freq() last left in register 3 (0, "unused" per the
     // datasheet's own CDIV range note) rather than the fPFD/100kHz value
     // this function computes, since that value hadn't been written yet at
     // the moment ADCS's 0->1 edge landed.
-    max2871_write_reg(reg3_temp);
-    max2871_write_reg(reg5_temp);
-    max2871_write_reg(reg2_temp);
+    hal_max2871_write_reg(reg3_temp);
+    hal_max2871_write_reg(reg5_temp);
+    hal_max2871_write_reg(reg2_temp);
     sleep_us(100);
 
-    uint32_t reg6 = max2871_read_reg6();
+    uint32_t reg6 = hal_max2871_read_reg6();
 
-    max2871_write_reg(last_reg5); // restore normal operation (also clears ADCM/ADCS)
-    max2871_write_reg(last_reg3);
-    max2871_write_reg(last_reg2);
+    hal_max2871_write_reg(last_reg5); // restore normal operation (also clears ADCM/ADCS)
+    hal_max2871_write_reg(last_reg3);
+    hal_max2871_write_reg(last_reg2);
 
     bool valid = (reg6 >> 15) & 1u; // ADCV, register 6 bit 15
     if (!valid) return false;

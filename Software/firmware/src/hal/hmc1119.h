@@ -7,7 +7,7 @@
 // 0.1-6GHz), controlled via a 7-bit parallel word (D0-D6) latched on LE --
 // not SPI. See Software/protocol/PINMAP.md.
 
-void hmc1119_init(void);
-void hmc1119_set_atten(uint8_t value7bit); // 0-127
+void hal_hmc1119_init(void);
+void hal_hmc1119_set_atten(uint8_t value7bit); // 0-127
 
 #endif

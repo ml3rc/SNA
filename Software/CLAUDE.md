@@ -1,0 +1,102 @@
+# SNA software
+
+School project (ET2023a, deadline **2026-12-02**): 2-port scalar network analyzer, ~23.5 MHz–6 GHz,
+50 Ω and switchable 75 Ω (SDI cable testing). Scalar only (no phase). Hardware (Altium, Fusion360) is
+done and assembled; this dir holds everything software. Repo: github.com/ml3rc/SNA. Docs are mixed
+German/English.
+
+## Layout
+
+- `firmware/` — RP2350B (**not** ESP32-S3; the Aufgabenstellung is stale on this), Pico SDK 2.2.0, C11,
+  bare-metal + TinyUSB, no RTOS. `src/hal/` = one driver per chip (chip registers only);
+  `rf_control/` = board-level RF composition in three layers, strictly application → state → block → hal, each with its
+  prefix: `rf_app_*` (`application.c`, modes IDLE/SWEEP/GENERATOR/PWR_DETECTOR/MANUAL, entered/left by the host with
+  `mode_enter`/`mode_exit`, only from idle; client: `SnaClient.acquireMode/releaseMode/withMode`), `rf_state_*` (`state.c`,
+  every hardware change), `rf_ctrl_*` (blocks `source/coupler/detector/ports.c`, the only HAL callers), `hal_*`
+  (macros/enums upper case: `RF_APP_`, `RF_STATE_`, `RF_CTRL_`, `HAL_`). `application.h` exposes nothing below it
+  and calls nothing above it except `rf_app_hooks_t`. `eeprom.c` sits on `hal_eeprom_24aa32a_*`.
+  **Core 1 owns all RF hardware** (every mode): it runs `rf_app_*` and below via `rf_task.c`, the only cross-core
+  link (request queue → one final reply each, sweep points stream before it; `rf_task_cancel()` aborts sweeps and
+  lock waits). Core 0 = TinyUSB, `protocol.c` (async: validate → request, reply → JSON), `measurement.c`
+  (counts → dB + calibration), EEPROM/I2C, `sdi_test.c` (non-blocking front-panel test), `main.c` (LEDs, boot
+  self-test blink codes). Core 0 code uses only `rf_task_*` and the pure `rf_app_counts_*` conversions.
+  Vendored cJSON in `src/third_party/` (own CMake target, exempt from our warnings).
+- `client/` — Kotlin Multiplatform + Compose (desktop JVM + Android, no iOS). Package
+  `io.github.ml3rc.sna.client`: `protocol/` (wire types), `client/` (`SnaClient`, `TrafficLog` for the
+  console), `session/` (no Compose: `AppState` connects and owns one `Session` per connection, which owns
+  `DeviceMonitor`, the interlock `ToolActivity`/`blockReason` and one state class per tool), `ui/` (one
+  screen per tab). `SerialTransport` (commonMain) is the platform seam (jSerialComm / usb-serial-for-android).
+  Custom Canvas chart (`ui/SnaChart.kt`), Vico is gone.
+- `protocol/` — **source of truth for both sides**: `PROTOCOL.md` (newline-delimited JSON over USB CDC-ACM),
+  `PINMAP.md`, `EEPROM_LAYOUT.md`. Change these first, then firmware and client together.
+- `docs/` — index in `docs/README.md`: block diagrams (`RF/Power/Digital.drawio`), current design notes
+  (`firmware-dataflow.md`, `dual-core-design.md`, `firmware-review.md`, feature docs); superseded 0.1.x notes and
+  raw captures in `docs/history/` (`pll-lock-research.md`, `sweep-profiling.md`, calibration audit). Check here
+  before re-researching something.
+
+## Build & test
+
+Firmware is built with devenv (Nix) in WSL, from `firmware/`: `devenv shell fw-build` -> `build/sna_firmware.uf2`
+(`devenv.nix` + `devenv.yaml`, not a flake; toolchain and Pico SDK 2.2.0 pinned in `devenv.lock`). Setup: firmware
+README "Building".
+Host unit tests are Windows-only: `.\tests\run-host-tests.ps1` (PowerShell, from `firmware/`).
+Flash over SWD with Raspberry Pi's OpenOCD fork in `.toolchain/openocd-rp2350/` (stock scoop openocd has no
+RP2350 support; probe-rs doesn't work with the current probe firmware). Exact invocation: `firmware/README.md`.
+Keep **zero warnings** (`-Wall -Wextra`) on our own code.
+
+Client (from `client/`): `gradlew.bat :composeApp:run`, `:composeApp:desktopTest`,
+`:composeApp:packageMsi`, `:composeApp:assembleDebug`. The default `JAVA_HOME` (scoop Temurin 21) works for
+desktop and Android. JDK 17–21 only (Android Studio's bundled Java 25 and the system JDK 27 break the pinned
+build; the old `jdk-20` path no longer exists).
+
+## Hard-won rules
+
+- `PICO_SDK_PATH` is a cached CMake variable: if the build picks up the wrong SDK, delete the build dir's cache.
+  Don't re-add the Pico VS Code extension's CMake header stanza; it overrides the pinned SDK on every reconfigure.
+- The SDK builds its own picotool (in `build/_deps/picotool`, needed for the `.uf2`) with the host gcc; its
+  "No installed picotool with version 2.1.1" warning is expected (SDK 2.2.0's minimum, it builds 2.2.0).
+- Register-level code (MAX2871 etc.) must be checked field-by-field against the datasheet. A past R-divider bit
+  position bug compiled fine and was silently wrong. Mark unverified-on-hardware changes as such.
+- **Parked output = attenuator at 127 first, then terminate** (user-confirmed reason: the port switch's termination resistor
+  must not absorb the amp's output, ~12-15 dBm at 0 dB). Routing is the reverse: switch first, then release the attenuator.
+  `rf_state_set_source()` does this (OFF/PARKED/ON); any new path that touches the port switch must go through it.
+- MAX2871 needs register writes done **twice with ≥20 ms gap** after a true power-up. `rf_state_set_freq()` does it
+  once per CE power-up (at boot, and after `manual src_en:false`); the source stays PARKED and running between sweeps,
+  so `rf_app_sweep_begin/end` normally just retune/park. Data flow: `docs/firmware-dataflow.md`.
+- Any long/streamed CDC write must pump `tud_task()` when the TX FIFO is full (`send_json()` does).
+- The watchdog (0.4.1, `main.c`) resets the device if one core-1 step runs longer than 6 s or core 0 stops
+  calling `update_heartbeat()`: keep blocking waits bounded (lock waits are 2 s) and call `update_heartbeat()`
+  from any new blocking loop on core 0.
+- Coupler-bank, LPF-bank and RFSW6042 truth tables (`rf_control/coupler.c`, `rf_control/source.c`, `hal/rf_switch.h`)
+  are user-confirmed, not schematic-derived.
+  Don't re-derive them; ask if something is unclear (e.g. how port/direction maps to S11/S21/S12/S22).
+- Chart data: missing points stay `null` end-to-end (gaps, excluded from autoscale). Never `?: 0.0` before `SnaChart`.
+  Chart X axis uses point index, not Hz (jittery real frequencies broke Vico's axis). Keep sweep placeholder
+  frequencies matching the firmware's grid (PROTOCOL.md `sweep`: exact integer `f0 + (f1-f0)*i/(points-1)`, log
+  rounded to the Hz; firmware `point_frequency()` in `rf_task.c`, client `SweepGrid`).
+- `SnaClient` must apply backpressure (`channel.send`, not `trySend`) when streaming sweep points.
+- Never own one chart-model producer per changing key. Create it once, update contents.
+- `docs/STT_Storage_Electronics.xlsx`: open with `openpyxl.load_workbook(..., read_only=True)`; the default mode
+  allocates ~32 GB.
+
+## Working with the hardware and the user's session
+
+- The user often has the **real installed client** (`SNA Client.exe`) running against hardware. Before any GUI
+  click automation, verify the foreground window's owning PID and that your window rect is on-screen (a minimized
+  window reports -32000,-32000). Prefer headless console checks for state logic; use a fake `SerialTransport`
+  for hardware-free UI tests. Never touch the user's process.
+- COM port is shared: don't open the device's serial port from scripts while the client is connected.
+- Known hardware erratum (resolved): Q202/Q203 footprint D/S swap; document as a deviation in the report, not a
+  firmware bug.
+- Amp (TRF37A73) is enabled by default with no firmware; MAX2871 CE defaults off.
+
+## Conventions
+
+- Firmware and client both treat `protocol/` as authoritative; bump docs in the same change as behaviour.
+- Client state classes are plain StateFlow classes in `session/` (no androidx ViewModel), owned by `Session`
+  so they survive tab changes; give new screens their own state class instead of growing `AppState`/`Session`.
+- Client UI rule: while a test runs, controls that would not reach the hardware are disabled; controls that
+  change the running test live (level, generator settings, Abort/Stop) stay enabled; display-only choices stay
+  usable (`ui/Format.kt` `ToolGate`).
+- Unsigned installers are fine for now. Target counts and versions are in `client/README.md`.
+- Don't commit build dirs, `.toolchain/`, logs, or `tmp_temp_poller/` (all gitignored).

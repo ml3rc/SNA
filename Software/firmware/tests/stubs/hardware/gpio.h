@@ -5,6 +5,7 @@
 #define GPIO_OUT 1
 #define GPIO_IN 0
 #define GPIO_FUNC_I2C 3
+#define GPIO_FUNC_PWM 4
 enum gpio_drive_strength { GPIO_DRIVE_STRENGTH_12MA = 12 };
 void gpio_init(unsigned int pin);
 void gpio_set_dir(unsigned int pin, bool out);

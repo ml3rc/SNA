@@ -3,7 +3,7 @@ package io.github.ml3rc.sna.client.client
 import io.github.ml3rc.sna.client.data.Touchstone
 import io.github.ml3rc.sna.client.protocol.*
 import io.github.ml3rc.sna.client.transport.*
-import io.github.ml3rc.sna.client.ui.CalModeWizardState
+import io.github.ml3rc.sna.client.session.CalModeWizardState
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -30,14 +30,14 @@ class ConnectionRegressionTest {
         val client = SnaClient(link, this)
         link.respond = { request ->
             if (request.getValue("cmd").jsonPrimitive.content == "sweep") {
-                repeat(4096) { i -> link.send(request, "\"pt\":$i,\"f\":50000000,\"s11_db\":-10") }
+                repeat(4096) { i -> link.send(request, "\"pt\":$i,\"f\":50000000,\"s11_db\":-10,\"locked\":true") }
                 link.send(request, "\"ok\":true,\"done\":true")
-            } else link.send(request, "\"ok\":true,\"fw\":\"test\",\"hw_rev\":1,\"proto\":1")
+            } else link.send(request, "\"ok\":true,\"fw\":\"test\",\"proto\":3,\"hw_rev\":1,\"freq_min_hz\":50000000,\"freq_max_hz\":6000000000")
         }
         client.start()
         try {
             withTimeout(3000) {
-                client.sweep(50_000_000, 50_000_000, 4096, false, Impedance.FIFTY, setOf(SParam.S11)).take(1).toList()
+                client.sweep(50_000_000, 50_000_000, 4096, false, Impedance.FIFTY, setOf(SParam.S11), attenuation = 0).take(1).toList()
                 assertEquals("test", client.ping().fw)
             }
         } finally { client.stop() }
@@ -47,13 +47,13 @@ class ConnectionRegressionTest {
         val link = Link()
         val client = SnaClient(link, this)
         link.respond = { request ->
-            link.send(request, "\"pt\":0,\"f\":50000000,\"s11_db\":-10")
+            link.send(request, "\"pt\":0,\"f\":50000000,\"s11_db\":-10,\"locked\":true")
             link.lines.close()
         }
         client.start()
         try {
             assertFailsWith<SnaProtocolException> {
-                withTimeout(3000) { client.sweep(50_000_000, 60_000_000, 2, false, Impedance.FIFTY, setOf(SParam.S11)).toList() }
+                withTimeout(3000) { client.sweep(50_000_000, 60_000_000, 2, false, Impedance.FIFTY, setOf(SParam.S11), attenuation = 0).toList() }
             }
         } finally { client.stop() }
     }
@@ -65,7 +65,7 @@ class ConnectionRegressionTest {
         client.start()
         try {
             assertEquals("busy", assertFailsWith<SnaProtocolException> {
-                client.sweep(50_000_000, 60_000_000, 2, false, Impedance.FIFTY, setOf(SParam.S11)).toList()
+                client.sweep(50_000_000, 60_000_000, 2, false, Impedance.FIFTY, setOf(SParam.S11), attenuation = 0).toList()
             }.message)
             assertEquals("busy", assertFailsWith<SnaProtocolException> { client.calGet(CalSet.entries.first()) }.message)
             val wizard = CalModeWizardState(Impedance.FIFTY, client, this)
@@ -83,7 +83,7 @@ class ConnectionRegressionTest {
         client.start()
         try {
             assertFailsWith<IllegalStateException> {
-                client.sweep(50_000_000, 60_000_000, 2, false, Impedance.FIFTY, setOf(SParam.S11)).toList()
+                client.sweep(50_000_000, 60_000_000, 2, false, Impedance.FIFTY, setOf(SParam.S11), attenuation = 0).toList()
             }
         } finally { client.stop() }
     }
@@ -91,7 +91,7 @@ class ConnectionRegressionTest {
     @Test fun concurrentRequestsStayCorrelated() = runBlocking<Unit> {
         val link = Link()
         val client = SnaClient(link, this)
-        link.respond = { link.send(it, "\"ok\":true,\"fw\":\"${it.getValue("id")}\",\"hw_rev\":1,\"proto\":1") }
+        link.respond = { link.send(it, "\"ok\":true,\"fw\":\"${it.getValue("id")}\",\"proto\":3,\"hw_rev\":1,\"freq_min_hz\":50000000,\"freq_max_hz\":6000000000") }
         client.start()
         try {
             val ids = withTimeout(5000) { (1..200).map { async(Dispatchers.Default) { client.ping().fw } }.awaitAll() }

@@ -6,6 +6,9 @@ import androidx.compose.ui.graphics.Color
  *  charts, chosen to read clearly against the app's dark "bench instrument" theme
  *  (see ui/theme/Theme.kt) alongside its primary/secondary accents. */
 object ChartColors {
+    /** "A tool is running" marker on menu buttons. */
+    val Running = Color(0xFF4CAF50)
+
     val S11 = Color(0xFF39E6C9) // primary cyan
     val S21 = Color(0xFFFFB74D) // secondary amber
     val S12 = Color(0xFFCE93D8) // soft magenta

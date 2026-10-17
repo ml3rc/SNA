@@ -1,6 +1,8 @@
 package io.github.ml3rc.sna.client.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -13,196 +15,271 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import io.github.ml3rc.sna.client.data.FileStore
 import io.github.ml3rc.sna.client.data.SweepFile
 import io.github.ml3rc.sna.client.data.SweepFileIO
 import io.github.ml3rc.sna.client.data.Touchstone
-import io.github.ml3rc.sna.client.protocol.FrequencyLimits
-import io.github.ml3rc.sna.client.protocol.Impedance
+import io.github.ml3rc.sna.client.protocol.CAL_CAPTURE_ATTEN
 import io.github.ml3rc.sna.client.protocol.SParam
 import io.github.ml3rc.sna.client.protocol.SweepPoint
+import io.github.ml3rc.sna.client.session.MarkerSearch
+import io.github.ml3rc.sna.client.session.ReferenceView
+import io.github.ml3rc.sna.client.session.Session
+import io.github.ml3rc.sna.client.session.Tool
+import io.github.ml3rc.sna.client.session.TraceMarker
+import io.github.ml3rc.sna.client.session.confirmedValue
+import io.github.ml3rc.sna.client.session.findTraceMarker
 import kotlinx.coroutines.launch
+
+/**
+ * The Sweep tab: the S-parameter view and the raw detector view. A running raw sweep keeps its
+ * view when the tab is reopened.
+ */
+@Composable
+fun SweepScreen(session: Session, compactUi: Boolean = false) {
+    var raw by remember { mutableStateOf(session.rawSweep.running.value) }
+    Column(Modifier.fillMaxSize()) {
+        Row(Modifier.padding(horizontal = if (compactUi) 8.dp else 14.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ChoiceChip("S-parameters", !raw) { raw = false }
+            ChoiceChip("Raw detector", raw) { raw = true }
+        }
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            if (raw) RawSweepScreen(session, compactUi) else SParameterSweepScreen(session, compactUi)
+        }
+    }
+}
 
 private enum class ChartView { MERGED, SEPARATE }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun SweepScreen(viewModel: SnaViewModel, compactUi: Boolean = false) {
-    val points by viewModel.points.collectAsState()
-    val measurementZ by viewModel.measurementZ.collectAsState()
-    val sweeping by viewModel.sweeping.collectAsState()
-    val looping by viewModel.looping.collectAsState()
-    val scanIndex by viewModel.scanIndex.collectAsState()
-    val error by viewModel.error.collectAsState()
+internal fun SParameterSweepScreen(session: Session, compactUi: Boolean = false) {
+    val sweep = session.sweep
+    val settings by sweep.settings.collectAsState()
+    val points by sweep.points.collectAsState()
+    val measurementZ by sweep.measurementZ.collectAsState()
+    val running by sweep.running.collectAsState()
+    val looping by sweep.looping.collectAsState()
+    val scanIndex by sweep.scanIndex.collectAsState()
+    val error by sweep.error.collectAsState()
+    val reference by sweep.reference.reference.collectAsState()
+    val rawRunning by session.rawSweep.running.collectAsState()
+    val toolGate = rememberGate(session, Tool.SWEEP)
+    // Both views are the Sweep tool; the other view's sweep locks this one out.
+    val gate = ToolGate(toolGate.reason ?: if (rawRunning) "A raw detector sweep is running." else null, running)
+    val editable = gate.idleEditable
 
-    var f0 by rememberSaveable { mutableStateOf(FrequencyLimits.MIN_HZ.toString()) }
-    var f1 by rememberSaveable { mutableStateOf(FrequencyLimits.MAX_HZ.toString()) }
-    var numPoints by rememberSaveable { mutableStateOf("201") }
-    var z50 by rememberSaveable { mutableStateOf(true) }
-    var showS11 by rememberSaveable { mutableStateOf(true) }
-    var showS21 by rememberSaveable { mutableStateOf(true) }
-    var showS12 by rememberSaveable { mutableStateOf(false) }
-    var showS22 by rememberSaveable { mutableStateOf(false) }
-    var loop by rememberSaveable { mutableStateOf(false) }
-    var chartViewIndex by rememberSaveable { mutableStateOf(ChartView.MERGED.ordinal) }
-    val chartView = ChartView.entries[chartViewIndex]
-    // HMC1119 attenuation is relative to maximum output, not calibrated absolute dBm.
-    var attenSteps by rememberSaveable { mutableStateOf(64f) }
+    // Display-only choices: they never reach the device, so they stay usable during a sweep.
+    var chartViewName by rememberSaveable { mutableStateOf(ChartView.MERGED.name) }
+    var markerSearchName by rememberSaveable { mutableStateOf(MarkerSearch.OFF.name) }
+    var markerParamName by rememberSaveable { mutableStateOf(SParam.S11.name) }
+    var referenceViewName by rememberSaveable { mutableStateOf(ReferenceView.OVERLAY.name) }
+    val chartView = ChartView.entries.firstOrNull { it.name == chartViewName } ?: ChartView.MERGED
     val coroutineScope = rememberCoroutineScope()
-    val scroll = rememberScrollState()
-    val params = buildSet {
-        if (showS11) add(SParam.S11)
-        if (showS21) add(SParam.S21)
-        if (showS12) add(SParam.S12)
-        if (showS22) add(SParam.S22)
+    val params = settings.params
+    // The traces shown are the ones measured, so toggling a parameter mid-loop doesn't hide data.
+    val shownParams = SParam.entries.filter { p -> p in params || points.any { it.measured && it.value(p) != null } }.toSet()
+
+    val markerSearch = MarkerSearch.entries.firstOrNull { it.name == markerSearchName } ?: MarkerSearch.OFF
+    val referenceView = if (reference == null) ReferenceView.LIVE
+        else ReferenceView.entries.firstOrNull { it.name == referenceViewName } ?: ReferenceView.OVERLAY
+    val referenceMatches = reference?.matches(points, measurementZ) == true
+    val displayPoints = remember(points, reference, measurementZ, referenceView) {
+        if (referenceView == ReferenceView.DIFFERENCE) {
+            reference?.difference(points, measurementZ) ?: points.map {
+                it.copy(s11_db = null, s21_db = null, s12_db = null, s22_db = null)
+            }
+        } else points
+    }
+    val overlay = reference?.points?.takeIf { referenceMatches && referenceView == ReferenceView.OVERLAY }
+    val markerParam = SParam.entries.firstOrNull { it.name == markerParamName }?.takeIf { it in shownParams } ?: shownParams.firstOrNull()
+    val marker = remember(displayPoints, markerParam, markerSearch, running) {
+        if (running || markerParam == null) null else findTraceMarker(displayPoints, markerParam, markerSearch)
     }
 
-    val validFrequencyRange = f0.toLongOrNull()?.let { start ->
-        f1.toLongOrNull()?.let { stop -> FrequencyLimits.isValidRange(start, stop) }
-    } == true
-
-    // A scrolling page needs bounded chart heights instead of weights in unbounded space.
-    val contentModifier = if (compactUi) Modifier.verticalScroll(scroll) else Modifier
-    Column(Modifier.fillMaxSize().then(contentModifier).padding(if (compactUi) 8.dp else 14.dp)) {
-        Text("Frequency sweep", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(8.dp))
-        Panel(title = "Acquisition", modifier = Modifier.fillMaxWidth()) {
-            Text("Supported range: 50 MHz–6 GHz", color = if (validFrequencyRange)
-                MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = f0, onValueChange = { f0 = it }, label = { Text("Start (Hz)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
-                OutlinedTextField(value = f1, onValueChange = { f1 = it }, label = { Text("Stop (Hz)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
-                if (!compactUi) {
-                    OutlinedTextField(value = numPoints, onValueChange = { numPoints = it }, label = { Text("Points") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
-                }
-            }
-            if (compactUi) {
-                Spacer(Modifier.height(4.dp))
-                OutlinedTextField(value = numPoints, onValueChange = { numPoints = it }, label = { Text("Points") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
-            }
-            Spacer(Modifier.height(6.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("75Ω"); Switch(checked = z50, onCheckedChange = { z50 = it }); Text("50Ω")
-                }
-                ToggleChip("S11", showS11, { showS11 = it }, accent = ChartColors.S11)
-                ToggleChip("S21", showS21, { showS21 = it }, accent = ChartColors.S21)
-                ToggleChip("S12", showS12, { showS12 = it }, accent = ChartColors.S12)
-                ToggleChip("S22", showS22, { showS22 = it }, accent = ChartColors.S22)
-                ToggleChip("Loop", loop, { loop = it }, enabled = !sweeping)
-            }
-            Spacer(Modifier.height(6.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Button(enabled = !sweeping && params.isNotEmpty() && validFrequencyRange, onClick = {
-                    val f0Hz = f0.toLongOrNull() ?: return@Button
-                    val f1Hz = f1.toLongOrNull() ?: return@Button
-                    val n = numPoints.toIntOrNull() ?: return@Button
-                    viewModel.startSweep(f0Hz, f1Hz, n, log = false, z = if (z50) Impedance.FIFTY else Impedance.SEVENTY_FIVE, params = params, loop = loop)
-                }) { Text(if (looping) "Looping…" else if (sweeping) "Sweeping…" else if (loop) "Start loop" else "Start sweep") }
-                OutlinedButton(enabled = sweeping || looping, onClick = { viewModel.abortSweep() }) { Text("Abort") }
-            }
-            error?.let { Spacer(Modifier.height(8.dp)); Text(it, color = MaterialTheme.colorScheme.error) }
-            val unlockedPoints = points.count { !it.locked }
-            if (unlockedPoints > 0) Text("$unlockedPoints points measured without confirmed source lock", color = MaterialTheme.colorScheme.error)
-        }
-        Spacer(Modifier.height(6.dp))
-        Panel(modifier = Modifier.fillMaxWidth()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (!compactUi) Text("Relative output", modifier = Modifier.width(112.dp), style = MaterialTheme.typography.bodyMedium)
-                Text("-%.2f dB".format(attenSteps * 0.25f), modifier = Modifier.width(80.dp), style = MaterialTheme.typography.bodyLarge)
-                Slider(value = attenSteps, onValueChange = { attenSteps = it }, onValueChangeFinished = {
-                    val client = viewModel.client ?: return@Slider
-                    coroutineScope.launch { runCatching { client.manual("atten", attenSteps.toInt()) } }
-                }, valueRange = 0f..127f, steps = 126, modifier = Modifier.weight(1f),
-                    colors = SliderDefaults.colors(activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.outline,
-                        activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent))
-            }
-            if (compactUi) Text("Attenuation relative to maximum output power (0.25 dB/step).", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Spacer(Modifier.height(6.dp))
-        val resultsModifier = if (compactUi) {
-            Modifier.fillMaxWidth().height(if (chartView == ChartView.SEPARATE) (params.size.coerceAtLeast(1) * 240 + 100).dp else 360.dp)
-        } else Modifier.fillMaxWidth().weight(1f)
-        Panel(title = "Magnitude response (dB)", modifier = resultsModifier.testTag("sweep-results")) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ChoiceChip("Merged", chartView == ChartView.MERGED) { chartViewIndex = ChartView.MERGED.ordinal }
-                ChoiceChip("Separate", chartView == ChartView.SEPARATE) { chartViewIndex = ChartView.SEPARATE.ordinal }
-                val z = measurementZ
-                val isTwoPort = showS21 || showS12 || showS22
-                OutlinedButton(enabled = !sweeping && if (isTwoPort) Touchstone.hasCompleteTwoPortData(points)
-                    else points.any { it.s11_db != null }, onClick = {
-                    coroutineScope.launch {
-                        val content = if (isTwoPort) Touchstone.formatS2P(points, z) else Touchstone.formatS1P(points, z)
-                        FileStore.save(if (isTwoPort) "sweep.s2p" else "sweep.s1p", content)
-                    }
-                }) { Text("Export Touchstone") }
-                OutlinedButton(enabled = !sweeping && points.any { it.s11_db != null || it.s21_db != null || it.s12_db != null || it.s22_db != null }, onClick = {
-                    coroutineScope.launch {
-                        val file = SweepFile(z = z, f0 = points.first().f, f1 = points.last().f, points = points)
-                        FileStore.save("sweep.json", SweepFileIO.encode(file))
-                    }
-                }) { Text("Export JSON") }
-            }
-            if ((showS21 || showS12 || showS22) && !Touchstone.hasCompleteTwoPortData(points)) {
-                Text("S2P export needs a sweep with all four S-parameters. JSON supports partial measurements.", style = MaterialTheme.typography.bodySmall)
-            }
+    // Keep charts bounded and readable when controls exceed the window's available height.
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val desktopResultsHeight = (maxHeight - 420.dp).coerceAtLeast(440.dp)
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(if (compactUi) 8.dp else 14.dp)) {
+            Text("Frequency sweep", style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(8.dp))
+            Panel(title = "Acquisition", modifier = Modifier.fillMaxWidth()) {
+                Hint("Supported range: 50 MHz–6 GHz")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    NumberField(settings.f0, { v -> sweep.update { it.copy(f0 = v) } }, "Start (Hz)", Modifier.weight(1f), editable)
+                    NumberField(settings.f1, { v -> sweep.update { it.copy(f1 = v) } }, "Stop (Hz)", Modifier.weight(1f), editable)
+                    if (!compactUi) NumberField(settings.points, { v -> sweep.update { it.copy(points = v) } }, "Points", Modifier.weight(1f), editable)
+                }
+                if (compactUi) {
+                    Spacer(Modifier.height(4.dp))
+                    NumberField(settings.points, { v -> sweep.update { it.copy(points = v) } }, "Points", Modifier.fillMaxWidth(), editable)
+                }
+                Spacer(Modifier.height(6.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SpacingChoice(settings.log, editable) { log -> sweep.update { it.copy(log = log) } }
+                    ImpedanceChoice(settings.z, editable) { z -> sweep.update { it.copy(z = z) } }
+                }
+                Spacer(Modifier.height(6.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SParam.entries.forEach { p ->
+                        ToggleChip(p.name, p in params, { on -> sweep.update { it.copy(params = if (on) it.params + p else it.params - p) } },
+                            enabled = editable, accent = p.color())
+                    }
+                    ToggleChip("Loop", settings.loop, { on -> sweep.update { it.copy(loop = on) } }, enabled = editable)
+                }
+                Spacer(Modifier.height(6.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Button(enabled = editable && settings.problem == null, onClick = { sweep.start() }) {
+                        Text(if (looping) "Looping…" else if (running) "Sweeping…" else if (settings.loop) "Start loop" else "Start sweep")
+                    }
+                    if (looping) OutlinedButton(onClick = { sweep.stopLoop() }) { Text("Stop after pass") }
+                    OutlinedButton(enabled = running, onClick = { sweep.abort() }) { Text("Abort") }
+                }
+                if (!running) settings.problem?.let { Hint(it) }
+                ErrorText(gate.reason, "sweep-blocked")
+                ErrorText(error)
+                val unlockedPoints = points.count { it.measured && !it.locked }
+                if (unlockedPoints > 0) ErrorText("$unlockedPoints points measured without confirmed source lock")
+            }
+            Spacer(Modifier.height(6.dp))
+            Panel(modifier = Modifier.fillMaxWidth()) {
+                // Sent with every sweep (each loop pass reads it again); during a sweep it also changes the
+                // running pass from its next point on, which shows as a step in the trace.
+                LevelSlider(settings.attenSteps, { v -> sweep.update { it.copy(attenSteps = v) } },
+                    label = if (compactUi) null else "Relative output", enabled = gate.liveEditable,
+                    onCommit = { sweep.setLevel(sweep.settings.value.attenSteps) })
+                Hint("Attenuation relative to maximum output power (0.25 dB/step); during a sweep it changes the running pass " +
+                    "from its next point on. Calibration captures are always taken at ${formatAtten(CAL_CAPTURE_ATTEN)}; " +
+                    "measuring at another level can leave errors where the detector reading is small. " + OUTPUT_LEVEL_NOTE)
+            }
+            Spacer(Modifier.height(6.dp))
+            Panel(title = "Reference comparison", modifier = Modifier.fillMaxWidth()) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    OutlinedButton(enabled = !running && points.any { point -> SParam.entries.any { point.confirmedValue(it) != null } }, onClick = {
+                        if (sweep.holdReference()) referenceViewName = ReferenceView.OVERLAY.name
+                    }) { Text(if (reference == null) "Hold reference" else "Replace reference") }
+                    OutlinedButton(enabled = reference != null, onClick = { sweep.reference.clear() }) { Text("Clear reference") }
+                    if (reference != null) {
+                        ChoiceChip("Live", referenceView == ReferenceView.LIVE) { referenceViewName = ReferenceView.LIVE.name }
+                        ChoiceChip("Overlay", referenceView == ReferenceView.OVERLAY) { referenceViewName = ReferenceView.OVERLAY.name }
+                        ChoiceChip("Difference (dB)", referenceView == ReferenceView.DIFFERENCE) { referenceViewName = ReferenceView.DIFFERENCE.name }
+                    }
+                }
+                val held = reference
+                if (held != null) {
+                    Text("Reference: ${held.points.size} samples · ${held.impedance} Ω · ${formatFreqAxisValue(held.points.first().f.toDouble())}–${formatFreqAxisValue(held.points.last().f.toDouble())}",
+                        modifier = Modifier.testTag("reference-summary"), style = MaterialTheme.typography.bodySmall)
+                    if (!referenceMatches) Text("Comparison needs the same frequency grid and impedance.",
+                        modifier = Modifier.testTag("reference-mismatch"), style = MaterialTheme.typography.bodySmall)
+                    else if (referenceView == ReferenceView.DIFFERENCE) Text("Current − reference in dB. Gaps indicate missing, unlocked or different calibration status.",
+                        style = MaterialTheme.typography.bodySmall)
+                } else Text("Hold a sweep to compare the next measurement. Use the same setup and output level.",
+                    style = MaterialTheme.typography.bodySmall)
+            }
+            Spacer(Modifier.height(6.dp))
+            val resultsModifier = if (compactUi) {
+                Modifier.fillMaxWidth().height((if (chartView == ChartView.SEPARATE) shownParams.size.coerceAtLeast(1) * 240 + 100 else 360).dp +
+                    if (markerSearch == MarkerSearch.OFF) 64.dp else 180.dp)
+            } else Modifier.fillMaxWidth().height(desktopResultsHeight)
+            Panel(title = if (referenceView == ReferenceView.DIFFERENCE) "Difference from reference (dB)" else "Magnitude response (dB)",
+                modifier = resultsModifier.testTag("sweep-results")) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ChoiceChip("Merged", chartView == ChartView.MERGED) { chartViewName = ChartView.MERGED.name }
+                    ChoiceChip("Separate", chartView == ChartView.SEPARATE) { chartViewName = ChartView.SEPARATE.name }
+                    val isTwoPort = shownParams.any { it != SParam.S11 }
+                    OutlinedButton(enabled = !running && if (isTwoPort) Touchstone.hasCompleteTwoPortData(points)
+                        else points.any { it.s11_db != null }, onClick = {
+                        coroutineScope.launch {
+                            val content = if (isTwoPort) Touchstone.formatS2P(points, measurementZ) else Touchstone.formatS1P(points, measurementZ)
+                            FileStore.save(if (isTwoPort) "sweep.s2p" else "sweep.s1p", content)
+                        }
+                    }) { Text("Export Touchstone") }
+                    OutlinedButton(enabled = !running && points.any { p -> SParam.entries.any { p.value(it) != null } }, onClick = {
+                        coroutineScope.launch {
+                            // f0/f1 describe the sweep's grid; only points that were actually measured are saved.
+                            val file = SweepFile(z = measurementZ, f0 = points.first().f, f1 = points.last().f, points = points.filter { it.measured })
+                            FileStore.save("sweep.json", SweepFileIO.encode(file))
+                        }
+                    }) { Text("Export JSON") }
+                }
+                if (shownParams.any { it != SParam.S11 } && !Touchstone.hasCompleteTwoPortData(points)) {
+                    Text("S2P export needs a sweep with all four S-parameters. JSON supports partial measurements.", style = MaterialTheme.typography.bodySmall)
+                }
+                Spacer(Modifier.height(8.dp))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    ChoiceChip("Marker off", markerSearch == MarkerSearch.OFF) { markerSearchName = MarkerSearch.OFF.name }
+                    ChoiceChip("Find minimum", markerSearch == MarkerSearch.MINIMUM) { markerSearchName = MarkerSearch.MINIMUM.name }
+                    ChoiceChip("Find maximum", markerSearch == MarkerSearch.MAXIMUM) { markerSearchName = MarkerSearch.MAXIMUM.name }
+                }
+                if (markerSearch != MarkerSearch.OFF) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        shownParams.forEach { parameter ->
+                            ChoiceChip("Marker ${parameter.name}", markerParam == parameter) { markerParamName = parameter.name }
+                        }
+                    }
+                    Text(when {
+                        running -> "Marker search resumes when acquisition stops."
+                        marker == null -> "No confirmed finite readings for the selected trace."
+                        else -> "M · ${if (referenceView == ReferenceView.DIFFERENCE) "Δ " else ""}${marker.parameter.name} · ${marker.frequencyHz} Hz · %.2f dB · %s".format(
+                            marker.db, if (marker.calibrated) "Calibrated" else "Uncalibrated")
+                    }, modifier = Modifier.testTag("marker-readout"), style = MaterialTheme.typography.bodySmall)
+                    Hint("Search uses sampled points with confirmed source lock.")
+                }
+                Spacer(Modifier.height(8.dp))
 
-            if (chartView == ChartView.MERGED) {
-                MergedChart(points, params, scanIndex, Modifier.fillMaxWidth().weight(1f))
-            } else {
-                SeparateCharts(points, params, scanIndex, Modifier.fillMaxWidth().weight(1f), stacked = compactUi)
+                if (chartView == ChartView.MERGED) {
+                    MergedChart(displayPoints, shownParams, scanIndex, Modifier.fillMaxWidth().weight(1f).testTag("sweep-chart"), marker, overlay)
+                } else {
+                    SeparateCharts(displayPoints, shownParams, scanIndex, Modifier.fillMaxWidth().weight(1f), stacked = compactUi, marker = marker, overlay = overlay)
+                }
             }
         }
     }
 }
 
-private data class ChartCell(val label: String, val color: Color, val y: (SweepPoint) -> Double?)
+private fun SweepPoint.value(p: SParam): Double? = when (p) {
+    SParam.S11 -> s11_db; SParam.S21 -> s21_db; SParam.S12 -> s12_db; SParam.S22 -> s22_db
+}
 
-// Keep labels/colors and their data together; a single recomposition updates the entire chart.
-private fun chartCells(params: Set<SParam>): List<ChartCell> = buildList {
-    if (SParam.S11 in params) add(ChartCell("S11", ChartColors.S11) { it.s11_db })
-    if (SParam.S21 in params) add(ChartCell("S21", ChartColors.S21) { it.s21_db })
-    if (SParam.S12 in params) add(ChartCell("S12", ChartColors.S12) { it.s12_db })
-    if (SParam.S22 in params) add(ChartCell("S22", ChartColors.S22) { it.s22_db })
+internal fun SParam.color(): Color = when (this) {
+    SParam.S11 -> ChartColors.S11; SParam.S21 -> ChartColors.S21; SParam.S12 -> ChartColors.S12; SParam.S22 -> ChartColors.S22
+}
+
+private fun frequencyLabels(points: List<SweepPoint>): (Int) -> String =
+    { idx -> points.getOrNull(idx)?.f?.toDouble()?.let(::formatFreqAxisValue) ?: "" }
+
+@Composable
+private fun MergedChart(points: List<SweepPoint>, params: Set<SParam>, scanIndex: Int?, modifier: Modifier, marker: TraceMarker?, overlay: List<SweepPoint>?) {
+    val cells = SParam.entries.filter { it in params }
+    SnaChart(series = cells.map { it.name to it.color() } + if (overlay != null) cells.map { "${it.name} ref" to it.color().copy(alpha = 0.45f) } else emptyList(),
+        ySeries = cells.map { p -> points.map { it.value(p) } } + if (overlay != null) cells.map { p -> overlay.map { it.confirmedValue(p) } } else emptyList(),
+        xLabelFormatter = frequencyLabels(points), scanIndex = scanIndex, modifier = modifier, marker = marker, liveSeriesCount = cells.size)
 }
 
 @Composable
-private fun MergedChart(points: List<SweepPoint>, params: Set<SParam>, scanIndex: Int?, modifier: Modifier) {
-    val cells = chartCells(params)
-    SnaChart(series = cells.map { it.label to it.color }, ySeries = cells.map { points.map(it.y) },
-        xLabelFormatter = { idx -> points.getOrNull(idx)?.f?.toDouble()?.let(::formatFreqAxisValue) ?: "" },
-        scanIndex = scanIndex, modifier = modifier)
-}
-
-@Composable
-private fun SeparateCharts(points: List<SweepPoint>, params: Set<SParam>, scanIndex: Int?, modifier: Modifier, stacked: Boolean) {
-    val cells = chartCells(params)
+private fun SeparateCharts(points: List<SweepPoint>, params: Set<SParam>, scanIndex: Int?, modifier: Modifier, stacked: Boolean, marker: TraceMarker?, overlay: List<SweepPoint>?) {
+    val cells = SParam.entries.filter { it in params }
     @Composable
-    fun cellChart(cell: ChartCell, cellModifier: Modifier) {
-        Panel(title = cell.label, modifier = cellModifier) {
-            SnaChart(series = listOf(cell.label to cell.color), ySeries = listOf(points.map(cell.y)),
-                xLabelFormatter = { idx -> points.getOrNull(idx)?.f?.toDouble()?.let(::formatFreqAxisValue) ?: "" },
-                scanIndex = scanIndex, modifier = Modifier.fillMaxWidth().weight(1f))
+    fun cellChart(p: SParam, cellModifier: Modifier) {
+        Panel(title = p.name, modifier = cellModifier) {
+            SnaChart(series = listOf(p.name to p.color()) + if (overlay != null) listOf("${p.name} ref" to p.color().copy(alpha = 0.45f)) else emptyList(),
+                ySeries = listOf(points.map { it.value(p) }) + if (overlay != null) listOf(overlay.map { it.confirmedValue(p) }) else emptyList(),
+                xLabelFormatter = frequencyLabels(points), scanIndex = scanIndex, modifier = Modifier.fillMaxWidth().weight(1f),
+                marker = marker?.takeIf { it.parameter == p }, liveSeriesCount = 1)
         }
     }
     if (stacked && cells.isNotEmpty()) {

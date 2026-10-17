@@ -5,12 +5,8 @@
 extern "C" {
 #endif
 
-// TinyUSB's rp2040 device-controller driver (dcd_rp2040.c) covers the RP2350's
-// USB controller too (same IP block) -- confirmed correct by an actual build
-// against pico-sdk 2.2.0 / its bundled TinyUSB: the SDK's own CMake glue
-// selects this same "rp2040" TinyUSB port for RP2350 builds (see the
-// "TinyUSB available at .../lib/tinyusb/hw/bsp/rp2040" configure-time
-// message), not a dedicated RP2350 port.
+// TinyUSB's rp2040 device driver also covers the RP2350 (same USB IP block);
+// pico-sdk selects the same port for RP2350 builds.
 #define CFG_TUSB_MCU OPT_MCU_RP2040
 #define CFG_TUSB_OS OPT_OS_PICO
 #define CFG_TUSB_RHPORT0_MODE (OPT_MODE_DEVICE | OPT_MODE_FULL_SPEED)

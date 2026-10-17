@@ -8,3 +8,6 @@ __pycache__/
 *.pyc
 *.log
 *.bkp
+
+# Project documents stay local
+/docs/

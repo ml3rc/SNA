@@ -13,14 +13,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import io.github.ml3rc.sna.client.session.AppState
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ConnectScreen(viewModel: SnaViewModel, onConnected: () -> Unit) {
-    val ports = viewModel.ports.collectAsState().value
-    val connecting = viewModel.connecting.collectAsState().value
-    val error = viewModel.error.collectAsState().value
-    LaunchedEffect(Unit) { viewModel.refreshPorts() }
+fun ConnectScreen(app: AppState, onConnected: () -> Unit) {
+    val ports = app.ports.collectAsState().value
+    val connecting = app.connecting.collectAsState().value
+    val error = app.error.collectAsState().value
+    LaunchedEffect(Unit) { app.refreshPorts() }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val wide = maxWidth >= 800.dp
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(if (wide) 40.dp else 20.dp),
@@ -47,7 +48,7 @@ fun ConnectScreen(viewModel: SnaViewModel, onConnected: () -> Unit) {
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)) {
                             Row(Modifier.clickable(enabled = !connecting, role = Role.Button,
-                                onClick = { viewModel.connect(port, onConnected) }).padding(16.dp),
+                                onClick = { app.connect(port, onConnected) }).padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
                                     Text("SNA analyzer", style = MaterialTheme.typography.titleMedium)
@@ -62,7 +63,7 @@ fun ConnectScreen(viewModel: SnaViewModel, onConnected: () -> Unit) {
                     }
                     error?.let { Spacer(Modifier.height(8.dp)); Text(it, color = MaterialTheme.colorScheme.error) }
                     Spacer(Modifier.height(16.dp))
-                    OutlinedButton(enabled = !connecting, onClick = { viewModel.refreshPorts() }) { Text("Rescan USB") }
+                    OutlinedButton(enabled = !connecting, onClick = { app.refreshPorts() }) { Text("Rescan USB") }
                 }
                 Spacer(Modifier.height(24.dp))
                 Text("Measurements", style = MaterialTheme.typography.titleSmall)

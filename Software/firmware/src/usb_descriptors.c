@@ -33,6 +33,16 @@ uint8_t const *tud_descriptor_device_cb(void) {
     return (uint8_t const *) &desc_device;
 }
 
+// String descriptor indices (string_desc_arr below).
+enum {
+    STRID_LANGID = 0,
+    STRID_MANUFACTURER,
+    STRID_PRODUCT,
+    STRID_SERIAL,
+    STRID_CDC,
+    STRID_COUNT,
+};
+
 enum {
     ITF_NUM_CDC = 0,
     ITF_NUM_CDC_DATA,
@@ -47,7 +57,7 @@ enum {
 
 uint8_t const desc_fs_configuration[] = {
     TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 100),
-    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, 64),
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, STRID_CDC, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, 64),
 };
 
 uint8_t const *tud_descriptor_configuration_cb(uint8_t index) {
@@ -56,12 +66,13 @@ uint8_t const *tud_descriptor_configuration_cb(uint8_t index) {
 }
 
 static char const *string_desc_arr[] = {
-    NULL,                            // 0: filled specially (language id)
-    "SNA Project",                   // 1: Manufacturer
-    "SNA Scalar Network Analyzer",   // 2: Product
-    NULL,                            // 3: Serial -- filled at runtime from the flash unique id
-    "SNA Control",                   // 4: CDC interface name
+    [STRID_LANGID] = NULL,                          // filled specially (language id)
+    [STRID_MANUFACTURER] = "ml3rc",
+    [STRID_PRODUCT] = "SNA Scalar Network Analyzer",
+    [STRID_SERIAL] = NULL,                          // filled at runtime from the flash unique id
+    [STRID_CDC] = "SNA Control",                    // CDC interface name
 };
+_Static_assert(sizeof(string_desc_arr) / sizeof(string_desc_arr[0]) == STRID_COUNT, "a string per index");
 
 static uint16_t _desc_str[32];
 
@@ -69,14 +80,14 @@ uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     (void) langid;
     size_t chr_count;
 
-    if (index == 0) {
+    if (index == STRID_LANGID) {
         _desc_str[1] = 0x0409; // English (US)
         chr_count = 1;
     } else {
         char serial_buf[PICO_UNIQUE_BOARD_ID_SIZE_BYTES * 2 + 1];
         const char *str;
 
-        if (index == 3) {
+        if (index == STRID_SERIAL) {
             pico_get_unique_board_id_string(serial_buf, sizeof(serial_buf));
             str = serial_buf;
         } else {

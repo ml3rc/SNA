@@ -111,17 +111,21 @@ class AndroidSerialTransport(private val context: Context) : SerialTransport {
             close()
             return@callbackFlow
         }
-        val buffer = StringBuilder()
+        // Raw bytes, not text: a multi-byte UTF-8 character can be split across two USB chunks,
+        // so only complete lines (split on 0x0A, which never occurs inside a UTF-8 sequence) are decoded.
+        val buffer = java.io.ByteArrayOutputStream()
         val listener = object : SerialInputOutputManager.Listener {
             override fun onNewData(data: ByteArray) {
-                buffer.append(String(data, Charsets.UTF_8))
-                while (true) {
-                    val idx = buffer.indexOf("\n")
-                    if (idx < 0) break
-                    val line = buffer.substring(0, idx)
-                    buffer.delete(0, idx + 1)
+                var start = 0
+                for (i in data.indices) {
+                    if (data[i] != '\n'.code.toByte()) continue
+                    buffer.write(data, start, i - start)
+                    start = i + 1
+                    val line = buffer.toString(Charsets.UTF_8.name())
+                    buffer.reset()
                     if (trySendBlocking(line.trimEnd('\r')).isFailure) return
                 }
+                buffer.write(data, start, data.size - start)
             }
 
             override fun onRunError(e: Exception) {

@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -29,30 +31,17 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.ml3rc.sna.client.session.TraceMarker
 import kotlin.math.roundToInt
 
-/** Hz -> a compact, human-readable frequency axis label. */
-fun formatFreqAxisValue(hz: Double): String = when {
-    hz >= 1e9 -> "%.3f GHz".format(hz / 1e9)
-    hz >= 1e6 -> "%.1f MHz".format(hz / 1e6)
-    hz >= 1e3 -> "%.0f kHz".format(hz / 1e3)
-    else -> "%.0f Hz".format(hz)
-}
-
 /**
- * A small, purpose-built line chart replacing Vico (see `project_sna_client_hwfree_sim_testing.md`
- * / `project_sna_client_chart_ui_polish.md` memory for the full history) -- Vico caused three
- * separate serious bugs this session (a GCD-based axis-step computation that OOM'd on real
- * frequency data, a hard crash when a chart's backing `CartesianChartModelProducer` identity
- * changed, and generally volatile APIs across versions) and has no support for real mouse-hover
- * value tooltips, which the user explicitly asked for ("scientific interface"). This app's actual
- * charting needs are modest -- a handful of line series over a shared index-based X axis -- so a
- * from-scratch `Canvas` is less total code than continuing to fight Vico, and gives full control
- * over the pixel<->data mapping, which is what makes real hover trivial here.
+ * A small line chart on a `Canvas`, with mouse/touch hover values. (It replaced the Vico library,
+ * whose axis-step computation ran out of memory on jittery real frequencies and which crashed
+ * when a chart's model producer changed.)
  *
  * [series] is label+color per trace, parallel to [ySeries] (one Double list per entry). X is
- * always the point INDEX (0 until the series' own size), not a data value -- this avoids ever
- * needing a "step size" concept at all (the source of the GCD bug), and [xLabelFormatter] maps an
+ * always the point INDEX (0 until the series' own size), not a data value -- so a log sweep
+ * reads as a log frequency axis, there is no axis "step size" to compute, and [xLabelFormatter] maps an
  * index back to a real label (e.g. a frequency) purely for display. If series have different
  * lengths (e.g. CalibrationScreen's per-step captures, which may rarely be measured against
  * different grids), each is independently stretched to fill the full plot width by its own
@@ -72,8 +61,13 @@ fun formatFreqAxisValue(hz: Double): String = when {
  * tail -- and is drawn as a GAP (no line through it), and excluded from the Y-axis autoscale.
  * Plotting it as 0 instead would be actively misleading: a wide not-yet-scanned region sitting at
  * 0 dB would drag the whole axis toward it and visually crush the real data into a sliver.
+ *
+ * [liveSeriesCount]: the first [liveSeriesCount] entries of [series]/[ySeries] are the live traces;
+ * every entry after them is a reference (held) trace, drawn dashed and without scan-line fading. Callers must
+ * therefore append reference series AFTER all live ones, in the same order on both lists.
  */
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun SnaChart(
     series: List<Pair<String, Color>>,
     ySeries: List<List<Double?>>,
@@ -81,6 +75,8 @@ fun SnaChart(
     modifier: Modifier = Modifier,
     yLabelFormatter: (Double) -> String = { "%.1f".format(it) },
     scanIndex: Int? = null,
+    marker: TraceMarker? = null,
+    liveSeriesCount: Int = series.size,
 ) {
     val textColor = MaterialTheme.colorScheme.onSurface
     val mutedColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -101,7 +97,7 @@ fun SnaChart(
 
     Column(modifier) {
         if (series.isNotEmpty()) {
-            Row(
+            FlowRow(
                 Modifier.fillMaxWidth().padding(bottom = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(14.dp),
             ) {
@@ -160,6 +156,8 @@ fun SnaChart(
                 yHi = yHi,
                 hoverIndex = hoverIndex,
                 scanIndex = scanIndex,
+                marker = marker,
+                liveSeriesCount = liveSeriesCount,
                 textColor = textColor,
                 mutedColor = mutedColor,
                 gridColor = gridColor,
@@ -181,6 +179,8 @@ private fun DrawScope.drawChart(
     yHi: Double,
     hoverIndex: Int?,
     scanIndex: Int?,
+    marker: TraceMarker?,
+    liveSeriesCount: Int,
     textColor: Color,
     mutedColor: Color,
     gridColor: Color,
@@ -257,10 +257,13 @@ private fun DrawScope.drawChart(
     ySeries.forEachIndexed { si, ys ->
         if (ys.size < 2) return@forEachIndexed
         val color = series.getOrNull(si)?.second ?: mutedColor
-        val stroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
+        val isReference = si >= liveSeriesCount
+        val stroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx(),
+            pathEffect = if (isReference) androidx.compose.ui.graphics.PathEffect.dashPathEffect(
+                floatArrayOf(6.dp.toPx(), 4.dp.toPx())) else null)
         // Scale the shared scan index into this series' own length (see doc comment on
         // different-length series).
-        val scaledScan = scanIndex?.let { s ->
+        val scaledScan = scanIndex?.takeIf { !isReference }?.let { s ->
             if (pointCount <= 1) null else ((ys.size - 1) * s.toFloat() / (pointCount - 1)).roundToInt()
         }?.coerceIn(0, ys.size - 1)
         if (scaledScan == null || scaledScan >= ys.size - 1) {
@@ -281,6 +284,17 @@ private fun DrawScope.drawChart(
             androidx.compose.ui.geometry.Offset(px, plotTop + plotHeight),
             strokeWidth = 2.dp.toPx(),
         )
+    }
+
+    // Search marker remains visible independently of the mouse/touch hover.
+    if (marker != null && marker.index in 0 until pointCount) {
+        val px = xToPxFor(marker.index, pointCount)
+        val py = yToPx(marker.db)
+        drawLine(scanLineColor, androidx.compose.ui.geometry.Offset(px, plotTop),
+            androidx.compose.ui.geometry.Offset(px, plotTop + plotHeight), strokeWidth = 1.dp.toPx())
+        drawCircle(scanLineColor, radius = 5.dp.toPx(), center = androidx.compose.ui.geometry.Offset(px, py))
+        drawText(textMeasurer.measure("M", TextStyle(color = textColor, fontSize = 12.sp)),
+            topLeft = androidx.compose.ui.geometry.Offset((px + 7.dp.toPx()).coerceAtMost(size.width - 16.dp.toPx()), plotTop))
     }
 
     // Hover crosshair + tooltip.

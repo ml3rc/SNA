@@ -9,10 +9,9 @@
 // and there's no external pull resistor on this board's net for it -- so
 // with no firmware running, PWDN floats low and the amp is enabled by
 // default (unlike max2871's CE, which has an external pull-down and
-// defaults safely off). See Software/protocol/PINMAP.md and the
-// 2026-09-30 power-budget investigation.
+// defaults safely off). See Software/protocol/PINMAP.md.
 
-void trf37a73_init(void);
-void trf37a73_enable(bool en);
+void hal_trf37a73_init(void);
+void hal_trf37a73_enable(bool en);
 
 #endif

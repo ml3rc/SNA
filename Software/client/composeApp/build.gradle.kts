@@ -10,6 +10,11 @@ plugins {
 }
 
 kotlin {
+    compilerOptions {
+        // FileStore is an expect object (one native file dialog per platform).
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     jvm("desktop")
 
     androidTarget {
@@ -76,8 +81,8 @@ android {
         applicationId = "io.github.ml3rc.sna.client"
         minSdk = 26 // USB host mode / UsbManager APIs used here need API 26+
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.2.2"
+        versionCode = 9
+        versionName = "0.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -111,13 +116,13 @@ compose.desktop {
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb,
             )
             packageName = "SNA Client"
-            // packaging tools (DMG/MSI) require MAJOR > 0; app versionName stays 0.1.0. Bump this
+            // Packaging tools (DMG/MSI) require MAJOR > 0, so desktop and Android versions differ. Bump this
             // on every rebuild meant for the user to actually install -- confirmed risk,
             // 2026-10-02: Windows Installer can treat "same product, same version" as a no-op on
             // reinstall and silently keep the OLD files in place even if you "reinstall" over it,
             // which would make testing a just-shipped fix indistinguishable from testing the
             // still-broken old build. Bumping the version forces a real upgrade every time.
-            packageVersion = "1.2.2"
+            packageVersion = "1.4.0"
 
             // jpackage's MSI does NOT create a Start Menu shortcut by default -- confirmed
             // against this exact pinned plugin version's WindowsPlatformSettings, 2026-10-02,
