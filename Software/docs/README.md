@@ -1,6 +1,6 @@
 # SNA documentation
 
-2-port scalar network analyzer, 23.5 MHz – 6 GHz, 50 Ω / 75 Ω. Firmware 0.4.x · protocol 3 · client 1.4.x.
+2-port scalar network analyzer, 50 MHz – 6 GHz, 50 Ω / 75 Ω. Firmware 0.4.x · protocol 3 · client 1.4.x.
 
 Diagram-first: every page is a set of slides-ready diagrams with a few lines of text. All diagrams are draw.io
 sources in [presentation/diagrams/](presentation/diagrams/), exported to PNG/SVG for the pages and the slides

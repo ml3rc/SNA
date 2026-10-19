@@ -603,7 +603,7 @@ DE = {
     "no points stored · nothing measured": "keine Punkte gespeichert · keine Messung",
     "short red blink": "kurzes rotes Blinken",
     "not idle (a host mode is active)": "nicht IDLE (ein Host-Modus ist aktiv)",
-    "sweep mode · atten 0 · current z": "Sweep-Modus · atten 0 · aktuelles z",
+    "sweep mode · atten 0 · z 75": "Sweep-Modus · atten 0 · z 75",
     "green / red blink": "grünes / rotes Blinken",
     "per test point": "pro Testpunkt",
     "result shown → back to idle": "Ergebnis gezeigt → zurück zu IDLE",

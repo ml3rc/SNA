@@ -6,8 +6,8 @@
 
 | Block | Chip | Firmware sets | Interface |
 |---|---|---|---|
-| Synthesizer | MAX2871 | frequency 23.5 MHz – 6 GHz, on/off | SPI + lock detect |
-| Low-pass bank | 2 × RFSW6042 SP4T | bypass · 3.5 · 1.75 · 0.95 GHz (per frequency) | GPIO |
+| Synthesizer | MAX2871 | frequency 50 MHz – 6 GHz (chip: from 23.5 MHz), on/off | SPI + lock detect |
+| Low-pass bank | 2 × RFSW6042 SP4T | bypass · 3.5 · 1.75 · 0.95 GHz (lowest cutoff ≥ f, bypass above 3.5 GHz) | GPIO |
 | Attenuator | HMC1119 | level 0–31.75 dB, 0.25 dB steps | 7-bit parallel |
 | Amplifier | TRF37A73 | on/off | GPIO |
 | Port switch | QPC6324 SPDT | terminated / port 1 / port 2 | GPIO |

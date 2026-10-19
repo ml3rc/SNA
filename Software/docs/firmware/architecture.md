@@ -18,7 +18,7 @@ Each layer only calls the one directly below.
 
 - Core 0 posts a request (tag, `cancel_seq`) to the request queue (8); core 1 takes them in order.
 - Core 1 streams sweep points, then exactly one final reply with a status snapshot, through the reply queue (8).
-  Core 0 drains it on every main-loop pass.
+  Core 0 drains it on every main-loop pass (at most 8 replies per pass, so `abort` is still read).
 - Full reply queue → core 1 waits (no lost points = backpressure).
-- `rf_task_cancel()` = `cancel_seq++` → cancels everything sent before it. Used on `abort`, `mode_exit`,
+- `rf_task_cancel()` = `cancel_seq++` → cancels everything sent before it. Used on `abort`, `mode_exit`, `bootsel`,
   disconnect and a 2 s host stall.

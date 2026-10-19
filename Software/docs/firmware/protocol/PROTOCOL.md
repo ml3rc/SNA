@@ -44,7 +44,9 @@ re-enumerates.
 | `storage_error` | The EEPROM could not be written or read |
 | `not_valid` | `src_temp_read` has no valid reading |
 
-Arguments are validated before the mode is checked, so invalid arguments get `bad_args` in any mode.
+Arguments are validated before the mode is checked, so invalid arguments get `bad_args` in any mode. The one check
+before them: while a sweep (or the on-board SDI test) runs, a command not allowed then gets `busy` whatever its
+arguments.
 
 ## Modes
 
@@ -136,8 +138,9 @@ change in the middle of a measurement makes sense is the host's call. The reply 
   `"warning":"source_unlocked","unlocked_points":N`. With `false` the first lock failure ends the sweep:
   `{"id":4,"ok":false,"done":true,"error":"source_not_locked","stage":"startup|retune","pt":12,"f":5100000000}`.
 - Every point carries `locked`. If calibration data for `z` covers the point, the S-parameter values are corrected
-  (the device interpolates its stored grid onto the sweep's frequencies); otherwise they are raw and the point
-  carries `"cal":false`.
+  (the device interpolates its stored grid onto the sweep's frequencies); otherwise they are raw. `"cal":false` marks
+  a point that is not calibrated: no curve covers it, or it is unlocked (the source is not at `f`, so the correction
+  for `f` does not hold, even though it was subtracted).
 - During a sweep only `status`, `ping`, `src_temp_read`, `set`, `abort` and `mode_exit` are accepted; everything
   else gets `busy`. `abort` ends the sweep (`"error":"aborted"`), the mode stays `sweep`. A host that disconnects or
   stops reading for 2 s ends it as well; the output is parked afterwards.
@@ -203,7 +206,7 @@ See LEDs and SDI button for the test itself.
 ```
 | `block` | `value` |
 |---|---|
-| `lpf` | 0–3: none, 3500 MHz, 1747 MHz, 947 MHz (sweeps and the generator select it automatically) |
+| `lpf` | 0–3: none, 3500 MHz, 1747 MHz, 947 MHz (sweeps and the generator select it automatically: the lowest cutoff at or above the frequency, none above 3500 MHz) |
 | `cplr` | coupler path 0–3: port 1 fwd, port 1 bwd, port 2 fwd, port 2 bwd |
 | `port` | 0 terminates the output, 1/2 select the source port; the reply carries `"source_on":true|false` |
 | `src_freq` | synthesizer frequency, integer Hz in [50 MHz, 6 GHz] |

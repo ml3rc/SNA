@@ -3,7 +3,7 @@
 RP2350B firmware, Raspberry Pi Pico SDK (C, bare-metal + TinyUSB), implementing
 [`../docs/firmware/protocol/PROTOCOL.md`](../docs/firmware/protocol/PROTOCOL.md) over USB CDC-ACM.
 Current version: **0.4.1** (protocol 3). 0.4.1 adds the robustness fixes below to 0.4.0; the
-protocol is unchanged. It passes the host tests but is **not yet tested on hardware**.
+protocol is unchanged.
 
 ## Overview
 
@@ -48,8 +48,10 @@ protocol is unchanged. It passes the host tests but is **not yet tested on hardw
   127 before terminating the port switch; switching it on does the reverse. The
   50/75 ohm switch may be changed while the source is on.
 - **Filters and detector:** sweeps and the generator pick the lowest LPF whose
-  cutoff x 0.8 still passes the frequency (947 MHz filter up to 757.6 MHz,
-  1747 MHz up to 1397.6 MHz, 3500 MHz up to 2800 MHz, none above). The
+  cutoff is still at or above the frequency (947 MHz filter up to 947 MHz,
+  1747 MHz up to 1747 MHz, 3500 MHz up to 3500 MHz, bypass above; using each
+  filter up to its full cutoff measured better on the board than a 0.8
+  margin, and moving these edges invalidates stored calibration). The
   detector is on from boot; each coupler-path reading waits 100 us after the
   switch and takes the median of 16 ADC samples, plus 200 us after PLL lock
   on a new frequency. The PLL
@@ -78,9 +80,9 @@ protocol is unchanged. It passes the host tests but is **not yet tested on hardw
   (1 EEPROM, 2 source lock, 3 detector, 4 USB).
 
 **Accuracy limits:** the detector slope is one fixed value across the band;
-PLL/switch settling budgets and the LPF selection boundaries still need bench
-characterization. Scalar calibration cannot correct errors requiring phase.
-SDI thresholds support 50 MHz through UINT32_MAX Hz (their storage format).
+PLL/switch settling budgets still need bench characterization. Scalar
+calibration cannot correct errors requiring phase. SDI test points cover the
+whole 50 MHz to 6 GHz band (`u64` frequencies, EEPROM format 3).
 
 ## Building
 

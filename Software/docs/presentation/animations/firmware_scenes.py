@@ -71,7 +71,7 @@ class MeasurementFlow(Scene):
 
         # --- 3. configure RF ---------------------------------------------------
         cap.show("3  Core 1 sets up the RF path for 1 GHz")
-        notes = [("tune 1 GHz", 0), ("947 MHz LPF", 1), ("port 1", 3)]
+        notes = [("tune 1 GHz", 0), ("1747 MHz LPF", 1), ("port 1", 3)]
         shown = []
         for text, i in notes:
             n = label(text, 20, CORE1).next_to(rf[i], DOWN, buff=0.15)

@@ -1,6 +1,6 @@
 # SNA software
 
-School project (ET2023a, deadline **2026-12-02**): 2-port scalar network analyzer, ~23.5 MHz–6 GHz,
+School project (ET2023a, deadline **2026-12-02**): 2-port scalar network analyzer, 50 MHz–6 GHz (MAX2871 from ~23.5 MHz),
 50 Ω and switchable 75 Ω (SDI cable testing). Scalar only (no phase). Hardware (Altium, Fusion360) is
 done and assembled; this dir holds everything software. Repo: github.com/ml3rc/SNA. Docs are mixed
 German/English.
