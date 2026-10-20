@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Same notch mark as composeApp/icons/sna.svg (512 units), scaled so its stroke ends stay
+     inside the adaptive icon's 66dp safe circle and shifted up to centre it optically. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="512" android:viewportHeight="512">
+    <group android:pivotX="256" android:pivotY="256"
+        android:scaleX="0.68" android:scaleY="0.68" android:translateY="-26">
+        <path
+            android:pathData="M84,196 H178 C222,196 232,236 244,330 L256,392 L268,330 C280,236 290,196 334,196 H428"
+            android:fillColor="#00000000"
+            android:strokeColor="#E39A6E" android:strokeWidth="44"
+            android:strokeLineCap="round" android:strokeLineJoin="round" />
+    </group>
+</vector>

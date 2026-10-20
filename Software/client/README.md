@@ -6,8 +6,8 @@ Kotlin Multiplatform + Compose Multiplatform app for the SNA scalar network anal
 
 | | Version | Needs |
 |---|---|---|
-| Desktop | **1.4.0** | protocol **3** (firmware 0.4.x) |
-| Android | **0.4.0** (versionCode 9) | protocol **3** (firmware 0.4.x) |
+| Desktop | **1.0.0** | protocol **3** (firmware 1.0.x) |
+| Android | **1.0.0** (versionCode 11) | protocol **3** (firmware 1.0.x) |
 
 The client refuses firmware reporting any other `proto` (older firmware: update the firmware;
 newer: update the client), and any frequency range other than 50 MHz–6 GHz.
@@ -109,8 +109,9 @@ gradlew.bat :composeApp:installDebug       # ... onto a connected phone with USB
 gradlew.bat :composeApp:connectedDebugAndroidTest   # Android UI tests (emulator or device)
 ```
 
-Installers are unsigned (expect an "unknown publisher" warning). Bump `packageVersion` for every
-installer meant to be installed: Windows Installer can treat the same version as a no-op.
+Installers are unsigned (expect an "unknown publisher" warning). Each MSI installs over the previous one
+(no uninstall needed): its version's third field is a build tick, see `windows {}` in
+`composeApp/build.gradle.kts`. Bump `desktopVersion` only for real releases.
 
 The tests use simulated serial transports. The desktop UI test saves rendered previews (from
 simulated data, not measurements) under `composeApp/build/ui-previews/`. They do not replace

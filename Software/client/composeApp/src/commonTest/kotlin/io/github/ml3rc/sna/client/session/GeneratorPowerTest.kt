@@ -105,7 +105,7 @@ private class FakeDevice : SerialTransport {
                 ""","pwr_on":false,"init_errors":[$initErrors]}"""
             "power_read" -> if (genOn) """{"id":$id,"ok":false,"error":"wrong_mode","mode":"generator"}""" else
                 """{"id":$id,"ok":true,"port":${request.getValue("port").jsonPrimitive.int},"z":${request.getValue("z").jsonPrimitive.int},"raw":1500,"volts":1.209,"dbm":-9.5,"range":"ok"}"""
-            "ping" -> """{"id":$id,"ok":true,"fw":"0.4.0","proto":3,"hw_rev":1,"freq_min_hz":50000000,"freq_max_hz":6000000000}"""
+            "ping" -> """{"id":$id,"ok":true,"fw":"1.0.0","proto":3,"hw_rev":1,"freq_min_hz":50000000,"freq_max_hz":6000000000}"""
             "sweep" -> {
                 val names = (request.getValue("params") as kotlinx.serialization.json.JsonArray).map { it.jsonPrimitive.content }
                 val count = request.getValue("points").jsonPrimitive.int

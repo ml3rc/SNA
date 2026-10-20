@@ -12,16 +12,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 val SnaDarkColorScheme = darkColorScheme(
-    primary = Color(0xFF9CBCEE), onPrimary = Color(0xFF142238),
-    primaryContainer = Color(0xFF263345), onPrimaryContainer = Color(0xFFD2E1F8),
-    secondary = Color(0xFFF2BE74), onSecondary = Color(0xFF30200C),
-    secondaryContainer = Color(0xFF47351F), onSecondaryContainer = Color(0xFFFFDFB0),
-    background = Color(0xFF151719), onBackground = Color(0xFFE9EAEC),
-    surface = Color(0xFF1C1F22), onSurface = Color(0xFFE9EAEC),
-    surfaceVariant = Color(0xFF282C31), onSurfaceVariant = Color(0xFFB1B5BC),
-    outline = Color(0xFF565C65), outlineVariant = Color(0xFF353A40),
-    error = Color(0xFFFF8990), onError = Color(0xFF3D1016),
-    errorContainer = Color(0xFF481D25), onErrorContainer = Color(0xFFFFD9DD),
+    // Copper primary + dusty-violet secondary on warm near-black: kept clear of the four
+    // trace hues (yellow/cyan/magenta/green, see ChartColors) so UI accents never read as data.
+    primary = Color(0xFFE39A6E), onPrimary = Color(0xFF3A1D0D),
+    primaryContainer = Color(0xFF4A2E1F), onPrimaryContainer = Color(0xFFFFDCC8),
+    secondary = Color(0xFFB7A7DC), onSecondary = Color(0xFF2A2140),
+    secondaryContainer = Color(0xFF3B3352), onSecondaryContainer = Color(0xFFE6DDFF),
+    background = Color(0xFF0F0E0D), onBackground = Color(0xFFECE7E1),
+    surface = Color(0xFF161412), onSurface = Color(0xFFECE7E1),
+    surfaceVariant = Color(0xFF24211E), onSurfaceVariant = Color(0xFFB8B0A6),
+    surfaceContainerLowest = Color(0xFF0B0A09), surfaceContainerLow = Color(0xFF141210),
+    surfaceContainer = Color(0xFF1A1816), surfaceContainerHigh = Color(0xFF211E1B),
+    surfaceContainerHighest = Color(0xFF292522),
+    outline = Color(0xFF5F5850), outlineVariant = Color(0xFF34302B),
+    error = Color(0xFFFF8A80), onError = Color(0xFF3D1210),
+    errorContainer = Color(0xFF4A1E1A), onErrorContainer = Color(0xFFFFDAD5),
 )
 
 private fun type(size: Int, height: Int, weight: FontWeight = FontWeight.Normal,
