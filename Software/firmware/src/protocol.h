@@ -5,7 +5,7 @@
 
 #include "cJSON.h"
 
-// The host protocol (Software/docs/firmware/protocol/PROTOCOL.md) on core 0. Commands are
+// The host protocol (docs/firmware/protocol/PROTOCOL.md) on core 0. Commands are
 // validated here and turned into rf_task requests; their replies come back
 // asynchronously and are answered from protocol_poll(), so USB keeps being
 // serviced while core 1 works.

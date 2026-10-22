@@ -1,0 +1,32 @@
+{
+ "1": [
+  "50 Hz: the whole cable has the same voltage at any moment, it is just a wire"
+ ],
+ "2": [
+  "100 MHz: the voltage already differs along the cable"
+ ],
+ "3": [
+  "1 GHz: five waves fit on 1 m, the signal travels along the cable as a wave"
+ ],
+ "4": [
+  "Rule of thumb: longer than 1/10 of the wavelength → treat it as a transmission line"
+ ],
+ "5": [
+  "What does the wave see? Every centimetre of cable is a small L and a small C"
+ ],
+ "6": [
+  "You know: L and C change their impedance with frequency"
+ ],
+ "7": [
+  "Along the ladder only their ratio counts: ω cancels out"
+ ],
+ "8": [
+  "Typical coax: L′ ≈ 250 nH/m, C′ ≈ 100 pF/m → Z₀ = √2500 = 50 Ω"
+ ],
+ "9": [
+  "Z₀ is the characteristic impedance: no loss, the same for any length and frequency"
+ ],
+ "10": [
+  "At the end of the line the wave meets the load. If the load is not Z₀, part of it comes back."
+ ]
+}

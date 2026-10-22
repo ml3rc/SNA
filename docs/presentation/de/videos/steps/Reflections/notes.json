@@ -1,0 +1,41 @@
+{
+ "1": [
+  "Last = 50 Ω = Z₀: Die Last nimmt die ganze Welle auf, nichts kommt zurück"
+ ],
+ "2": [
+  "Offenes Ende (∞ Ω): Kein Strom möglich, die ganze Welle kehrt um"
+ ],
+ "3": [
+  "Kurzschluss (0 Ω): Die Spannung muss 0 bleiben, die Welle kommt umgekehrt zurück"
+ ],
+ "4": [
+  "Beliebige Last: Am Ende muss Spannung / Strom = Z_L sein. Das legt Grösse und Vorzeichen der Reflexion fest."
+ ],
+ "5": [
+  "100 Ω: dazwischen, ein Teil der Welle wird aufgenommen, ein Teil kommt zurück"
+ ],
+ "6": [
+  "Γ (Reflexionsfaktor) hängt nur davon ab, wie weit Z_L von Z₀ entfernt ist"
+ ],
+ "7": [
+  "Die Leistung geht mit dem Quadrat: Bei 100 Ω kommen (1/3)² = 11 % der Leistung zurück"
+ ],
+ "8": [
+  "In dB: |S11| = 20 · log₁₀|Γ|. Je negativer, desto besser die Anpassung (Return Loss)."
+ ],
+ "9": [
+  "Darum hat der SNA ein 50 → 75 Ω Pad: Ein SDI-Kabel direkt an 50 Ω würde mit −14 dB reflektieren"
+ ],
+ "10": [
+  "Echte Lasten ändern sich mit der Frequenz, z. B. 50 Ω mit 2 pF Steckerkapazität parallel"
+ ],
+ "11": [
+  "Tiefe Frequenz: Der Kondensator ist fast offen, die Last ist gute 50 Ω"
+ ],
+ "12": [
+  "Höhere Frequenz: Z_C sinkt, die Last entfernt sich von 50 Ω, mehr wird reflektiert"
+ ],
+ "13": [
+  "Impedanz über Frequenz = Reflexion über Frequenz. Darum macht der SNA einen Sweep."
+ ]
+}

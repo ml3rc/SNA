@@ -1,0 +1,20 @@
+{
+ "1": [
+  "Forward wave (source → DUT): a −10 dB copy reaches CPL"
+ ],
+ "2": [
+  "Reflected wave (DUT → source): coupled into the internal 50 Ω, CPL stays dark"
+ ],
+ "3": [
+  "The other port gets a pad with the same loss as switches + coupler"
+ ],
+ "4": [
+  "Reference: the wave going out of port 1"
+ ],
+ "5": [
+  "Switches flip the coupler: now it sees what comes back from port 1"
+ ],
+ "6": [
+  "Coupler moves to port 2: it catches what went through the DUT"
+ ]
+}

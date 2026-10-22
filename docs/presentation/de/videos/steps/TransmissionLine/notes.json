@@ -1,0 +1,32 @@
+{
+ "1": [
+  "50 Hz: Das ganze Kabel hat in jedem Moment dieselbe Spannung, es ist nur ein Draht"
+ ],
+ "2": [
+  "100 MHz: Die Spannung ist entlang des Kabels schon verschieden"
+ ],
+ "3": [
+  "1 GHz: Auf 1 m passen fünf Wellen, das Signal läuft als Welle durch das Kabel"
+ ],
+ "4": [
+  "Faustregel: länger als 1/10 der Wellenlänge → als Leitung behandeln, nicht als Draht"
+ ],
+ "5": [
+  "Was sieht die Welle? Jeder Zentimeter Kabel ist ein kleines L und ein kleines C"
+ ],
+ "6": [
+  "Bekannt: L und C ändern ihre Impedanz mit der Frequenz"
+ ],
+ "7": [
+  "Entlang der Kette zählt nur ihr Verhältnis: ω kürzt sich weg"
+ ],
+ "8": [
+  "Typisches Koaxkabel: L′ ≈ 250 nH/m, C′ ≈ 100 pF/m → Z₀ = √2500 = 50 Ω"
+ ],
+ "9": [
+  "Z₀ ist der Wellenwiderstand: kein Verlust, gleich für jede Länge und Frequenz"
+ ],
+ "10": [
+  "Am Ende der Leitung trifft die Welle auf die Last. Ist die Last nicht Z₀, kommt ein Teil zurück."
+ ]
+}

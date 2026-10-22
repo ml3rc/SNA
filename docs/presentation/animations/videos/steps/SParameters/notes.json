@@ -1,0 +1,50 @@
+{
+ "1": [
+  "A two-port: anything with an input and an output"
+ ],
+ "2": [
+  "Send a wave a1 into port 1"
+ ],
+ "3": [
+  "Part of it comes back out of port 1 (b1), part comes out of port 2 (b2)"
+ ],
+ "4": [
+  "S-parameters are ratios: what comes out divided by what went in"
+ ],
+ "5": [
+  "The name says where: S out, in.  S21 = out at port 2, in at port 1"
+ ],
+ "6": [
+  "Now the other way: source on port 2, port 1 terminated with 50 Ω"
+ ],
+ "7": [
+  "Four numbers describe the two-port: reflections on the diagonal, transmissions across"
+ ],
+ "8": [
+  "Ratios are given in dB: 10 · log₁₀ of the power ratio"
+ ],
+ "9": [
+  "dB makes tiny and huge ratios readable on one axis, and ratios become subtractions"
+ ],
+ "10": [
+  "Typical values"
+ ],
+ "11": [
+  "Passive parts work both ways (S21 = S12), an amplifier only one way"
+ ],
+ "12": [
+  "Over frequency, e.g. a 1 GHz low-pass filter"
+ ],
+ "13": [
+  "Below 1 GHz the signal passes (S21 ≈ 0 dB), above it is blocked"
+ ],
+ "14": [
+  "What does not pass comes back: S11 rises where S21 falls"
+ ],
+ "15": [
+  "The SNA measures powers in dBm, so S11 in dB is just a subtraction"
+ ],
+ "16": [
+  "Directional coupler and log detector measure these powers, calibration removes the SNA's own losses"
+ ]
+}

@@ -1,0 +1,26 @@
+{
+ "1": [
+  "One mode owns the RF hardware at a time"
+ ],
+ "2": [
+  "Enter the sweep mode"
+ ],
+ "3": [
+  "Start a sweep: the points stream back as they are measured"
+ ],
+ "4": [
+  "A command of another mode during the sweep is refused"
+ ],
+ "5": [
+  "mode_exit cancels the running sweep and returns to IDLE"
+ ],
+ "6": [
+  "Same pattern for the other modes, e.g. the signal generator"
+ ],
+ "7": [
+  "Settings like the output level can be changed in every mode, even live"
+ ],
+ "8": [
+  "mode_exit stops the output and frees the hardware again"
+ ]
+}

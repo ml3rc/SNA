@@ -1,0 +1,29 @@
+{
+ "1": [
+  "1  Der Client sendet eine JSON-Zeile über USB"
+ ],
+ "2": [
+  "2  Kern 0 prüft sie und reiht eine Anfrage für Kern 1 ein"
+ ],
+ "3": [
+  "3  Kern 1 richtet den HF-Pfad für 1 GHz ein"
+ ],
+ "4": [
+  "4  Die HF-Welle läuft zum Kabel, ein Teil wird reflektiert"
+ ],
+ "5": [
+  "5  Der Koppler tastet die Vorwärtswelle ab, dann die reflektierte"
+ ],
+ "6": [
+  "6  Rohwerte gehen über die Antwort-Queue zurück zu Kern 0"
+ ],
+ "7": [
+  "7  Kern 0 macht aus den zwei Werten dB und wendet die Kalibrierung an"
+ ],
+ "8": [
+  "8  Pro Punkt geht eine JSON-Zeile zurück an den Client"
+ ],
+ "9": [
+  "…wiederholt für jede Frequenz des Sweeps: ≈ 2 ms pro Punkt"
+ ]
+}

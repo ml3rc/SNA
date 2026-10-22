@@ -27,18 +27,23 @@ German/English.
   `DeviceMonitor`, the interlock `ToolActivity`/`blockReason` and one state class per tool), `ui/` (one
   screen per tab). `SerialTransport` (commonMain) is the platform seam (jSerialComm / usb-serial-for-android).
   Custom Canvas chart (`ui/SnaChart.kt`), Vico is gone.
-- `docs/firmware/protocol/` — **source of truth for both sides**: `PROTOCOL.md` (newline-delimited JSON over USB
+- `../docs/firmware/protocol/` (repo root) — **source of truth for both sides**: `PROTOCOL.md` (newline-delimited JSON over USB
   CDC-ACM), `PINMAP.md`, `EEPROM_LAYOUT.md`. Change these first, then firmware and client together.
-- `docs/` (committed) — short, diagram-first documentation meant for presentation slides: `api/README.md` (wire
+- `../docs/` (repo root, committed; moved out of `Software/` for v1.0.0) — short, diagram-first documentation meant
+  for presentation slides, plus `measurements/` (scope/LibreVNA captures) and `pictures/` (photos, client screenshots): `api/README.md` (wire
   API + `SnaClient`), `firmware/*.md` (architecture, RF chain, modes, sweep, calibration, boot/LEDs),
   `hardware/README.md`. Pages embed the draw.io exports (`presentation/diagrams/export/*.png`), little text; keep
   the diagrams in sync when behaviour changes. The `.drawio` files are the source (the user edits them in draw.io;
   `diagrams/src/build_*.py` only made the first version, re-running one overwrites hand edits), then `export.sh`;
   repeated arrow meanings go in a legend, not on one arrow. Diagrams are English only. Electrical symbols are IEC
   everywhere, one fixed resistor size (90 × 30 px / `resistor()` in `animations/sna_style.py`). Manim scenes in
-  `presentation/animations/` (`render.sh`, also cuts each scene into click-through steps at `next_section()` →
+  `presentation/animations/` (`basics_scenes.py` = RF basics for a non-RF audience: TransmissionLine, Reflections,
+  SParameters; trace colours = client `ChartColors`) (`render.sh`, also cuts each scene into click-through steps at `next_section()` →
   `videos/steps/`). German animations only (`SNA_LANG=de`, strings in `presentation/i18n_de.py`, output in
   `presentation/de/videos/`), never linked from the docs.
+  Videos have **no captions** (texts → `steps/<Scene>/notes.json` → speaker notes), run at `SNA_SPEED` 1.3, and use
+  no zoom effects (`highlight()` instead of `Indicate`/`Wiggle`/`FadeIn(scale>1)`; check with `SNA_CHECK_BOUNDS`).
+  In PowerPoint each clip's poster must be its first frame, or the step's end flashes when the clip appears.
 - The LEDs and the SDI button sit on the PCB, seen/pressed through vertical holes in the two-part milled case:
   there is no front panel, don't call it one.
 - `docs-local/` (gitignored, project documents) — index in `docs-local/README.md`: block diagrams
@@ -104,7 +109,7 @@ build; the old `jdk-20` path no longer exists).
 
 ## Conventions
 
-- Firmware and client both treat `docs/firmware/protocol/` as authoritative; bump docs in the same change as behaviour.
+- Firmware and client both treat `../docs/firmware/protocol/` as authoritative; bump docs in the same change as behaviour.
 - Client state classes are plain StateFlow classes in `session/` (no androidx ViewModel), owned by `Session`
   so they survive tab changes; give new screens their own state class instead of growing `AppState`/`Session`.
 - Client UI rule: while a test runs, controls that would not reach the hardware are disabled; controls that

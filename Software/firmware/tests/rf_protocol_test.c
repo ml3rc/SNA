@@ -498,7 +498,7 @@ static void test_invalid_commands_and_storage(void) {
     assert(has("\"id\":3,\"ok\":true,\"set\":\"s11_50\",\"f0\":50000000,\"f1\":6000000000,\"points\":[1,1,"));
     cmd("{\"cmd\":\"cal_clear\",\"set\":\"all\"}"); assert(has("\"ok\":true"));
     cmd("{\"cmd\":\"ping\",\"id\":7}");
-    assert(has("\"id\":7,\"ok\":true,\"fw\":\"0.4.1\",\"proto\":3,\"hw_rev\":1,\"freq_min_hz\":50000000,\"freq_max_hz\":6000000000"));
+    assert(has("\"id\":7,\"ok\":true,\"fw\":\"1.0.0\",\"proto\":3,\"hw_rev\":1,\"freq_min_hz\":50000000,\"freq_max_hz\":6000000000"));
     // SDI points up to 6 GHz round-trip.
     cmd("{\"cmd\":\"sdi_test_set\",\"points\":[{\"f\":5940000000,\"thresh_db\":-12.5,\"s_param\":\"s21\",\"cmp\":\"gt\"}]}");
     assert(has("\"ok\":true"));

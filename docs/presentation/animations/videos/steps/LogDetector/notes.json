@@ -1,0 +1,9 @@
+{
+ "4": [
+  "Noise and single spikes (red) disturb individual ADC readings"
+ ],
+ "5": [
+  "Sort the 16 values …",
+  "… and take the middle: the spikes have no effect"
+ ]
+}

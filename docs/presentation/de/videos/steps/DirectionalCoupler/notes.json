@@ -1,0 +1,20 @@
+{
+ "1": [
+  "Vorwärtswelle (Quelle → DUT): eine −10-dB-Kopie erreicht CPL"
+ ],
+ "2": [
+  "Reflektierte Welle (DUT → Quelle): geht in den internen 50 Ω, CPL bleibt dunkel"
+ ],
+ "3": [
+  "Der andere Port bekommt ein Pad mit demselben Verlust wie Schalter + Koppler"
+ ],
+ "4": [
+  "Referenz: die Welle, die Port 1 verlässt"
+ ],
+ "5": [
+  "Die Schalter drehen den Koppler: jetzt sieht er, was von Port 1 zurückkommt"
+ ],
+ "6": [
+  "Koppler wechselt an Port 2: er fängt ein, was durch das DUT ging"
+ ]
+}

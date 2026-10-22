@@ -1,0 +1,50 @@
+{
+ "1": [
+  "Ein Zweitor: alles mit einem Eingang und einem Ausgang"
+ ],
+ "2": [
+  "Eine Welle a1 in Port 1 schicken"
+ ],
+ "3": [
+  "Ein Teil kommt an Port 1 zurück (b1), ein Teil kommt an Port 2 heraus (b2)"
+ ],
+ "4": [
+  "S-Parameter sind Verhältnisse: was herauskommt, geteilt durch was hineinging"
+ ],
+ "5": [
+  "Der Name sagt wo: S aus, ein.  S21 = aus an Port 2, ein an Port 1"
+ ],
+ "6": [
+  "Jetzt umgekehrt: Quelle an Port 2, Port 1 mit 50 Ω abgeschlossen"
+ ],
+ "7": [
+  "Vier Zahlen beschreiben das Zweitor: Reflexionen auf der Diagonale, Transmissionen über Kreuz"
+ ],
+ "8": [
+  "Verhältnisse werden in dB angegeben: 10 · log₁₀ des Leistungsverhältnisses"
+ ],
+ "9": [
+  "dB macht winzige und riesige Verhältnisse auf einer Achse lesbar, und aus Divisionen werden Subtraktionen"
+ ],
+ "10": [
+  "Typische Werte"
+ ],
+ "11": [
+  "Passive Bauteile wirken in beide Richtungen (S21 = S12), ein Verstärker nur in eine"
+ ],
+ "12": [
+  "Über die Frequenz, z. B. ein 1-GHz-Tiefpass"
+ ],
+ "13": [
+  "Unter 1 GHz kommt das Signal durch (S21 ≈ 0 dB), darüber wird es gesperrt"
+ ],
+ "14": [
+  "Was nicht durchkommt, kommt zurück: S11 steigt, wo S21 fällt"
+ ],
+ "15": [
+  "Der SNA misst Leistungen in dBm, S11 in dB ist darum nur eine Subtraktion"
+ ],
+ "16": [
+  "Richtkoppler und Log-Detektor messen diese Leistungen, die Kalibrierung entfernt die Verluste des SNA selbst"
+ ]
+}

@@ -1,0 +1,17 @@
+{
+ "1": [
+  "Zwei Leitungen laufen ein kurzes Stück nah nebeneinander, ohne sich zu berühren"
+ ],
+ "2": [
+  "Sie koppeln doppelt: über das elektrische Feld (Kapazität C) und über das Magnetfeld (M)"
+ ],
+ "3": [
+  "Hinlaufende Welle IN → OUT: Am CPL-Ende zeigen beide Ströme in dieselbe Richtung, am ISO-Ende heben sie sich auf"
+ ],
+ "4": [
+  "Reflektierte Welle OUT → IN: Der Hauptstrom dreht, damit auch der M-Anteil. Jetzt addieren sie sich bei ISO, die 50 Ω schlucken es."
+ ],
+ "5": [
+  "CPL sieht also nur die hinlaufende Welle, etwa 10 dB schwächer. Umgedreht sieht derselbe Koppler nur die Reflexion."
+ ]
+}

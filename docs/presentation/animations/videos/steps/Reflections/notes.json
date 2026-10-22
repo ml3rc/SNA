@@ -1,0 +1,41 @@
+{
+ "1": [
+  "Load = 50 Ω = Z₀: the load takes the whole wave, nothing comes back"
+ ],
+ "2": [
+  "Open end (∞ Ω): no current can flow, the whole wave turns around"
+ ],
+ "3": [
+  "Short (0 Ω): the voltage must stay 0, the wave comes back upside down"
+ ],
+ "4": [
+  "Any load: at the end, voltage / current must equal Z_L. That fixes size and sign of the reflection."
+ ],
+ "5": [
+  "100 Ω: in between, part of the wave is absorbed, part comes back"
+ ],
+ "6": [
+  "Γ (reflection coefficient) only depends on how far Z_L is from Z₀"
+ ],
+ "7": [
+  "Power goes with the square: with 100 Ω, (1/3)² = 11 % of the power comes back"
+ ],
+ "8": [
+  "In dB: |S11| = 20 · log₁₀|Γ|. The more negative, the better the match (Return Loss)."
+ ],
+ "9": [
+  "That is why the SNA has a 50 → 75 Ω pad: an SDI cable directly on 50 Ω would reflect at −14 dB"
+ ],
+ "10": [
+  "Real loads change with frequency, e.g. 50 Ω with 2 pF of connector capacitance in parallel"
+ ],
+ "11": [
+  "Low frequency: the capacitor is almost open, the load is a good 50 Ω"
+ ],
+ "12": [
+  "Higher frequency: Z_C falls, the load drifts away from 50 Ω, more is reflected"
+ ],
+ "13": [
+  "Impedance over frequency = reflection over frequency. That is why the SNA sweeps."
+ ]
+}

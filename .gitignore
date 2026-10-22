@@ -1,2 +1,9 @@
 .vscode/
 .vs/
+__pycache__/
+*.pyc
+
+# Presentation tooling (Manim venv and render cache; final videos live in animations/videos/ and de/videos/)
+/docs/presentation/animations/.venv/
+/docs/presentation/animations/media/
+/docs/presentation/animations/media_*/

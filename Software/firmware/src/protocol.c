@@ -15,7 +15,7 @@
 #include "rf_task.h"
 #include "sdi_test.h"
 
-#define FW_VERSION "0.4.1"
+#define FW_VERSION "1.0.0"
 #define PROTO_VERSION 3
 #define RESP_BUF_SIZE 8192
 #define PENDING_MAX 8          // requests waiting for core 1's reply

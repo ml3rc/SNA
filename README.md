@@ -2,11 +2,14 @@
 
 A 2-port scalar network analyzer from 50 MHz to 6 GHz with switchable 50 Ω (SMA) and 75 Ω (BNC)
 ports, built as a school project ("mini IPA"). It measures S11/S21/S12/S22 magnitude, stores its
-calibration on the device, and can check SDI coax cables on its own with a front-panel button.
+calibration on the device, and can check SDI coax cables on its own with the test button on the board
+(pressed through a hole in the case).
 
-![Enclosure render](Fusion360/exp/front_left_render.PNG)
+**Release v1.0.0** — see the [CHANGELOG](CHANGELOG.md).
 
-![System overview](Software/docs/presentation/diagrams/export/hw-01-system-overview.png)
+![SNA v1.0](docs/pictures/_DSC4359.jpg)
+
+![System overview](docs/presentation/diagrams/export/hw-01-system-overview.png)
 
 ## What's inside
 
@@ -19,7 +22,7 @@ calibration on the device, and can check SDI coax cables on its own with a front
   (port × direction × impedance) and the SDI test thresholds, SWD header J202.
 - **Enclosure:** milled aluminium, PCB sandwiched between top and bottom halves.
 
-![RF chain](Software/docs/presentation/diagrams/export/hw-04-rf-chain.png)
+![RF chain](docs/presentation/diagrams/export/hw-04-rf-chain.png)
 
 ## Repository
 
@@ -28,20 +31,21 @@ Altium/              schematic + 4-layer PCB (SNA.PrjPcb)
   SNAPCBVersion-FAB/   Gerbers
   SNAPCBVersion-INT/   schematic, layout, assembly PDFs and BOM
 Fusion360/exp/       enclosure: STEP, Fusion archive, laser DXF, drawing, render
-Measurements/        scope captures of the output signal per port, frequency and level
 Software/
   firmware/          C11 · Pico SDK 2.2.0 · TinyUSB, RP2350B, dual core
   client/            Kotlin/Compose Multiplatform app: desktop (JVM) and Android
-  docs/              diagram-first docs: API, firmware, hardware, presentation
+docs/                diagram-first docs: API, firmware, hardware, presentation
+  measurements/      scope captures of the output signal, LibreVNA comparison
+  pictures/          photos of the board and the case
 ```
 
 ## Versions
 
 | Part | Version | Notes |
 |---|---|---|
-| Firmware | 0.4.1 | protocol 3 · passes host tests, not yet tested on hardware |
-| Desktop client | 1.4.0 | needs protocol 3 |
-| Android client | 0.4.0 | needs protocol 3 |
+| Firmware | 1.0.0 | protocol 3 · EEPROM format 3 |
+| Desktop client | 1.0.0 | needs protocol 3 · Windows MSI, `.deb`/`.dmg` from source |
+| Android client | 1.0.0 (versionCode 11) | needs protocol 3 · USB OTG |
 | PCB | 1.0 | see [hardware errata](#known-hardware-issues) |
 
 Firmware and client talk JSON lines over USB CDC-ACM (VID:PID `CAFE:4001`); the client refuses
@@ -54,7 +58,9 @@ firmware with any other protocol version.
 2. **Flash it:** hold BOOTSEL while plugging in USB and copy the `.uf2` onto the drive, or program
    the `.elf` over SWD (J202) with OpenOCD.
 3. **Run the client** (JDK 17–21): `cd Software/client && gradlew.bat :composeApp:run`.
-4. **Calibrate** each impedance in the Calibration tab (Open/Short per port, Thru), then sweep.
+4. **Or install** the Windows MSI (`gradlew.bat :composeApp:packageMsi`) or the Android APK
+   (`:composeApp:assembleDebug`).
+5. **Calibrate** each impedance in the Calibration tab (Open/Short per port, Thru), then sweep.
 
 Details, toolchain setup and tests: [firmware README](Software/firmware/README.md),
 [client README](Software/client/README.md).
@@ -63,20 +69,23 @@ Details, toolchain setup and tests: [firmware README](Software/firmware/README.m
 
 | | |
 |---|---|
-| [Software/docs](Software/docs/README.md) | Overview and index |
-| [API](Software/docs/api/README.md) | USB JSON API: framing, modes, commands, errors |
-| [Firmware](Software/docs/firmware/README.md) | Architecture, RF chain, sweep, calibration, boot, LEDs & SDI button |
-| [Hardware](Software/docs/hardware/README.md) | Schematic sheets, power tree, MCU, RF chain, PCB |
-| [PROTOCOL.md](Software/docs/firmware/protocol/PROTOCOL.md) | Wire protocol, source of truth for firmware and client |
-| [PINMAP.md](Software/docs/firmware/protocol/PINMAP.md) | RP2350B pin map |
-| [EEPROM_LAYOUT.md](Software/docs/firmware/protocol/EEPROM_LAYOUT.md) | EEPROM byte layout |
-| [Presentation](Software/docs/presentation/README.md) | draw.io slide diagrams and Manim animations |
+| [docs](docs/README.md) | Overview and index |
+| [RF basics](docs/presentation/README.md#rf-basics) | Animations: transmission lines, reflections, S-parameters |
+| [Measurements](docs/measurements/README.md) | Output signals, LibreVNA comparison |
+| [Pictures](docs/pictures/README.md) | Board and case photos |
+| [API](docs/api/README.md) | USB JSON API: framing, modes, commands, errors |
+| [Firmware](docs/firmware/README.md) | Architecture, RF chain, sweep, calibration, boot, LEDs & SDI button |
+| [Hardware](docs/hardware/README.md) | Schematic sheets, power tree, MCU, RF chain, PCB |
+| [PROTOCOL.md](docs/firmware/protocol/PROTOCOL.md) | Wire protocol, source of truth for firmware and client |
+| [PINMAP.md](docs/firmware/protocol/PINMAP.md) | RP2350B pin map |
+| [EEPROM_LAYOUT.md](docs/firmware/protocol/EEPROM_LAYOUT.md) | EEPROM byte layout |
+| [Presentation](docs/presentation/README.md) | draw.io slide diagrams and Manim animations |
 
 ## Limitations
 
 - Scalar only: magnitude, no phase, so calibration cannot correct errors that need phase.
-- The detector slope is one value for the whole band; settling times and LPF boundaries still need
-  bench characterization.
+- The detector slope is one value for the whole band; the settling times are conservative estimates,
+  not measured limits.
 - Power meter readings are approximate, uncalibrated dBm.
 
 ## Known hardware issues

@@ -2,7 +2,7 @@
 
 Kotlin Multiplatform + Compose Multiplatform app for the SNA scalar network analyzer: desktop
 (Windows/Linux/macOS on the JVM) and Android. No iOS target. It speaks the wire protocol in
-[`../docs/firmware/protocol/PROTOCOL.md`](../docs/firmware/protocol/PROTOCOL.md) over USB CDC-ACM.
+[`../../docs/firmware/protocol/PROTOCOL.md`](../../docs/firmware/protocol/PROTOCOL.md) over USB CDC-ACM.
 
 | | Version | Needs |
 |---|---|---|
@@ -61,6 +61,18 @@ view, dBm/counts, console filters) never touch the device and stay usable.
 
 A mode entered from the console is adopted by the tool of that mode (e.g. the generator tab can
 switch off a generator started by hand) and locks out the others until `mode_exit`.
+
+## Look
+
+Warm dark "bench instrument" theme (`ui/theme/Theme.kt`): background `#0F0E0D`, copper primary `#E39A6E`, violet
+secondary `#B7A7DC`. Traces use the classic network-analyzer order (`ui/ChartColors.kt`): **S11 yellow** `#F2E450`,
+**S21 cyan** `#4FD6EA`, **S12 magenta** `#E466D8`, **S22 green** `#5ED86A`; the calibration wizard uses darker
+shades of the same families for Short. App icon: a copper notch on a dark rounded square (`composeApp/icons/sna.svg`,
+`.ico`/`.icns`/`.png` generated from it; Android uses an adaptive vector icon).
+
+![Sweep tab](../../docs/pictures/client/desktop-sweep.png)
+
+Screenshots (rendered by `desktopTest` from simulated data): [`docs/pictures/client/`](../../docs/pictures/client/).
 
 ## Code layout
 

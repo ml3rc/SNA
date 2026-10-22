@@ -1,0 +1,17 @@
+{
+ "1": [
+  "Kern 1 misst einen Punkt (alle vier S-Parameter)"
+ ],
+ "2": [
+  "Während Kern 1 Punkt N+1 misst, sendet Kern 0 Punkt N"
+ ],
+ "3": [
+  "Jeder Punkt läuft durch eine Antwort-Queue mit 8 Plätzen"
+ ],
+ "4": [
+  "Stockt USB, füllt sich die Queue und Kern 1 wartet: kein Punkt geht verloren"
+ ],
+ "5": [
+  "Der Sweep endet, der Client zeichnet die ganze Kurve"
+ ]
+}

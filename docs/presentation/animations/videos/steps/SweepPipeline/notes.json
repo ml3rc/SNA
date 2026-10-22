@@ -1,0 +1,17 @@
+{
+ "1": [
+  "Core 1 measures one point (all four S-parameters)"
+ ],
+ "2": [
+  "While core 1 measures point N+1, core 0 sends point N"
+ ],
+ "3": [
+  "Every point travels through a reply queue with 8 places"
+ ],
+ "4": [
+  "If USB stalls, the queue fills up and core 1 waits: no point is lost"
+ ],
+ "5": [
+  "The sweep finishes, the client draws the whole curve"
+ ]
+}

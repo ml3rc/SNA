@@ -1,0 +1,26 @@
+{
+ "1": [
+  "Immer nur ein Modus besitzt die HF-Hardware"
+ ],
+ "2": [
+  "In den Sweep-Modus wechseln"
+ ],
+ "3": [
+  "Sweep starten: die Punkte streamen zurück, sobald sie gemessen sind"
+ ],
+ "4": [
+  "Ein Befehl eines anderen Modus wird während des Sweeps abgelehnt"
+ ],
+ "5": [
+  "mode_exit bricht den laufenden Sweep ab, zurück zu IDLE"
+ ],
+ "6": [
+  "Gleiches Muster für die anderen Modi, z. B. den Signalgenerator"
+ ],
+ "7": [
+  "Einstellungen wie der Ausgangspegel sind in jedem Modus änderbar, auch live"
+ ],
+ "8": [
+  "mode_exit stoppt den Ausgang und gibt die Hardware frei"
+ ]
+}

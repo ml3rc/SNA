@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 /**
- * Data shapes and constants mirroring `Software/docs/firmware/protocol/PROTOCOL.md`. Keep this file in sync
+ * Data shapes and constants mirroring `docs/firmware/protocol/PROTOCOL.md`. Keep this file in sync
  * with that document -- it's the wire-format source of truth for both firmware and client.
  */
 

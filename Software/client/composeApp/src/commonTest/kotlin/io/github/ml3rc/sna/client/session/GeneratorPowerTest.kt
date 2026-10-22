@@ -436,7 +436,7 @@ class GeneratorPowerTest {
             val csv = raw.toCsv().lines()
             assertEquals("f_hz,p1_bwd_raw,p1_bwd_dbm,p2_fwd_raw,p2_fwd_dbm", csv[0])
             assertEquals("100000000,1500,-9.5,1500,-9.5", csv[1])
-            assertNull(tools.blockReason(Tool.GENERATOR)) // idle again
+            awaitTrue { tools.blockReason(Tool.GENERATOR) == null } // idle again (released just after running=false)
         } finally {
             tools.close(); client.stop(); device.lines.close()
         }

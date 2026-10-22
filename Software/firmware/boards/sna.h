@@ -41,7 +41,7 @@
 // pinout figure (Figure 3, section 1.2.1.2 "QFN-80 (RP2350B)") -- rendered
 // and read directly off the diagram, then cross-checked against a second
 // independent source (rp2350b.pinout.xyz) which matched exactly. Not a
-// placeholder -- see Software/docs/firmware/protocol/PINMAP.md for the full annotated
+// placeholder -- see docs/firmware/protocol/PINMAP.md for the full annotated
 // pin<->GPIO<->signal table and the cross-check notes. Regenerate PINMAP.md
 // (and this header) from the netlist if the schematic changes; the package
 // pin -> GPIO mapping itself is fixed silicon and never changes.

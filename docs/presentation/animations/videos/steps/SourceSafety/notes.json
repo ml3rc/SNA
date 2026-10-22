@@ -1,0 +1,26 @@
+{
+ "1": [
+  "Three source states"
+ ],
+ "2": [
+  "ON: full power goes out of port 1"
+ ],
+ "3": [
+  "Parking the WRONG way: switch to the termination first …"
+ ],
+ "4": [
+  "Parking the right way: 1. attenuator to 127 (−31.75 dB) …"
+ ],
+ "5": [
+  "2. … then switch to the termination: it only gets a weak signal"
+ ],
+ "6": [
+  "Routing is the reverse: 1. switch to the port while still attenuated …"
+ ],
+ "7": [
+  "2. … then release the attenuator to the requested level"
+ ],
+ "8": [
+  "After a power-up (OFF → PARKED) the MAX2871 needs its registers written twice"
+ ]
+}

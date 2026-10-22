@@ -1,0 +1,23 @@
+{
+ "1": [
+  "A 100 MHz crystal oscillator is the reference"
+ ],
+ "2": [
+  "The phase detector compares reference and feedback"
+ ],
+ "3": [
+  "Charge pump + loop filter turn the phase error into a tuning voltage"
+ ],
+ "4": [
+  "The VCO frequency is divided by N and fed back"
+ ],
+ "5": [
+  "Closing the loop: the VCO is pulled onto N × f_PFD"
+ ],
+ "6": [
+  "The output divider reaches the low frequencies"
+ ],
+ "7": [
+  "Fractional N (F/M) gives fine frequency steps; the SNA sweeps 50 MHz – 6 GHz"
+ ]
+}

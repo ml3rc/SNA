@@ -1,9 +1,8 @@
 # SNA firmware
 
 RP2350B firmware, Raspberry Pi Pico SDK (C, bare-metal + TinyUSB), implementing
-[`../docs/firmware/protocol/PROTOCOL.md`](../docs/firmware/protocol/PROTOCOL.md) over USB CDC-ACM.
-Current version: **0.4.1** (protocol 3). 0.4.1 adds the robustness fixes below to 0.4.0; the
-protocol is unchanged.
+[`../../docs/firmware/protocol/PROTOCOL.md`](../../docs/firmware/protocol/PROTOCOL.md) over USB CDC-ACM.
+Current version: **1.0.0** (protocol 3).
 
 ## Overview
 
@@ -23,7 +22,7 @@ protocol is unchanged.
   one final reply (a sweep streams its points first, with backpressure).
   Core 0 converts and calibrates point N while core 1 measures point N+1;
   calibration curves are prefetched into RAM, so core 0 needs no I2C during
-  a sweep. Design: [`../docs/firmware/architecture.md`](../docs/firmware/architecture.md).
+  a sweep. Design: [`../../docs/firmware/architecture.md`](../../docs/firmware/architecture.md).
 - **Robustness (0.4.1):** a watchdog (8 s) resets the device when core 0
   stops looping or core 1 sits in one step for 6 s (`main.c`,
   `service_watchdog()`); cJSON nesting is limited to 8 levels, so a line of
@@ -211,7 +210,7 @@ pure conversions. `eeprom.c` is the storage counterpart of `rf_control/` on
 top of `hal/eeprom_24aa32a.c` and is used on core 0 only.
 
 How a request travels through these layers and the two cores:
-[`../docs/firmware/`](../docs/firmware/README.md) (diagrams; detailed notes in the local `docs-local/firmware-dataflow.md`).
+[`../../docs/firmware/`](../../docs/firmware/README.md) (diagrams; detailed notes in the local `docs-local/firmware-dataflow.md`).
 
 | File | Purpose |
 |---|---|
@@ -222,7 +221,7 @@ How a request travels through these layers and the two cores:
 | `src/measurement.c` | Core 0: raw detector codes to S-parameters in dB, minus the EEPROM calibration from the RAM cache |
 | `src/sdi_test.c` | Core 0: non-blocking on-board SDI test (mode enter, sweep, mode exit, `sdi_test_result` event, result LED pulses) |
 | `src/rf_control/` | Board-level RF control on core 1, three layers (see `rf_control.h`, the only header other code includes). Application: `application.c` (mode state machine, sweep sessions and points, generator, power meter, manual control, probe, boot self-test, pure conversions). State: `state.c` (source OFF/PARKED/ON, port, impedance, attenuation, frequency, LPF, coupler path, detector). Blocks, the only HAL callers: `source.c` (PLL, LPF bank, attenuator, amp), `coupler.c`, `detector.c`, `ports.c` (port/impedance switches and their LEDs) |
-| `src/eeprom.c` | Core 0: structured calibration/config storage (header, cal grid, SDI thresholds, 8 cal tables, RAM cache and interpolation; format 3) per `../docs/firmware/protocol/EEPROM_LAYOUT.md`, built on `hal/eeprom_24aa32a.c` |
+| `src/eeprom.c` | Core 0: structured calibration/config storage (header, cal grid, SDI thresholds, 8 cal tables, RAM cache and interpolation; format 3) per `../../docs/firmware/protocol/EEPROM_LAYOUT.md`, built on `hal/eeprom_24aa32a.c` |
 | `src/hal/max2871.c` | MAX2871 synthesizer driver (bit-banged 4-wire, enable/lock-detect, frequency-set register programming) |
 | `src/hal/ad8318.c` | AD8318 log detector driver (enable + ADC read) |
 | `src/hal/trf37a73.c` | TRF37A73 amp driver (PWDN control) |

@@ -1,0 +1,17 @@
+{
+ "1": [
+  "Two lines run close together over a short distance, without touching"
+ ],
+ "2": [
+  "They couple twice: through the electric field (a capacitance C) and the magnetic field (M)"
+ ],
+ "3": [
+  "Forward wave IN → OUT: at the CPL end both currents point the same way, at the ISO end they cancel"
+ ],
+ "4": [
+  "Reflected wave OUT → IN: the main current turns, so does the M part. Now they add at ISO, the 50 Ω eats it."
+ ],
+ "5": [
+  "So CPL sees only the forward wave, about 10 dB weaker. Turned around, the same part sees only the reflection."
+ ]
+}

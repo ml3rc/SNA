@@ -1,0 +1,26 @@
+{
+ "1": [
+  "Client-Assistent: 5 Roh-Sweeps mit bekannten Standards (pro Impedanz)"
+ ],
+ "2": [
+  "Rohes S11 mit Open und mit Short: reale Pfade haben Verlust und Welligkeit"
+ ],
+ "3": [
+  "S11-Korrektur = Mittel aus Open und Short: die Welligkeit hebt sich auf"
+ ],
+ "4": [
+  "S21-/S12-Korrektur = die Thru-Messung selbst"
+ ],
+ "5": [
+  "cal_set lädt jede Kurve als 240 Punkte (0,01-dB-Stufen) ins EEPROM"
+ ],
+ "6": [
+  "Ein Kabel messen: das rohe S21 enthält das Kabel UND den Verlust des Analysators"
+ ],
+ "7": [
+  "Das Gerät interpoliert die gespeicherte Kurve bei jeder Sweep-Frequenz"
+ ],
+ "8": [
+  "korrigiert = roh − Korrektur  →  nur das Kabel bleibt"
+ ]
+}

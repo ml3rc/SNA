@@ -1,0 +1,26 @@
+{
+ "1": [
+  "Client wizard: 5 raw sweeps with known standards (per impedance)"
+ ],
+ "2": [
+  "Raw S11 with Open and with Short: real paths have loss and ripple"
+ ],
+ "3": [
+  "S11 correction = average of Open and Short: the ripple cancels"
+ ],
+ "4": [
+  "S21 / S12 correction = the Thru reading itself"
+ ],
+ "5": [
+  "cal_set uploads each curve as 240 points (0.01 dB steps) into the EEPROM"
+ ],
+ "6": [
+  "Measuring a cable: the raw S21 contains the cable AND the analyzer's loss"
+ ],
+ "7": [
+  "The device interpolates the stored curve at every sweep frequency"
+ ],
+ "8": [
+  "corrected = raw − correction  →  only the cable is left"
+ ]
+}

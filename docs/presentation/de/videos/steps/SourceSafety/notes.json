@@ -1,0 +1,26 @@
+{
+ "1": [
+  "Drei Quellenzustände"
+ ],
+ "2": [
+  "ON: volle Leistung geht aus Port 1"
+ ],
+ "3": [
+  "FALSCH parken: zuerst auf den Abschluss schalten …"
+ ],
+ "4": [
+  "Richtig parken: 1. Dämpfung auf 127 (−31,75 dB) …"
+ ],
+ "5": [
+  "2. … dann auf den Abschluss schalten: er bekommt nur ein schwaches Signal"
+ ],
+ "6": [
+  "Schalten ist umgekehrt: 1. auf den Port schalten, solange noch gedämpft …"
+ ],
+ "7": [
+  "2. … dann die Dämpfung auf den gewünschten Pegel freigeben"
+ ],
+ "8": [
+  "Nach dem Einschalten (OFF → PARKED) braucht der MAX2871 seine Register zweimal"
+ ]
+}

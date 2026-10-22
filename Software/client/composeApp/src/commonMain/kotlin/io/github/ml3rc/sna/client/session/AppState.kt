@@ -79,7 +79,7 @@ class AppState(private val transport: SerialTransport) {
                 val info = withTimeout(3000) { c.ping() }
                 check(info.proto == REQUIRED_PROTOCOL) {
                     "Firmware ${info.fw} speaks protocol ${info.proto}; this client needs protocol $REQUIRED_PROTOCOL " +
-                        "(firmware 0.4.x). " + if (info.proto < REQUIRED_PROTOCOL) "Update the firmware." else "Update the client."
+                        "(firmware 1.0.x). " + if (info.proto < REQUIRED_PROTOCOL) "Update the firmware." else "Update the client."
                 }
                 // Every range check, the grid and the calibration assume this band; a device reporting
                 // another one would be driven with limits it does not have.
