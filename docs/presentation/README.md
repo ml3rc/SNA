@@ -49,12 +49,35 @@ Sources: `diagrams/*.drawio` (open in draw.io desktop or diagrams.net). Exports 
 | api-03 | [Sessions](diagrams/export/api-03-sequences.png) | Sweep session, generator → power meter session |
 | api-04 | [Errors](diagrams/export/api-04-errors.png) | Validation order → error codes |
 | sw-01 | [Client](diagrams/export/sw-01-client-architecture.png) | Kotlin Multiplatform client layers |
+| code-01 | [hal/max2871.c](diagrams/export/code-01-hal-max2871.png) | Divider / N / F math, register set, bit-bang, MUX readback |
+| code-02 | [hal/hmc1119.c](diagrams/export/code-02-hal-hmc1119.png) | 7-bit word + LE latch, starts at 127 |
+| code-03 | [hal/trf37a73.c](diagrams/export/code-03-hal-trf37a73.png) | PWDN pin, default on, power order with the MAX2871 |
+| code-04 | [hal/rf_switch.c](diagrams/export/code-04-hal-rf-switch.png) | All 10 switches, RFSW6042 legs, why one GPIO write |
+| code-05 | [hal/ad8318.c](diagrams/export/code-05-hal-ad8318.png) | Detector → ADC, transfer curve, conversions |
+| code-06 | [hal/eeprom_24aa32a.c](diagrams/export/code-06-hal-eeprom-24aa32a.png) | I2C frames, page split, bus recovery |
+| code-07 | [rf_ctrl blocks](diagrams/export/code-07-rf-ctrl-blocks.png) | source / coupler / detector / ports and their tables |
+| code-08 | [rf_state](diagrams/export/code-08-rf-state.png) | OFF / PARKED / ON, setters, double write, LPF choice, init |
+| code-09 | [rf_app](diagrams/export/code-09-rf-app.png) | Modes, one sweep point, generator / power / manual |
+| code-10 | [main.c](diagrams/export/code-10-main.png) | Boot, main loop, LEDs, error codes, watchdog |
+| code-11 | [rf_task.c](diagrams/export/code-11-rf-task.png) | Queues, core 1 step, sweep lifecycle, cancel |
+| code-12 | [protocol.c](diagrams/export/code-12-protocol.png) | Dispatch, core 0 vs core 1 commands, replies, USB writes |
+| code-13 | [measurement.c](diagrams/export/code-13-measurement.png) | Counts → dB, S-parameter mapping, calibration |
+| code-14 | [eeprom.c](diagrams/export/code-14-eeprom.png) | Layout, init / format, cal_set, cache |
+| code-15 | [sdi_test.c](diagrams/export/code-15-sdi-test.png) | SDI test state machine and LED pulses |
+| code-16 | [usb_descriptors.c](diagrams/export/code-16-usb-descriptors.png) | Device / configuration / CDC interfaces, strings |
 
 The `.drawio` files are the source: edit them directly in draw.io, then export with
 `bash diagrams/src/export.sh [name …]` (needs draw.io desktop, `scoop install extras/draw.io`).
+Light-mode copies (white background, darker accents) go to `diagrams/export-light/` via
+`python diagrams/src/export_light.py [name …]`; it recolours a temp copy, the sources stay dark.
 `diagrams/src/build_*.py` (helpers in `dio.py`) only produced the first version; re-running one overwrites hand
 edits in the diagrams it builds. When several arrows mean the same thing, give the diagram a legend instead of
 labelling one of them.
+
+Formulas are typeset as TeX in both: in draw.io as inline MathJax `\( … \)` inside the label (needs
+Extras → Mathematical Typesetting, i.e. `math="1"`, set in every diagram that has a formula; the CLI export renders
+it), in Manim with `formula()` (`sna_style.py`, matplotlib mathtext, no LaTeX install). Words beside a formula stay
+normal label text; words inside one go in `\mathrm{…}`.
 
 Electrical symbols are IEC everywhere (diagrams and animations): resistor = rectangle, always 90 × 30 px in the
 diagrams (0.8 × 0.27 units in Manim, `resistor()` in `sna_style.py`), ground = three bars, amplifier = triangle.
@@ -106,10 +129,10 @@ values.
 
 Example numbers in the animations (ADC codes, levels, curve shapes) are illustrative, not measurements.
 
-Render (from `animations/`, Python 3.12 venv with `manim==0.19.0`, no LaTeX needed):
+Render (from `animations/`, Python 3.12 venv with `manim==0.19.0` + `matplotlib` for the formulas, no LaTeX needed):
 
 ```sh
-uv venv --python 3.12 .venv && uv pip install --python .venv/Scripts/python.exe manim==0.19.0
+uv venv --python 3.12 .venv && uv pip install --python .venv/Scripts/python.exe manim==0.19.0 matplotlib
 bash render.sh                 # all scenes → videos/
 bash render.sh PllSynthesis    # one scene
 ```

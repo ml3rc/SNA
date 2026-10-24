@@ -7,7 +7,7 @@ Scenes: TransmissionLine, Reflections, SParameters
 """
 from fw_common import *
 from hw_common import capacitor, chip, inductor, travel_anim
-from i18n import tr, tr_exact
+from i18n import tr
 
 # Trace colours of the client (ui/ChartColors.kt), so the slides match the app
 S11_C = "#F2E450"     # yellow
@@ -24,11 +24,6 @@ def at(x, y):
 def text(s, size=24, color=TEXT, weight=NORMAL):
     """Label whose text is already translated (live readouts: tr() the words, numbers appended)."""
     return Text(s, font=FONT, font_size=size, color=color, weight=weight)
-
-
-def formula(s, size=26, color=TEXT, weight=NORMAL):
-    """Formula label: translated only on an exact table hit (V → U in German), since it has no words to look up."""
-    return Text(tr_exact(s), font=FONT, font_size=size, color=color, weight=weight)
 
 
 def num(s):
@@ -160,23 +155,25 @@ class TransmissionLine(Scene):
 
         ladder = VGroup(top, bottom, caps_, dots_l, dots_r, lab_l, lab_c)
         cap.show("You know: L and C change their impedance with frequency")
-        zl = label("Z_L = jωL′  (rises with f)", 24, TEXT).move_to(at(-3.2, 2.35))
-        zc = label("Z_C = 1 / (jωC′)  (falls with f)", 24, MEAS).move_to(at(3.0, 2.35))
+        zl = VGroup(formula(r"Z_L = j\omega L'", 26, TEXT), label("(rises with f)", 24, TEXT)
+                    ).arrange(RIGHT, buff=0.25).move_to(at(-3.2, 2.6))
+        zc = VGroup(formula(r"Z_C = 1 / (j\omega C')", 26, MEAS), label("(falls with f)", 24, MEAS)
+                    ).arrange(RIGHT, buff=0.25).move_to(at(3.0, 2.6))
         self.play(FadeOut(zoom), FadeOut(seg), FadeIn(zl), FadeIn(zc))
         self.wait(2.5)
 
         cap.show("Along the ladder only their ratio counts: ω cancels out")
-        f1 = label("Z₀ = √( jωL′ · 1/(jωC′) ) = √( L′ / C′ )", 34, TEXT, weight=BOLD).move_to(at(0, 1.55))
+        f1 = formula(r"Z_0 = \sqrt{j\omega L' \cdot \dfrac{1}{j\omega C'}} = \sqrt{\dfrac{L'}{C'}}", 34, TEXT).move_to(at(-1.6, 1.45))
         self.play(FadeOut(cable), FadeOut(src), FadeOut(load), FadeIn(f1))
         self.wait(2.5)
 
         cap.show("Typical coax: L′ ≈ 250 nH/m, C′ ≈ 100 pF/m → Z₀ = √2500 = 50 Ω")
-        f2 = label("√( 250 nH / 100 pF ) = 50 Ω", 30, RF, weight=BOLD).next_to(f1, DOWN, buff=0.3)
+        f2 = formula(r"\sqrt{\dfrac{250\,\mathrm{nH}}{100\,\mathrm{pF}}} = 50\,\Omega", 32, RF).next_to(f1, RIGHT, buff=0.8)
         self.play(FadeIn(f2))
         self.wait(3)
 
         cap.show("Z₀ is the characteristic impedance: no loss, the same for any length and frequency")
-        self.play(FadeOut(ladder), FadeOut(zl), FadeOut(zc), VGroup(f1, f2).animate.move_to(at(0, 1.9)))
+        self.play(FadeOut(ladder), FadeOut(zl), FadeOut(zc), VGroup(f1, f2).animate.move_to(at(0, 1.7)))
         ex = VGroup(chip("SMA coax  ·  50 Ω", RF, 24), chip("SDI coax, BNC  ·  75 Ω", HOST, 24),
                     chip("PCB trace (coplanar waveguide)  ·  50 Ω", MEAS, 24)).arrange(DOWN, buff=0.3).move_to(at(0, -0.6))
         self.play(LaggedStart(*[FadeIn(e, shift=UP * 0.15) for e in ex], lag_ratio=0.3))
@@ -274,12 +271,13 @@ class Reflections(Scene):
         load = new
         self.send(1.0, load, t_line=2.8, show_sum=True)
         why = VGroup(label("Open end: the current must be 0", 26, TEXT, weight=BOLD),
-                     formula("I = (V→ − V←) / Z₀ = 0   →   V← = +V→", 26, POWER),
+                     formula(r"I = \dfrac{V_\rightarrow - V_\leftarrow}{Z_0} = 0 \quad\Rightarrow\quad V_\leftarrow = +V_\rightarrow", 26, POWER,
+                          de=r"I = \dfrac{U_\rightarrow - U_\leftarrow}{Z_0} = 0 \quad\Rightarrow\quad U_\leftarrow = +U_\rightarrow"),
                      label("The returning wave carries its current the other way: the currents cancel, the voltages add (2 · V→)",
-                           20, MUTED)).arrange(DOWN, buff=0.18).move_to(at(0, -2.1))
+                           20, MUTED)).arrange(DOWN, buff=0.12).move_to(at(0, -1.95))
         self.play(FadeIn(why[0]))
         self.play(FadeIn(why[1]), FadeIn(why[2]))
-        res = chip("Γ = +1  ·  everything comes back", POWER, 24).move_to(at(-0.5, -3.25))
+        res = chip("Γ = +1  ·  everything comes back", POWER, 24).move_to(at(-0.5, -3.4))
         self.play(FadeIn(res))
         self.wait(1.5)
 
@@ -290,22 +288,29 @@ class Reflections(Scene):
         load = new
         self.send(-1.0, load, t_line=2.8, show_sum=True)
         why = VGroup(label("Short: the voltage must be 0", 26, TEXT, weight=BOLD),
-                     formula("V = V→ + V← = 0   →   V← = −V→", 26, POWER),
+                     formula(r"V = V_\rightarrow + V_\leftarrow = 0 \quad\Rightarrow\quad V_\leftarrow = -V_\rightarrow", 26, POWER,
+                          de=r"U = U_\rightarrow + U_\leftarrow = 0 \quad\Rightarrow\quad U_\leftarrow = -U_\rightarrow"),
                      label("The reflection comes back inverted: the voltages cancel, the currents add (2 · I→)",
-                           20, MUTED)).arrange(DOWN, buff=0.18).move_to(at(0, -2.1))
+                           20, MUTED)).arrange(DOWN, buff=0.12).move_to(at(0, -1.95))
         self.play(FadeIn(why[0]))
         self.play(FadeIn(why[1]), FadeIn(why[2]))
-        res = chip("Γ = −1  ·  everything comes back, inverted", POWER, 24).move_to(at(-0.5, -3.25))
+        res = chip("Γ = −1  ·  everything comes back, inverted", POWER, 24).move_to(at(-0.5, -3.4))
         self.play(FadeIn(res))
         self.wait(1.5)
 
         # --- any load: Γ from the same two rules ------------------------------------------------
         cap.show("Any load: at the end, voltage / current must equal Z_L. That fixes size and sign of the reflection.")
         self.play(FadeOut(why), FadeOut(res))
-        gen = VGroup(formula("V / I = (V→ + V←) / ((V→ − V←) / Z₀) = Z_L", 26, TEXT),
-                     formula("Γ = V← / V→ = (Z_L − Z₀) / (Z_L + Z₀)", 32, POWER, weight=BOLD),
-                     label("Z_L > Z₀  →  Γ > 0, same sign      Z_L < Z₀  →  Γ < 0, inverted", 22, MUTED)
-                     ).arrange(DOWN, buff=0.28).move_to(at(-0.5, -2.3))
+        gen = VGroup(formula(r"\dfrac{V}{I} = \dfrac{V_\rightarrow + V_\leftarrow}{(V_\rightarrow - V_\leftarrow)\,/\,Z_0} = Z_L", 26, TEXT,
+                          de=r"\dfrac{U}{I} = \dfrac{U_\rightarrow + U_\leftarrow}{(U_\rightarrow - U_\leftarrow)\,/\,Z_0} = Z_L"),
+                     formula(r"\Gamma = \dfrac{V_\leftarrow}{V_\rightarrow} = \dfrac{Z_L - Z_0}{Z_L + Z_0}", 32, POWER,
+                          de=r"\Gamma = \dfrac{U_\leftarrow}{U_\rightarrow} = \dfrac{Z_L - Z_0}{Z_L + Z_0}"),
+                     VGroup(formula(r"Z_L > Z_0 \;\Rightarrow\; \Gamma > 0", 24, MUTED), label("same sign", 22, MUTED),
+                            formula(r"Z_L < Z_0 \;\Rightarrow\; \Gamma < 0", 24, MUTED), label("inverted", 22, MUTED)
+                            ).arrange(RIGHT, buff=0.2)
+                     ).arrange(DOWN, buff=0.22).move_to(at(-0.5, -2.3))
+        gen[2][2].shift(RIGHT * 0.5)
+        gen[2][3].shift(RIGHT * 0.5)
         self.play(FadeIn(gen[0]))
         self.play(FadeIn(gen[1]))
         self.play(FadeIn(gen[2]))
@@ -317,8 +322,8 @@ class Reflections(Scene):
         self.play(FadeOut(load), FadeIn(new), FadeOut(gen))
         load = new
         self.send(1 / 3, load)
-        f = VGroup(label("Γ = (Z_L − Z₀) / (Z_L + Z₀)", 30, TEXT, weight=BOLD),
-                   label("= (100 − 50) / (100 + 50) = 1/3", 26, POWER)).arrange(RIGHT, buff=0.35).move_to(at(-0.5, -2.2))
+        f = VGroup(formula(r"\Gamma = \dfrac{Z_L - Z_0}{Z_L + Z_0}", 30, TEXT),
+                   formula(r"= \dfrac{100 - 50}{100 + 50} = \dfrac{1}{3}", 28, POWER)).arrange(RIGHT, buff=0.25).move_to(at(-0.5, -2.2))
         self.play(FadeIn(f[0]))
         self.play(FadeIn(f[1]))
         self.wait(2.5)
@@ -349,8 +354,10 @@ class Reflections(Scene):
 
         ptr = always_redraw(lambda: Triangle(color=RF, fill_color=RF, fill_opacity=1).scale(0.13).rotate(PI)
                             .move_to(nl.n2p(gamma_of(zl())) + UP * 0.62))
-        read = always_redraw(lambda: text(f"Z_L = {num(f'{zl():.0f}')} Ω   →   Γ = {num(f'{gamma_of(zl()):+.2f}')}",
-                                          24, RF, BOLD).move_to(at(-0.5, -0.65)))
+        read = always_redraw(lambda: VGroup(
+            formula("Z_L =", 26, RF), text(f"{num(f'{zl():.0f}')} Ω", 24, RF, BOLD),
+            formula(r"\quad\Rightarrow\quad \Gamma =", 26, RF), text(num(f"{gamma_of(zl()):+.2f}"), 24, RF, BOLD)
+        ).arrange(RIGHT, buff=0.12).move_to(at(-0.5, -0.65)))
         self.play(FadeIn(ptr), FadeIn(read))
         self.play(zt.animate.set_value(5), run_time=2.5)
         self.play(zt.animate.set_value(500), run_time=3.5, rate_func=smooth)
@@ -425,11 +432,14 @@ class Reflections(Scene):
         def readout():
             f_ = ft.get_value()
             xc = 1 / (2 * PI * f_ * 1e9 * C)
-            lines = VGroup(text(f"f = {num(f'{f_:.2f}')} GHz", 22, TEXT, BOLD),
-                           text(f"Z_C = {num(f'{xc:.0f}')} Ω", 22, MEAS),
-                           text(f"|Z_L| = {num(f'{abs(zload(f_)):.0f}')} Ω", 22, TEXT),
-                           text(f"|S11| = {num(f'{s11db(f_):.1f}')} dB", 22, S11_C, BOLD)).arrange(DOWN, buff=0.12,
-                                                                                                aligned_edge=LEFT)
+            def row(sym, val, color, weight=NORMAL):
+                return VGroup(formula(sym + "=", 24, color), text(val, 22, color, weight)).arrange(RIGHT, buff=0.12)
+
+            lines = VGroup(row("f", f"{num(f'{f_:.2f}')} GHz", TEXT, BOLD),
+                           row("Z_C", f"{num(f'{xc:.0f}')} Ω", MEAS),
+                           row("|Z_L|", f"{num(f'{abs(zload(f_)):.0f}')} Ω", TEXT),
+                           row("|S_{11}|", f"{num(f'{s11db(f_):.1f}')} dB", S11_C, BOLD)).arrange(DOWN, buff=0.12,
+                                                                                                    aligned_edge=LEFT)
             return lines.move_to(at(-5.0, -2.0))
 
         ro = always_redraw(readout)
@@ -501,9 +511,9 @@ class SParameters(Scene):
         self.wait(1)
 
         eq_y = -1.15
-        s11 = VGroup(label("S11 = b1 / a1", 32, S11_C, weight=BOLD), label("reflection at port 1", 22, MUTED)
+        s11 = VGroup(formula(r"S_{11} = \dfrac{b_1}{a_1}", 32, S11_C), label("reflection at port 1", 22, MUTED)
                      ).arrange(DOWN, buff=0.12).move_to(at(-3.2, eq_y))
-        s21 = VGroup(label("S21 = b2 / a1", 32, S21_C, weight=BOLD), label("transmission 1 → 2", 22, MUTED)
+        s21 = VGroup(formula(r"S_{21} = \dfrac{b_2}{a_1}", 32, S21_C), label("transmission 1 → 2", 22, MUTED)
                      ).arrange(DOWN, buff=0.12).move_to(at(3.2, eq_y))
         cap.show("S-parameters are ratios: what comes out divided by what went in")
         self.play(FadeIn(s11, shift=UP * 0.15))
@@ -538,10 +548,10 @@ class SParameters(Scene):
         self.add(g1, g2)
         self.play(an1, an2, GrowArrow(b2r[0]), FadeIn(b2r[1]), GrowArrow(b1t[0]), FadeIn(b1t[1]))
         self.remove(g1, g2)
-        s22 = VGroup(label("S22 = b2 / a2", 32, S22_C, weight=BOLD), label("reflection at port 2", 22, MUTED)
-                     ).arrange(DOWN, buff=0.12).move_to(at(3.2, eq_y - 1.25))
-        s12 = VGroup(label("S12 = b1 / a2", 32, S12_C, weight=BOLD), label("transmission 2 → 1", 22, MUTED)
-                     ).arrange(DOWN, buff=0.12).move_to(at(-3.2, eq_y - 1.25))
+        s22 = VGroup(formula(r"S_{22} = \dfrac{b_2}{a_2}", 32, S22_C), label("reflection at port 2", 22, MUTED)
+                     ).arrange(DOWN, buff=0.12).move_to(at(3.2, eq_y - 1.6))
+        s12 = VGroup(formula(r"S_{12} = \dfrac{b_1}{a_2}", 32, S12_C), label("transmission 2 → 1", 22, MUTED)
+                     ).arrange(DOWN, buff=0.12).move_to(at(-3.2, eq_y - 1.6))
         self.play(FadeIn(s22, shift=UP * 0.15), FadeIn(s12, shift=UP * 0.15))
         self.wait(2.5)
 
@@ -643,10 +653,14 @@ class SParameters(Scene):
         # --- how the SNA measures it --------------------------------------------------------------------
         cap.show("The SNA measures powers in dBm, so S11 in dB is just a subtraction")
         self.play(FadeOut(VGroup(ax, ticks, yl, zero, c21, c11, l21, l11)))
-        meas = VGroup(label("S11 (dB) = P reflected (dBm) − P outgoing (dBm)", 30, S11_C, weight=BOLD),
-                      label("S21 (dB) = P at port 2 (dBm) − P outgoing (dBm)", 30, S21_C, weight=BOLD)
+        meas = VGroup(formula(r"S_{11}\,[\mathrm{dB}] = P_\mathrm{reflected}\,[\mathrm{dBm}] - P_\mathrm{outgoing}\,[\mathrm{dBm}]", 30, S11_C,
+                           de=r"S_{11}\,[\mathrm{dB}] = P_\mathrm{reflektiert}\,[\mathrm{dBm}] - P_\mathrm{hinlaufend}\,[\mathrm{dBm}]"),
+                      formula(r"S_{21}\,[\mathrm{dB}] = P_\mathrm{port\,2}\,[\mathrm{dBm}] - P_\mathrm{outgoing}\,[\mathrm{dBm}]", 30, S21_C,
+                           de=r"S_{21}\,[\mathrm{dB}] = P_\mathrm{Port\,2}\,[\mathrm{dBm}] - P_\mathrm{hinlaufend}\,[\mathrm{dBm}]")
                       ).arrange(DOWN, buff=0.35).move_to(at(0, 1.1))
-        exm = label("e.g. 100 Ω load:  −9.5 dBm − 0 dBm = −9.5 dB", 26, TEXT).next_to(meas, DOWN, buff=0.6)
+        exm = VGroup(label("e.g. 100 Ω load:", 26, TEXT),
+                     formula(r"-9.5\,\mathrm{dBm} - 0\,\mathrm{dBm} = -9.5\,\mathrm{dB}", 28, TEXT)
+                     ).arrange(RIGHT, buff=0.3).next_to(meas, DOWN, buff=0.6)
         self.play(FadeIn(meas[0]))
         self.play(FadeIn(meas[1]))
         self.play(FadeIn(exm))

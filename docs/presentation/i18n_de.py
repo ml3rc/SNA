@@ -777,7 +777,6 @@ DE = {
     "power up": "einschalten",
     "Power: clean rails for the RF part": "Stromversorgung: saubere Schienen für den HF-Teil",
     "queue full → wait": "Queue voll → warten",
-    "range: 3 GHz ÷ 128 = 23.4 MHz   …   6 GHz ÷ 1 = 6 GHz": "Bereich: 3 GHz ÷ 128 = 23.4 MHz   …   6 GHz ÷ 1 = 6 GHz",
     "Ratios become subtractions": "Verhältnisse werden zu Differenzen",
     "Raw S11 with Open and with Short: real paths have loss and ripple":
         "Rohes S11 mit Open und mit Short: reale Pfade haben Verlust und Welligkeit",
@@ -794,7 +793,6 @@ DE = {
     "Routing is the reverse: 1. switch to the port while still attenuated …":
         "Schalten ist umgekehrt: 1. auf den Port schalten, solange noch gedämpft …",
     "S11 (dB) over frequency": "S11 (dB) über der Frequenz",
-    "S11 = (1520 − 1216) ÷ (−30.4 counts/dB) =": "S11 = (1520 − 1216) ÷ (−30.4 Counts/dB) =",
     "S11 at 1 GHz, from click to chart": "S11 bei 1 GHz, vom Klick bis zum Diagramm",
     "S11 correction = average of Open and Short: the ripple cancels":
         "S11-Korrektur = Mittel aus Open und Short: die Welligkeit hebt sich auf",
@@ -809,8 +807,6 @@ DE = {
         "Einstellungen wie der Ausgangspegel sind in jedem Modus änderbar, auch live",
     "slope −24.5 mV/dB": "Steigung −24.5 mV/dB",
     "Sort the 16 values …": "Die 16 Werte sortieren …",
-    "source on port 2 (mirrored):  S22 = P2_BWD − P2_FWD    S12 = P1_BWD − P2_FWD":
-        "Quelle an Port 2 (gespiegelt):  S22 = P2_BWD − P2_FWD    S12 = P1_BWD − P2_FWD",
     "Start a sweep: the points stream back as they are measured":
         "Sweep starten: die Punkte streamen zurück, sobald sie gemessen sind",
     "sweep point between two stored points": "Sweep-Punkt zwischen zwei gespeicherten Punkten",
@@ -820,7 +816,6 @@ DE = {
     "synth off · terminated · atten 127": "Synth aus · abgeschlossen · atten 127",
     "synth running · routed to a port · atten = level": "Synth läuft · auf Port geschaltet · atten = Pegel",
     "synth running · terminated · atten 127": "Synth läuft · abgeschlossen · atten 127",
-    "target: N × f_PFD = 40 × 100 MHz = 4.000 GHz": "Ziel: N × f_PFD = 40 × 100 MHz = 4.000 GHz",
     "The device interpolates the stored curve at every sweep frequency":
         "Das Gerät interpoliert die gespeicherte Kurve bei jeder Sweep-Frequenz",
     "the host enters a mode, uses it, leaves it": "der Host betritt einen Modus, nutzt ihn, verlässt ihn",
@@ -864,12 +859,9 @@ DE = {
     "L′  inner conductor": "L′  Innenleiter",
     "C′  inner conductor ↔ shield": "C′  Innenleiter ↔ Schirm",
     "You know: L and C change their impedance with frequency": "Bekannt: L und C ändern ihre Impedanz mit der Frequenz",
-    "Z_L = jωL′  (rises with f)": "Z_L = jωL′  (steigt mit f)",
-    "Z_C = 1 / (jωC′)  (falls with f)": "Z_C = 1 / (jωC′)  (sinkt mit f)",
     "Along the ladder only their ratio counts: ω cancels out": "Entlang der Kette zählt nur ihr Verhältnis: ω kürzt sich weg",
     "Typical coax: L′ ≈ 250 nH/m, C′ ≈ 100 pF/m → Z₀ = √2500 = 50 Ω":
         "Typisches Koaxkabel: L′ ≈ 250 nH/m, C′ ≈ 100 pF/m → Z₀ = √2500 = 50 Ω",
-    "√( 250 nH / 100 pF ) = 50 Ω": "√( 250 nH / 100 pF ) = 50 Ω",
     "Z₀ is the characteristic impedance: no loss, the same for any length and frequency":
         "Z₀ ist der Wellenwiderstand: kein Verlust, gleich für jede Länge und Frequenz",
     "SMA coax  ·  50 Ω": "SMA-Koaxkabel  ·  50 Ω",
@@ -962,28 +954,19 @@ DE = {
     "What does not pass comes back: S11 rises where S21 falls": "Was nicht durchkommt, kommt zurück: S11 steigt, wo S21 fällt",
     "The SNA measures powers in dBm, so S11 in dB is just a subtraction":
         "Der SNA misst Leistungen in dBm, S11 in dB ist darum nur eine Subtraktion",
-    "S11 (dB) = P reflected (dBm) − P outgoing (dBm)": "S11 (dB) = P reflektiert (dBm) − P hinlaufend (dBm)",
-    "S21 (dB) = P at port 2 (dBm) − P outgoing (dBm)": "S21 (dB) = P an Port 2 (dBm) − P hinlaufend (dBm)",
-    "e.g. 100 Ω load:  −9.5 dBm − 0 dBm = −9.5 dB": "z. B. 100-Ω-Last:  −9.5 dBm − 0 dBm = −9.5 dB",
     "Directional coupler and log detector measure these powers, calibration removes the SNA's own losses":
         "Richtkoppler und Log-Detektor messen diese Leistungen, die Kalibrierung entfernt die Verluste des SNA selbst",
 
     # --- reflection sign + coupler internals --------------------------------------------------------------------------
     "sum = voltage on the cable": "Summe = Spannung auf dem Kabel",
     "Open end: the current must be 0": "Offenes Ende: Der Strom muss 0 sein",
-    "I = (V→ − V←) / Z₀ = 0   →   V← = +V→": "I = (U→ − U←) / Z₀ = 0   →   U← = +U→",
     "The returning wave carries its current the other way: the currents cancel, the voltages add (2 · V→)":
         "Die rücklaufende Welle führt ihren Strom in die Gegenrichtung: Die Ströme heben sich auf, die Spannungen addieren sich (2 · U→)",
     "Short: the voltage must be 0": "Kurzschluss: Die Spannung muss 0 sein",
-    "V = V→ + V← = 0   →   V← = −V→": "U = U→ + U← = 0   →   U← = −U→",
     "The reflection comes back inverted: the voltages cancel, the currents add (2 · I→)":
         "Die Reflexion kommt invertiert zurück: Die Spannungen heben sich auf, die Ströme addieren sich (2 · I→)",
     "Any load: at the end, voltage / current must equal Z_L. That fixes size and sign of the reflection.":
         "Beliebige Last: Am Ende muss Spannung / Strom = Z_L sein. Das legt Grösse und Vorzeichen der Reflexion fest.",
-    "V / I = (V→ + V←) / ((V→ − V←) / Z₀) = Z_L": "U / I = (U→ + U←) / ((U→ − U←) / Z₀) = Z_L",
-    "Γ = V← / V→ = (Z_L − Z₀) / (Z_L + Z₀)": "Γ = U← / U→ = (Z_L − Z₀) / (Z_L + Z₀)",
-    "Z_L > Z₀  →  Γ > 0, same sign      Z_L < Z₀  →  Γ < 0, inverted":
-        "Z_L > Z₀  →  Γ > 0, gleiches Vorzeichen      Z_L < Z₀  →  Γ < 0, invertiert",
     "Inside the directional coupler": "So ist der Richtkoppler aufgebaut",
     "→ detector": "→ Detektor",
     "50 Ω inside": "50 Ω intern",
@@ -1008,4 +991,13 @@ DE = {
     "SEDC-10-63+: coupling ≈ −10 dB": "SEDC-10-63+: Kopplung ≈ −10 dB",
     "The cancellation is never perfect (directivity): a small leak limits the smallest S11":
         "Die Auslöschung ist nie perfekt (Directivity): Ein kleines Leck begrenzt das kleinste messbare S11",
+    # word labels beside formula() formulas
+    "(rises with f)": "(steigt mit f)",
+    "(falls with f)": "(sinkt mit f)",
+    "same sign": "gleiches Vorzeichen",
+    "inverted": "invertiert",
+    "e.g. 100 Ω load:": "z. B. 100-Ω-Last:",
+    "target:": "Ziel:",
+    "range:": "Bereich:",
+    "source on port 2 (mirrored):": "Quelle an Port 2 (gespiegelt):",
 }

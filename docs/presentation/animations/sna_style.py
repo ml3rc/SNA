@@ -1,7 +1,8 @@
 """Shared look for all SNA presentation animations (matches the draw.io diagrams).
 
-Dark theme, no LaTeX (Text only). Import with `from sna_style import *`. Labels are English; SNA_LANG=de renders the
-German version (translations in ../i18n_de.py, applied in label(); code()/JSON text stays as is).
+Dark theme, no LaTeX install (Text, formulas via formula()). Import with `from sna_style import *`. Labels are
+English; SNA_LANG=de renders the German version (translations in ../i18n_de.py, applied in label(); code()/JSON text
+stays as is).
 """
 import sys
 from pathlib import Path
@@ -39,6 +40,7 @@ config.background_color = BG
 # SNA_CHECK_BOUNDS=<file>  append every object that leaves the visible frame (checked on every rendered frame)
 import json  # noqa: E402
 import os  # noqa: E402
+import re  # noqa: E402
 
 from manim.renderer.cairo_renderer import CairoRenderer  # noqa: E402
 
@@ -158,6 +160,53 @@ def label(text, size=28, color=TEXT, weight=NORMAL, font=FONT):
     if t.width > MAX_TEXT_W:
         t.scale_to_fit_width(MAX_TEXT_W)
     return t
+
+
+# --- Formulas -------------------------------------------------------------------------------------------------------
+# TeX math typeset by matplotlib's mathtext (Computer Modern, like the MathJax formulas in the draw.io diagrams), so no
+# LaTeX install is needed. Rendered once to SVG in media/mathtext/, glyphs come in as paths.
+_MATH_DIR = Path(__file__).resolve().parent / "media" / "mathtext"
+_MATH_PT = 10          # mathtext render size; formula() scales the result to the label() size
+_MATH_EM = None        # Manim units per em at _MATH_PT, measured once
+_TEXT_EM = 1 / 72      # Manim units per em per font_size point of Text (font_size 72 = 1 unit em)
+_MATH_GROW = 1.1       # Computer Modern has a smaller x-height than Segoe UI: match the x-height, not the em
+
+
+def _math_svg(tex):
+    import hashlib
+    _MATH_DIR.mkdir(parents=True, exist_ok=True)
+    p = _MATH_DIR / (hashlib.md5(tex.encode()).hexdigest() + ".svg")
+    if not p.exists():
+        import matplotlib
+        matplotlib.use("svg")
+        import matplotlib.pyplot as plt
+        plt.rcParams.update({"svg.fonttype": "path", "mathtext.fontset": "cm"})
+        fig = plt.figure()
+        fig.patch.set_visible(False)
+        fig.text(0, 0, f"${tex}$", fontsize=_MATH_PT)
+        fig.savefig(p, transparent=True, bbox_inches="tight", pad_inches=0, metadata={"Date": None})
+        plt.close(fig)
+    return str(p)
+
+
+def _math_mob(tex):
+    return SVGMobject(_math_svg(tex), height=None, width=None, stroke_width=0)
+
+
+def formula(tex, size=28, color=TEXT, de=None):
+    """Formula from TeX math (no $…$), same size scale as label(size). German: `de` if given, else `tex` with decimal
+    commas. Words in a formula go in \\mathrm{…} and need a `de` version; plain words beside it stay in label()."""
+    global _MATH_EM
+    if LANG == "de":
+        tex = de if de is not None else re.sub(r"(?<=\d)\.(?=\d)", "{,}", tex)
+    if _MATH_EM is None:   # height of an "M" box (cap height 0.683 em in Computer Modern)
+        _MATH_EM = _math_mob("M").height / 0.683
+    m = _math_mob(tex)
+    m.scale(size * _TEXT_EM * _MATH_GROW / _MATH_EM)
+    m.set_fill(color, 1).set_stroke(width=0)
+    if m.width > MAX_TEXT_W:
+        m.scale_to_fit_width(MAX_TEXT_W)
+    return m
 
 
 def block(title, sub=None, color=LINE, w=2.6, h=1.1, fill=PANEL, title_size=26, sub_size=18):

@@ -69,10 +69,12 @@ class PllSynthesis(Scene):
             return f_target - 0.45 * np.exp(-6 * tt) * np.cos(12 * tt)
 
         readout = always_redraw(lambda: VGroup(
-            label("f_VCO =", 28, MUTED),
+            formula(r"f_\mathrm{VCO} =", 30, MUTED),
             label(f"{f_of(t.get_value()):.3f} GHz", 28, RF, weight=BOLD, font=MONO),
         ).arrange(RIGHT, buff=0.2).move_to(at(-4.2, -2.35)))
-        target = label("target: N × f_PFD = 40 × 100 MHz = 4.000 GHz", 24, MUTED).move_to(at(-2.9, -2.95))
+        target = VGroup(label("target:", 24, MUTED),
+                        formula(r"N \cdot f_\mathrm{PFD} = 40 \cdot 100\,\mathrm{MHz} = 4.000\,\mathrm{GHz}", 26, MUTED)
+                        ).arrange(RIGHT, buff=0.2).move_to(at(-2.9, -2.95))
         target.align_to(readout, LEFT)
 
         err_lbl = label("phase error", 22, MUTED).move_to(at(0.85, 0.75))
@@ -98,11 +100,13 @@ class PllSynthesis(Scene):
         travel(self, [(3.05, bot), (5.45, bot), (5.45, -1.8)], RF, run_time=1.2)
 
         self.next_section()
-        eq1 = VGroup(label("f_out = f_VCO ÷ DIV = 4 GHz ÷ 4 =", 26, TEXT),
-                     label("1 GHz", 26, RF, weight=BOLD)).arrange(RIGHT, buff=0.15)
+        eq1 = VGroup(formula(r"f_\mathrm{out} = \dfrac{f_\mathrm{VCO}}{\mathrm{DIV}} = \dfrac{4\,\mathrm{GHz}}{4} =", 28, TEXT),
+                     formula(r"1\,\mathrm{GHz}", 28, RF)).arrange(RIGHT, buff=0.15)
         eq1.move_to(at(-2.0, -2.35)).align_to(readout, LEFT)
         self.play(FadeOut(readout), FadeOut(target), FadeOut(ld_dot), FadeOut(ld_txt), FadeIn(eq1))
-        eq2 = label("range: 3 GHz ÷ 128 = 23.4 MHz   …   6 GHz ÷ 1 = 6 GHz", 24, MUTED)
+        eq2 = VGroup(label("range:", 24, MUTED),
+                     formula(r"3\,\mathrm{GHz} / 128 = 23.4\,\mathrm{MHz} \quad\ldots\quad 6\,\mathrm{GHz} / 1 = 6\,\mathrm{GHz}",
+                          26, MUTED)).arrange(RIGHT, buff=0.2)
         eq2.next_to(eq1, DOWN, buff=0.25).align_to(eq1, LEFT)
         self.play(FadeIn(eq2))
         self.play(Transform(cap, caption("Fractional N (F/M) gives fine frequency steps; the SNA sweeps 50 MHz – 6 GHz")))
@@ -389,9 +393,11 @@ class DirectionalCoupler(Scene):
 
         self.next_section()
         # Formulas
-        f1 = VGroup(label("S11 = P1_BWD − P1_FWD", 26, TEXT, weight=BOLD),
-                    label("S21 = P2_BWD − P1_FWD", 26, TEXT, weight=BOLD)).arrange(RIGHT, buff=1.0)
-        f2 = label("source on port 2 (mirrored):  S22 = P2_BWD − P2_FWD    S12 = P1_BWD − P2_FWD", 22, MUTED)
+        f1 = VGroup(formula(r"S_{11} = P_\mathrm{1\,BWD} - P_\mathrm{1\,FWD}", 30, TEXT),
+                    formula(r"S_{21} = P_\mathrm{2\,BWD} - P_\mathrm{1\,FWD}", 30, TEXT)).arrange(RIGHT, buff=1.0)
+        f2 = VGroup(label("source on port 2 (mirrored):", 22, MUTED),
+                    formula(r"S_{22} = P_\mathrm{2\,BWD} - P_\mathrm{2\,FWD} \qquad S_{12} = P_\mathrm{1\,BWD} - P_\mathrm{2\,FWD}", 24,
+                         MUTED)).arrange(RIGHT, buff=0.25)
         fs = VGroup(f1, f2).arrange(DOWN, buff=0.22).move_to(at(0, -2.75))
         self.play(FadeOut(cap), FadeOut(reads), FadeIn(f1))
         self.play(FadeIn(f2))
@@ -449,8 +455,9 @@ class LogDetector(Scene):
             pv = p.get_value()
             v = self.v_of(pv)
             rows = VGroup(
-                VGroup(label("P_in", 24, MUTED), label(f"{pv:6.1f} dBm", 26, RF, font=MONO)).arrange(RIGHT, buff=0.3),
-                VGroup(label("V_out", 24, MUTED), label(f"{v:5.2f} V", 26, MEAS, font=MONO)).arrange(RIGHT, buff=0.3),
+                VGroup(formula(r"P_\mathrm{in}", 26, MUTED), label(f"{pv:6.1f} dBm", 26, RF, font=MONO)).arrange(RIGHT, buff=0.3),
+                VGroup(formula(r"V_\mathrm{out}", 26, MUTED, de=r"U_\mathrm{out}"), label(f"{v:5.2f} V", 26, MEAS, font=MONO)
+                       ).arrange(RIGHT, buff=0.3),
                 VGroup(label("ADC", 24, MUTED), label(f"{round(v * 4096 / 3.3):5d}", 26, CORE1, font=MONO)).arrange(RIGHT, buff=0.3),
             ).arrange(DOWN, aligned_edge=LEFT, buff=0.3)
             return rows.move_to(at(4.6, 0.9))
@@ -530,8 +537,9 @@ class LogDetector(Scene):
         self.play(FadeIn(a))
         self.play(FadeIn(b))
         self.next_section()
-        eq = VGroup(label("S11 = (1520 − 1216) ÷ (−30.4 counts/dB) =", 30, TEXT),
-                    label("−10.0 dB", 30, MEAS, weight=BOLD)).arrange(RIGHT, buff=0.2).move_to(at(0, -0.4))
+        eq = VGroup(formula(r"S_{11} = \dfrac{1520 - 1216}{-30.4\,\mathrm{counts/dB}} =", 32, TEXT,
+                         de=r"S_{11} = \dfrac{1520 - 1216}{-30{,}4\,\mathrm{Counts/dB}} ="),
+                    formula(r"-10.0\,\mathrm{dB}", 32, MEAS)).arrange(RIGHT, buff=0.2).move_to(at(0, -0.4))
         self.play(Write(eq[0]), run_time=1.5)
         self.play(FadeIn(eq[1]))
         note = label("a power ratio is just the difference of two readings — no logarithm needed", 22, MUTED)
@@ -602,8 +610,8 @@ class ImpedancePads(Scene):
         eye1 = Arrow(at(-6.2, y), at(-4.75, y), buff=0, color=RF, stroke_width=4, tip_length=0.2)
         self.play(FadeIn(load), GrowArrow(eye1))
         eq1 = VGroup(label("seen from the 50 Ω side:", 24, MUTED),
-                     label("86.6 ∥ (43.2 + 75) =", 26, TEXT),
-                     label("50.0 Ω", 26, RF, weight=BOLD)).arrange(RIGHT, buff=0.2).move_to(at(0, -2.0))
+                     formula(r"86.6 \parallel (43.2 + 75) =", 28, TEXT),
+                     formula(r"50.0\,\Omega", 28, RF)).arrange(RIGHT, buff=0.2).move_to(at(0, -2.0))
         self.play(FadeIn(eq1[0]), Write(eq1[1]))
         self.play(FadeIn(eq1[2]))
         self.wait(1.5)
@@ -616,8 +624,8 @@ class ImpedancePads(Scene):
         eye2 = Arrow(at(6.6, y), at(4.95, y), buff=0, color=HOST, stroke_width=4, tip_length=0.2)
         self.play(FadeOut(load), FadeOut(eye1), FadeIn(src), GrowArrow(eye2))
         eq2 = VGroup(label("seen from the 75 Ω side:", 24, MUTED),
-                     label("43.2 + (86.6 ∥ 50) =", 26, TEXT),
-                     label("74.9 Ω", 26, HOST, weight=BOLD)).arrange(RIGHT, buff=0.2).move_to(at(0, -2.7))
+                     formula(r"43.2 + (86.6 \parallel 50) =", 28, TEXT),
+                     formula(r"74.9\,\Omega", 28, HOST)).arrange(RIGHT, buff=0.2).move_to(at(0, -2.7))
         self.play(FadeIn(eq2[0]), Write(eq2[1]))
         self.play(FadeIn(eq2[2]))
         self.wait(1.0)
