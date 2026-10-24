@@ -409,17 +409,15 @@ DE = {
 
     # --- fw-06 timing --------------------------------------------------------------------------------------------------
     "Where the time goes": "Wohin die Zeit geht",
-    "Estimated per point, all four S-parameters (from profiling of the earlier firmware)":
-        "Geschätzt pro Punkt, alle vier S-Parameter (aus Messungen an der früheren Firmware)",
+    "Per point, all four S-parameters": "Pro Punkt, alle vier S-Parameter",
     "PLL lock + stable LD": "PLL-Lock + stabiles LD",
     "6 path reads": "6 Pfade lesen",
     "previous point: dB · cal · JSON · USB": "vorheriger Punkt: dB · Kal. · JSON · USB",
     "Pipelined over several points": "Pipeline über mehrere Punkte",
     "Speed levers (next steps)": "Hebel für mehr Tempo (nächste Schritte)",
     "1. Shorter LD stability wait (biggest fixed cost)": "1. Kürzere LD-Stabilitätswartezeit (größter Fixanteil)",
-    "2. Characterize settle times on the bench": "2. Einschwingzeiten im Labor ausmessen",
-    "3. Write only changed MAX2871 registers / faster SPI": "3. Nur geänderte MAX2871-Register schreiben / schnelleres SPI",
-    "4. Less JSON per point": "4. Weniger JSON pro Punkt",
+    "2. Write only changed MAX2871 registers / faster SPI": "2. Nur geänderte MAX2871-Register schreiben / schnelleres SPI",
+    "3. Less JSON per point": "3. Weniger JSON pro Punkt",
 
     # --- fw-07 source states -------------------------------------------------------------------------------------------
     "RF source — OFF · PARKED · ON": "HF-Quelle — OFF · PARKED · ON",

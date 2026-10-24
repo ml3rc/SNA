@@ -169,7 +169,7 @@ def sweep_point():
 
 def timing():
     d = Diagram("fw-06-point-timing", 1600, 900)
-    d.title("Where the time goes", "Estimated per point, all four S-parameters (from profiling of the earlier firmware)")
+    d.title("Where the time goes", "Per point, all four S-parameters")
     x0, s = 230, 600  # px per ms
     d.text(40, 160, 180, 40, "Core 1", CORE1, 18, True, "right")
     d.text(40, 240, 180, 40, "Core 0", CORE0, 18, True, "right")
@@ -204,8 +204,7 @@ def timing():
     d.group(60, 680, 1500, 110, "Speed levers (next steps)", LINE)
     d.html(80, 715, 1460, 130,
            f'<span style="color:{TEXT};font-size:16px">1. Shorter LD stability wait (biggest fixed cost)&emsp;&emsp;'
-           f'2. Characterize settle times on the bench<br>3. Write only changed MAX2871 registers / faster SPI&emsp;&emsp;'
-           f'4. Less JSON per point</span>')
+           f'2. Write only changed MAX2871 registers / faster SPI<br>3. Less JSON per point</span>')
     return d.save()
 
 
