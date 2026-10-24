@@ -110,7 +110,7 @@ The RF hardware belongs to one mode at a time. The host enters a mode, uses it a
 ← {"id":3,"ok":true,"z":75,"atten":40}
 ```
 At least one of `z` (50|75) and `atten` (0..127, 0.25 dB steps relative to maximum output, not calibrated dBm;
-measured ≈ −atten dB in dBm at 2 GHz, roughly ±10 dB over frequency, see `docs-local/generator-and-power-meter.md`).
+measured ≈ −atten dB in dBm at 2 GHz, roughly ±10 dB over frequency).
 Works in every mode and during a sweep, and never changes the mode: `z` is switched immediately, also under a live
 output; `atten` changes a running output live and applies to a running sweep from its next point on. Whether a
 change in the middle of a measurement makes sense is the host's call. The reply carries the resulting settings.

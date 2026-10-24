@@ -7,3 +7,6 @@ __pycache__/
 /docs/presentation/animations/.venv/
 /docs/presentation/animations/media/
 /docs/presentation/animations/media_*/
+
+# Local Claude Code instructions
+/CLAUDE.md

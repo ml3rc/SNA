@@ -2,7 +2,8 @@
 
 RP2350B firmware, Raspberry Pi Pico SDK (C, bare-metal + TinyUSB), implementing
 [`../../docs/firmware/protocol/PROTOCOL.md`](../../docs/firmware/protocol/PROTOCOL.md) over USB CDC-ACM.
-Current version: **1.0.0** (protocol 3).
+Current version: **1.0.0** (protocol 3). A prebuilt `sna_firmware.uf2` is attached to each
+[GitHub release](https://github.com/ml3rc/SNA/releases).
 
 ## Overview
 
@@ -23,7 +24,7 @@ Current version: **1.0.0** (protocol 3).
   Core 0 converts and calibrates point N while core 1 measures point N+1;
   calibration curves are prefetched into RAM, so core 0 needs no I2C during
   a sweep. Design: [`../../docs/firmware/architecture.md`](../../docs/firmware/architecture.md).
-- **Robustness (0.4.1):** a watchdog (8 s) resets the device when core 0
+- **Robustness:** a watchdog (8 s) resets the device when core 0
   stops looping or core 1 sits in one step for 6 s (`main.c`,
   `service_watchdog()`); cJSON nesting is limited to 8 levels, so a line of
   `[[[[...` is `bad_request` instead of recursing through core 0's stack into
@@ -35,7 +36,7 @@ Current version: **1.0.0** (protocol 3).
   is read during fast sweeps; EEPROM I2C transfers have timeouts and the bus
   is clocked free at boot; a failed calibration-table read is retried on the
   next prefetch, and the EEPROM header is read twice before an unrecognized
-  one is reformatted. Review: `docs-local/firmware-review.md`, 2026-10-17.
+  one is reformatted.
 - **Settings:** `set` changes impedance and attenuation in any mode, also
   between sweep points; every sweep and generator start brings its own `z`
   and `atten`.
@@ -67,8 +68,8 @@ Current version: **1.0.0** (protocol 3).
   cached during a sweep or with the source on) and a on-board SDI test
   that runs the stored threshold points without a PC.
 - **Boot self-test:** core 1 checks PLL lock at 1 GHz and a parked detector
-  reading inside 2200..3000 counts (window based on the single parked
-  measurement in `docs-local/generator-and-power-meter.md`, not characterized);
+  reading inside 2200..3000 counts (window based on a single parked
+  measurement, not characterized);
   core 0 checks EEPROM and USB init. Failures appear in
   `status.init_errors` and as a blink code.
 - **LEDs:** port/impedance LEDs follow their switches; BUSY/READY show the
@@ -210,7 +211,7 @@ pure conversions. `eeprom.c` is the storage counterpart of `rf_control/` on
 top of `hal/eeprom_24aa32a.c` and is used on core 0 only.
 
 How a request travels through these layers and the two cores:
-[`../../docs/firmware/`](../../docs/firmware/README.md) (diagrams; detailed notes in the local `docs-local/firmware-dataflow.md`).
+[`../../docs/firmware/`](../../docs/firmware/README.md) (diagrams).
 
 | File | Purpose |
 |---|---|

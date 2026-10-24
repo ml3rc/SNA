@@ -5,7 +5,8 @@ ports, built as a school project ("mini IPA"). It measures S11/S21/S12/S22 magni
 calibration on the device, and can check SDI coax cables on its own with the test button on the board
 (pressed through a hole in the case).
 
-**Release v1.0.0** — see the [CHANGELOG](CHANGELOG.md).
+**Release v1.0.0** — features in the [CHANGELOG](CHANGELOG.md), builds on the
+[releases page](https://github.com/ml3rc/SNA/releases).
 
 ![SNA v1.0](docs/pictures/_DSC4359.jpg)
 
@@ -46,21 +47,37 @@ docs/                diagram-first docs: API, firmware, hardware, presentation
 | Firmware | 1.0.0 | protocol 3 · EEPROM format 3 |
 | Desktop client | 1.0.0 | needs protocol 3 · Windows MSI, `.deb`/`.dmg` from source |
 | Android client | 1.0.0 (versionCode 11) | needs protocol 3 · USB OTG |
-| PCB | 1.0 | see [hardware errata](#known-hardware-issues) |
+| PCB | 1.0 | |
 
 Firmware and client talk JSON lines over USB CDC-ACM (VID:PID `CAFE:4001`); the client refuses
 firmware with any other protocol version.
 
+## Downloads
+
+Builds are attached to each [GitHub release](https://github.com/ml3rc/SNA/releases):
+
+- `sna_firmware.uf2` — firmware
+- Windows installer (`.msi`) — desktop client
+- Android APK — client for phones/tablets with USB OTG
+
+Linux (`.deb`) and macOS (`.dmg`) packages are not published; build them from source (below).
+The installers are unsigned, so Windows and Android warn about an unknown publisher.
+
 ## Quick start
 
-1. **Build the firmware** (WSL/Linux, [devenv](https://devenv.sh)):
-   `cd Software/firmware && devenv shell fw-build` → `build/sna_firmware.uf2`.
-2. **Flash it:** hold BOOTSEL while plugging in USB and copy the `.uf2` onto the drive, or program
-   the `.elf` over SWD (J202) with OpenOCD.
-3. **Run the client** (JDK 17–21): `cd Software/client && gradlew.bat :composeApp:run`.
-4. **Or install** the Windows MSI (`gradlew.bat :composeApp:packageMsi`) or the Android APK
-   (`:composeApp:assembleDebug`).
-5. **Calibrate** each impedance in the Calibration tab (Open/Short per port, Thru), then sweep.
+1. **Flash the firmware:** hold BOOTSEL while plugging in USB (or send `{"cmd":"bootsel"}` to running
+   firmware) and copy `sna_firmware.uf2` onto the drive that appears.
+2. **Install the client** from the release and connect the SNA with a USB data cable.
+3. **Calibrate** each impedance in the Calibration tab (Open/Short per port, Thru), then sweep.
+
+### Building from source
+
+1. **Firmware** (WSL/Linux, [devenv](https://devenv.sh)):
+   `cd Software/firmware && devenv shell fw-build` → `build/sna_firmware.uf2`. It can also be
+   programmed over SWD (J202) with OpenOCD.
+2. **Client** (JDK 17–21): `cd Software/client && gradlew.bat :composeApp:run`; installers with
+   `:composeApp:packageMsi` (`packageDeb`/`packageDmg` on Linux/macOS) and the Android APK with
+   `:composeApp:assembleDebug`.
 
 Details, toolchain setup and tests: [firmware README](Software/firmware/README.md),
 [client README](Software/client/README.md).
@@ -87,11 +104,8 @@ Details, toolchain setup and tests: [firmware README](Software/firmware/README.m
 - The detector slope is one value for the whole band; the settling times are conservative estimates,
   not measured limits.
 - Power meter readings are approximate, uncalibrated dBm.
-
-## Known hardware issues
-
-- **Q202/Q203 (BSS84AK):** the footprint has drain and source swapped, so the body diode always
-  lights the drain-side LED. Needs a hardware fix (rework or next PCB revision).
+- The PCB has loss, and with this design it is not suitable for measurements that need to be accurate.
+- Android saves exports to app-private storage (no file picker).
 
 ## Acknowledgements
 

@@ -1,7 +1,7 @@
 # SNA documentation · v1.0.0
 
 2-port scalar network analyzer, 50 MHz – 6 GHz, 50 Ω / 75 Ω. Release **v1.0.0**: firmware 1.0.0 · protocol 3 ·
-EEPROM format 3 · desktop and Android client 1.0.0 · PCB rev 1.0. What changed: [CHANGELOG](../CHANGELOG.md).
+EEPROM format 3 · desktop and Android client 1.0.0 · PCB rev 1.0. Features: [CHANGELOG](../CHANGELOG.md); builds: [releases](https://github.com/ml3rc/SNA/releases).
 
 Diagram-first: every page is a set of slides-ready diagrams with a few lines of text. All diagrams are draw.io
 sources in [presentation/diagrams/](presentation/diagrams/), exported to PNG/SVG for the pages and the slides

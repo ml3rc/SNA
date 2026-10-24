@@ -28,7 +28,7 @@ The workspace has seven tabs. A green square on a tab means its tool is running 
   running output live; port and frequency through "Apply changes". The **detector probe** reads
   all four coupler paths under the running output and explains suspicious readings.
 - **Power meter** — continuous reading of the signal arriving at a port (approximate,
-  uncalibrated dBm; `docs-local/generator-and-power-meter.md`).
+  uncalibrated dBm).
 - **Calibration** — SLOT wizard per impedance: Open/Short at each port and Thru, compute, upload,
   verify. Detects and locks the device's existing grid (all 8 sets share one). Captures run in the
   background and can be aborted.
@@ -121,6 +121,7 @@ gradlew.bat :composeApp:installDebug       # ... onto a connected phone with USB
 gradlew.bat :composeApp:connectedDebugAndroidTest   # Android UI tests (emulator or device)
 ```
 
+Release builds (MSI, APK) are attached to the [GitHub releases](https://github.com/ml3rc/SNA/releases).
 Installers are unsigned (expect an "unknown publisher" warning). Each MSI installs over the previous one
 (no uninstall needed): its version's third field is a build tick, see `windows {}` in
 `composeApp/build.gradle.kts`. Bump `desktopVersion` only for real releases.
@@ -138,6 +139,6 @@ testing with the real device.
   host that asserts DTR. Android asserts DTR too and splits lines on raw bytes.
 - Android keeps the USB session in an activity ViewModel across rotation and window resizing.
 - Android's `FileStore` writes to app-private storage instead of a Storage Access Framework
-  picker; replace it before shipping to other users.
+  picker.
 - Dropdowns use a plain `Box` + `OutlinedButton` + `DropdownMenu` (Material3's "Exposed"
   dropdown API has changed between Compose Multiplatform versions).

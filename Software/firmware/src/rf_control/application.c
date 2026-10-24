@@ -181,8 +181,7 @@ bool rf_app_sweep_begin(uint8_t z, uint64_t first_freq_hz, bool allow_unlocked_p
     if (!rf_state_set_freq(first_freq_hz)) return false; // still active until rf_app_sweep_end()
 
     // Generous initial lock wait -- a one-time per-sweep cost, not
-    // per-point, so erring generous has no real downside. TODO: exact bound
-    // still unverified for this board's actual loop filter.
+    // per-point, so erring generous has no real downside.
     if (!wait_for_lock(SOURCE_INITIAL_LOCK_TIMEOUT_US, true) && (!sweep_allow_unlocked || cancelled()))
         return false;
     return true;

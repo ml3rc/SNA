@@ -1,7 +1,9 @@
 # Hardware (Altium)
 
 4-layer PCB in a milled aluminium case. Altium project: [`Altium/SNA.PrjPcb`](../../Altium/SNA.PrjPcb) ·
-BOM / netlist / STEP: [`Altium/Project Outputs for SNA/`](../../Altium/Project%20Outputs%20for%20SNA/) ·
+schematic, layout, assembly PDFs and BOM: [`Altium/SNAPCBVersion-INT/`](../../Altium/SNAPCBVersion-INT/) ·
+Gerbers: [`Altium/SNAPCBVersion-FAB/`](../../Altium/SNAPCBVersion-FAB/) ·
+enclosure STEP: [`Fusion360/exp/`](../../Fusion360/exp/) ·
 pin map: [PINMAP.md](../firmware/protocol/PINMAP.md). Diagrams are draw.io sources in
 [`../presentation/diagrams/`](../presentation/diagrams/); animations in
 [`../presentation/animations/`](../presentation/README.md#animations).
@@ -50,8 +52,3 @@ pin map: [PINMAP.md](../firmware/protocol/PINMAP.md). Diagrams are draw.io sourc
 ## PCB
 
 ![Stackup](../presentation/diagrams/export/hw-08-pcb-stackup.png)
-
-## Known erratum
-
-Q202/Q203 (BSS84AK): footprint has drain and source swapped, so the body diode always lights the drain-side LED.
-Hardware-only; fixed by rework, documented as a deviation in the report.
