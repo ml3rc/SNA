@@ -33,7 +33,7 @@ data class SweepSettings(
     val z: Impedance = Impedance.FIFTY,
     val params: Set<SParam> = setOf(SParam.S11, SParam.S21),
     val loop: Boolean = false,
-    /** 0.25 dB steps below maximum. Defaults to the level the calibration curves are captured at. */
+    /** 0.25 dB steps below maximum. Starts at 0 dB (full output), the level the calibration curves are captured at. */
     val attenSteps: Int = CAL_CAPTURE_ATTEN,
 ) {
     val f0Hz: Long? get() = f0.trim().toLongOrNull()

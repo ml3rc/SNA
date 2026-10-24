@@ -27,7 +27,7 @@ data class RawSweepSettings(
     val port: Int = 1,
     val z: Impedance = Impedance.FIFTY,
     /** 0.25 dB steps below maximum; like the impedance it stays the device's setting after the sweep. */
-    val attenSteps: Int = 64,
+    val attenSteps: Int = 0,
     val paths: Set<DetectorPath> = DetectorPath.entries.toSet(),
     /** Display only: ADC counts instead of detector dBm. */
     val showCounts: Boolean = false,

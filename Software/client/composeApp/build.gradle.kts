@@ -112,6 +112,19 @@ compose.desktop {
     application {
         mainClass = "io.github.ml3rc.sna.client.MainKt"
 
+        // Memory budget: the whole process stays under 0.5 GB. Measured 2026-10-24 on the real device
+        // (loop sweep, 4096 points x 4 S-parameters, every tab visited): without these flags ~470 MB
+        // working set and ~1 GB committed; with them ~300 MB for both. Most of the old footprint was
+        // the Direct3D renderer (~750 MB native commit), so Skia renders in software instead: same
+        // pixels, about 1 % more CPU while a loop sweep redraws the chart. The Java heap itself peaks
+        // around 35 MB, so 128 MB leaves room; SerialGC returns unused heap and has no G1 overhead.
+        jvmArgs += listOf(
+            "-Dskiko.renderApi=SOFTWARE_FAST",
+            "-Xms16m", "-Xmx128m", "-XX:+UseSerialGC",
+            "-XX:MaxMetaspaceSize=128m", "-XX:ReservedCodeCacheSize=48m", "-XX:MaxDirectMemorySize=64m",
+            "-XX:CICompilerCount=2", "-Xss512k",
+        )
+
         nativeDistributions {
             targetFormats(
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,

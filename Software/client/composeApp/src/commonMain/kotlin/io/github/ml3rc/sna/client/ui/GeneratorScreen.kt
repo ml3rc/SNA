@@ -55,7 +55,7 @@ fun GeneratorScreen(session: Session, compactUi: Boolean = false) {
     var port by remember { mutableStateOf(active?.port ?: 1) }
     var z by remember { mutableStateOf(active?.z ?: Impedance.FIFTY) }
     var freqMhz by remember { mutableStateOf(active?.freqHz?.let { "%.6f".format(it / 1e6).trimEnd('0').trimEnd('.', ',') } ?: "1000") }
-    var attenSteps by remember { mutableStateOf(active?.attenSteps ?: 64) }
+    var attenSteps by remember { mutableStateOf(active?.attenSteps ?: 0) }
 
     val freqHz = parseFrequencyMhz(freqMhz)
     val requested = freqHz?.let { GeneratorOutput(port, z, attenSteps, it) }

@@ -33,6 +33,9 @@ client up to 1.5, Android client up to 0.4).
 - New look: warm dark theme with copper and violet accents, traces in network-analyzer colours (S11 yellow, S21
   cyan, S12 magenta, S22 green), notch logo as app icon.
 - Windows MSI upgrades in place (stable upgrade code, build tick in the MSI version).
+- Every output level starts at 0 dB attenuation (sweep, raw detector sweep, generator).
+- Desktop memory stays around 300 MB, under 0.5 GB: Skia renders in software instead of Direct3D, and the JVM
+  runs with a 128 MB heap cap and SerialGC.
 
 ### Documentation
 
