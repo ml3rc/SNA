@@ -9,7 +9,7 @@
   "1 GHz: Auf 1 m passen fünf Wellen, das Signal läuft als Welle durch das Kabel"
  ],
  "4": [
-  "Faustregel: länger als 1/10 der Wellenlänge → als Leitung behandeln, nicht als Draht"
+  "Faustregel: länger als 1/10 der Wellenlänge → als Transmission Line behandeln, nicht als Draht"
  ],
  "5": [
   "Was sieht die Welle? Jeder Zentimeter Kabel ist ein kleines L und ein kleines C"
@@ -27,6 +27,6 @@
   "Z₀ ist der Wellenwiderstand: kein Verlust, gleich für jede Länge und Frequenz"
  ],
  "10": [
-  "Am Ende der Leitung trifft die Welle auf die Last. Ist die Last nicht Z₀, kommt ein Teil zurück."
+  "Am Ende der Leitung trifft die Welle auf die Load. Ist die Load nicht Z₀, kommt ein Teil zurück."
  ]
 }

@@ -15,7 +15,7 @@
   "Der Name sagt wo: S aus, ein.  S21 = aus an Port 2, ein an Port 1"
  ],
  "6": [
-  "Jetzt umgekehrt: Quelle an Port 2, Port 1 mit 50 Ω abgeschlossen"
+  "Jetzt umgekehrt: Source an Port 2, Port 1 mit 50 Ω terminiert"
  ],
  "7": [
   "Vier Zahlen beschreiben das Zweitor: Reflexionen auf der Diagonale, Transmissionen über Kreuz"
@@ -30,10 +30,10 @@
   "Typische Werte"
  ],
  "11": [
-  "Passive Bauteile wirken in beide Richtungen (S21 = S12), ein Verstärker nur in eine"
+  "Passive Bauteile wirken in beide Richtungen (S21 = S12), ein Amp nur in eine"
  ],
  "12": [
-  "Über die Frequenz, z. B. ein 1-GHz-Tiefpass"
+  "Über die Frequenz, z. B. ein 1-GHz-LPF"
  ],
  "13": [
   "Unter 1 GHz kommt das Signal durch (S21 ≈ 0 dB), darüber wird es gesperrt"
@@ -42,9 +42,9 @@
   "Was nicht durchkommt, kommt zurück: S11 steigt, wo S21 fällt"
  ],
  "15": [
-  "Der SNA misst Leistungen in dBm, S11 in dB ist darum nur eine Subtraktion"
+  "Das SNA misst Leistungen in dBm, S11 in dB ist darum nur eine Subtraktion"
  ],
  "16": [
-  "Richtkoppler und Log-Detektor messen diese Leistungen, die Kalibrierung entfernt die Verluste des SNA selbst"
+  "Directional Coupler und Log-Detektor messen diese Leistungen, die Kalibration entfernt die Verluste des SNA selbst"
  ]
 }

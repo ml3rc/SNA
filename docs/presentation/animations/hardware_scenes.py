@@ -115,109 +115,129 @@ class PllSynthesis(Scene):
 
 # ---------------------------------------------------------------------------
 class CouplerInside(Scene):
-    """How a coupled-line directional coupler works: capacitive and magnetic coupling add at CPL, cancel at ISO."""
+    """Two-transformer directional coupler, simplified after the Mini-Circuits ADC-10-4 style schematic
+    (changpuak.ch); not a verified SEDC-10-63+ netlist.
+
+    Current transformer: 1 turn in the line IN -> OUT, N turns from GND to node X (TERM).
+    Voltage transformer: N turns from the line to GND, 1 turn in series between X and CPL.
+    With both ports at 50 ohm: U_X = (Z0 I - U) / 2N, CPL = U_X + U/N = (U + Z0 I) / 2N.
+    Forward (U = Z0 I): U_X = 0, CPL = U/N.  Reverse (U = -Z0 I): U_X = -U/N, CPL = 0.
+    Voltage arrows point from + to -. Formulas are plain text (no new mathtext renders).
+    """
 
     def construct(self):
         cap = Captions(self)
-        title = title_card("Inside the directional coupler")
+        title = title_card("Directional coupler principle (simplified)")
         self.play(FadeIn(title, shift=DOWN * 0.2))
         self.play(title.animate.scale(0.75).to_edge(UP, buff=0.25))
 
-        ym, yc, xl, xr = 0.9, -0.4, -3.0, 3.0
-        main = Line(at(-5.6, ym), at(5.6, ym), color=RF, stroke_width=6)
-        lbl_in = label("IN", 24, TEXT, weight=BOLD).move_to(at(-6.1, ym))
-        lbl_out = label("OUT", 24, TEXT, weight=BOLD).move_to(at(6.2, ym))
-        cpl_line = Line(at(xl, yc), at(xr, yc), color=MEAS, stroke_width=6)
-        cpl_down = Line(at(xl, yc), at(xl, yc - 1.15), color=MEAS, stroke_width=4)
-        cpl_lbl = VGroup(label("CPL", 24, MEAS, weight=BOLD), label("→ detector", 20, MUTED)
-                         ).arrange(DOWN, buff=0.06).move_to(at(xl, yc - 1.6))
-        iso = VGroup(resistor(at(xr, yc), at(xr, yc - 1.15), MUTED), ground(at(xr, yc - 1.15), MUTED))
-        iso_lbl = VGroup(label("ISO", 24, MUTED, weight=BOLD), label("50 Ω inside", 20, MUTED)
-                         ).arrange(DOWN, buff=0.06).move_to(at(xr + 1.15, yc - 0.6))
-        main_lbl = label("main line", 20, RF).move_to(at(-4.4, ym + 0.35))
-        cpl_name = label("coupled line", 20, MEAS).move_to(at(0, yc - 0.35))
+        yl = 2.3
+        w3 = dict(stroke_width=3)
+        # --- main line with the current transformer's single turn ---------------------------------
+        ct_pri = inductor(at(-4.0, yl), at(-3.2, yl), CORE1, n=2, stroke=4)
+        main = VGroup(Line(at(-5.6, yl), at(-4.0, yl), color=RF, stroke_width=5),
+                      Line(at(-3.2, yl), at(5.6, yl), color=RF, stroke_width=5))
+        ports = VGroup(label("IN", 24, TEXT).move_to(at(-6.1, yl)),
+                       label("OUT", 24, TEXT).move_to(at(6.15, yl)))
+        # current transformer: N turns from GND to node X
+        ct_sec = inductor(at(-4.6, 1.8), at(-2.6, 1.8), CORE1, n=4).rotate(PI, about_point=at(-3.6, 1.8))
+        ct_core = VGroup(*[Line(at(-4.65, y), at(-2.55, y), color=MUTED, stroke_width=2) for y in (2.08, 2.0)])
+        xX = -1.0                                    # node X
+        ct_wires = VGroup(Line(at(-4.6, 1.8), at(-4.6, 1.35), color=CORE1, **w3), ground(at(-4.6, 1.35), CORE1),
+                          Line(at(-2.6, 1.8), at(-2.6, 0.2), color=CORE1, **w3),
+                          Line(at(-2.6, 0.2), at(xX, 0.2), color=CORE1, **w3))
+        current = VGroup(ct_pri, ct_sec, ct_core)
+        # voltage transformer: N turns line -> GND (vertical), 1 turn in series X -> CPL
+        xp, xs, top, bot = 1.6, 2.4, 2.0, 0.8
+        vt_pri = inductor(ORIGIN, RIGHT * 1.2, CORE0, n=4).rotate(-PI / 2, about_point=ORIGIN).shift(at(xp, top))
+        vt_sec = inductor(ORIGIN, RIGHT * 1.2, CORE0, n=2).rotate(PI / 2, about_point=ORIGIN).shift(at(xs, bot))
+        vt_core = VGroup(*[Line(at(x, top + 0.05), at(x, bot - 0.05), color=MUTED, stroke_width=2) for x in (1.96, 2.04)])
+        voltage = VGroup(vt_pri, vt_sec, vt_core)
+        vt_wires = VGroup(Line(at(xp, yl), at(xp, top), color=CORE0, **w3), Dot(at(xp, yl), radius=0.07, color=RF),
+                          Line(at(xp, bot), at(xp, bot - 0.1), color=CORE0, **w3), ground(at(xp, bot - 0.1), CORE0))
+        names = VGroup(label("Current transformer", 20, CORE1).move_to(at(-3.6, 2.85)),
+                       label("1 : N", 20, MUTED).move_to(at(-1.95, 1.75)),
+                       label("Voltage transformer", 20, CORE0).move_to(at(2.0, 2.85)),
+                       label("N : 1", 20, MUTED).move_to(at(3.0, 0.45)))
 
-        self.play(Create(main), FadeIn(lbl_in), FadeIn(lbl_out), FadeIn(main_lbl))
-        cap.show("Two lines run close together over a short distance, without touching")
-        self.play(Create(cpl_line), FadeIn(cpl_name))
-        self.play(Create(cpl_down), FadeIn(cpl_lbl), FadeIn(iso), FadeIn(iso_lbl))
+        self.play(Create(main), Create(ct_pri), FadeIn(ports))
+        cap.show("The SEDC-10-63+ is a transformer-type directional coupler")
+        self.play(FadeIn(current), FadeIn(voltage), Create(ct_wires), Create(vt_wires), FadeIn(names))
         self.wait(1)
 
-        # --- the two coupling mechanisms ------------------------------------------------------------
-        cap.show("They couple twice: through the electric field (a capacitance C) and the magnetic field (M)")
-        caps_ = VGroup(*[capacitor(at(x, ym), at(x, yc), CORE0) for x in (-2.0, -0.7, 0.7, 2.0)])
-        c_lbl = label("C", 24, CORE0, weight=BOLD).move_to(at(-2.35, (ym + yc) / 2))
-        loops = VGroup(*[DashedVMobject(Ellipse(width=0.5, height=1.7, color=CORE1, stroke_width=2.5), num_dashes=18)
-                         .move_to(at(x, (ym + yc) / 2)) for x in (-1.35, 0.0, 1.35)])
-        m_lbl = label("M", 24, CORE1, weight=BOLD).move_to(at(2.4, (ym + yc) / 2))
-        self.play(Create(caps_), FadeIn(c_lbl))
-        self.play(Create(loops), FadeIn(m_lbl))
+        # --- ports: node X -> internal termination, X -> voltage winding -> CPL --------------------
+        dot_x = Dot(at(xX, 0.2), radius=0.07, color=TEXT)
+        x_lab = label("X", 22, TEXT).next_to(dot_x, UP, buff=0.1)
+        term = block("Internal termination", "50 Ω", MUTED, 2.8, 1.0, title_size=20, sub_size=18).move_to(at(xX, -1.1))
+        cpl = block("CPL", "50 Ω → detector", MEAS, 2.2, 1.0, title_size=24, sub_size=18).move_to(at(4.8, 0.6))
+        port_wires = VGroup(Line(at(xX, 0.2), at(xX, -0.6), color=MUTED, **w3),
+                            Line(at(xX, 0.2), at(xs, 0.2), color=CORE0, **w3), Line(at(xs, 0.2), at(xs, bot), color=CORE0, **w3),
+                            Line(at(xs, top), at(3.6, top), color=MEAS, **w3), Line(at(3.6, top), at(3.6, 0.6), color=MEAS, **w3),
+                            Line(at(3.6, 0.6), at(3.7, 0.6), color=MEAS, **w3))
+
+        def varrow(a, b, color):
+            return Arrow(at(*a), at(*b), buff=0, color=color, stroke_width=3, tip_length=0.16,
+                         max_tip_length_to_length_ratio=0.3)
+        i_arrow = varrow((-5.5, yl + 0.3), (-4.6, yl + 0.3), RF)
+        i_lab = label("I", 24, RF).next_to(i_arrow, UP, buff=0.05)
+        is_arrow = varrow((-2.3, 1.3), (-2.3, 0.55), CORE1)
+        is_lab = label("I/N", 22, CORE1).next_to(is_arrow, RIGHT, buff=0.1)
+        cap.show("Current transformer: one turn in the line, N turns to node X. A current sample I/N flows into X")
+        self.play(GrowArrow(i_arrow), FadeIn(i_lab), GrowArrow(is_arrow), FadeIn(is_lab),
+                  Create(port_wires[0]), Create(port_wires[1]), FadeIn(dot_x), FadeIn(x_lab), FadeIn(term))
         self.wait(1.5)
 
-        y_c_arr, y_m_arr = yc - 0.75, yc - 1.2
+        u_arrow = varrow((1.25, 1.9), (1.25, 0.9), CORE0)
+        u_lab = label("U", 24, CORE0).next_to(u_arrow, LEFT, buff=0.1)
+        e_arrow = varrow((2.75, 1.9), (2.75, 0.9), CORE0)
+        e_lab = label("U/N", 22, CORE0).next_to(e_arrow, RIGHT, buff=0.08)
+        cap.show("Voltage transformer: N turns across the line, one turn in series between X and CPL. It adds U/N")
+        self.play(GrowArrow(u_arrow), FadeIn(u_lab), GrowArrow(e_arrow), FadeIn(e_lab),
+                  Create(port_wires[2:]), FadeIn(cpl))
+        self.wait(1.5)
 
-        def arrows(direction_m):
-            """Coupled currents for a wave travelling with main-line current direction `direction_m` (+1 = right).
-            C pushes current out both ways from the middle, M drives it against the main current."""
-            cl = VGroup(Arrow(at(-0.3, y_c_arr), at(-2.4, y_c_arr), buff=0, color=CORE0, stroke_width=5, tip_length=0.2),
-                        Arrow(at(0.3, y_c_arr), at(2.4, y_c_arr), buff=0, color=CORE0, stroke_width=5, tip_length=0.2))
-            a, b = (2.4, -2.4) if direction_m > 0 else (-2.4, 2.4)
-            ml = Arrow(at(a, y_m_arr), at(b, y_m_arr), buff=0, color=CORE1, stroke_width=5, tip_length=0.2)
-            return cl, ml
+        ux_arrow = varrow((-0.65, 0.1), (-0.65, -0.5), TEXT)
+        ux_lab = label("Uₓ", 22, TEXT).next_to(ux_arrow, RIGHT, buff=0.08)
+        f_cpl = label("CPL = Uₓ + U/N", 22, MEAS).move_to(at(4.8, -0.25))
+        cap.show("Both 50 Ω loads take the current sample at X. On the way to CPL the voltage winding adds U/N: "
+                 "CPL = Uₓ + U/N")
+        self.play(GrowArrow(ux_arrow), FadeIn(ux_lab), FadeIn(f_cpl))
+        self.wait(1.5)
 
-        legend = VGroup(VGroup(Line(LEFT * 0.3, RIGHT * 0.3, color=CORE0, stroke_width=5),
-                               label("through C: flows out both ways", 20, MUTED)).arrange(RIGHT, buff=0.15),
-                        VGroup(Line(LEFT * 0.3, RIGHT * 0.3, color=CORE1, stroke_width=5),
-                               label("through M: flows against the main current", 20, MUTED)).arrange(RIGHT, buff=0.15)
-                        ).arrange(RIGHT, buff=0.7).move_to(at(0, 2.3))
-        # the explanation rows sit below the circuit, clear of the labels
-        self.play(FadeOut(cpl_name), FadeIn(legend))
+        path = [(-5.6, yl), (5.6, yl)]
+        cap.show("Forward wave (U = Z0I): the current and voltage samples balance at X, so Uₓ = 0. "
+                 "The termination gets nothing, CPL gets U/N")
+        travel(self, path, RF, run_time=1.6)
+        r_x = label("= 0", 22, TEXT).next_to(ux_lab, RIGHT, buff=0.1)
+        r_cpl = label("= U/N", 22, MEAS).next_to(f_cpl, DOWN, buff=0.12)
+        self.play(FadeIn(r_x), FadeIn(r_cpl), highlight(cpl, MEAS))
+        self.wait(1.5)
 
-        # --- forward wave ------------------------------------------------------------------------------
-        cap.show("Forward wave IN → OUT: at the CPL end both currents point the same way, at the ISO end they cancel")
-        g, an = travel_anim([(-5.6, ym), (5.6, ym)], RF, run_time=2.0)
-        fwd_main = Arrow(at(-1.2, ym + 0.45), at(1.2, ym + 0.45), buff=0, color=RF, stroke_width=5, tip_length=0.2)
-        self.add(g)
-        self.play(an, GrowArrow(fwd_main))
-        self.remove(g)
-        cl, ml = arrows(+1)
-        self.play(GrowArrow(cl[0]), GrowArrow(cl[1]))
-        self.play(GrowArrow(ml))
-        add_l = chip("add up → CPL", MEAS, 22).move_to(at(-3.0, -3.1))
-        cancel_r = chip("cancel → ISO gets nothing", MUTED, 22).move_to(at(3.0, -3.1))
-        g2, a2 = travel_anim([(xl, yc), (xl, yc - 1.15)], MEAS, run_time=0.8, r=0.08)
-        self.add(g2)
-        self.play(a2, FadeIn(add_l), FadeIn(cancel_r))
-        self.remove(g2)
+        cap.show("Reverse wave (U = −Z0I): the current and its sample flip, so Uₓ = −U/N. "
+                 "At CPL: −U/N + U/N = 0")
+        travel(self, path[::-1], POWER, run_time=1.6)
+        i_rev = varrow((-4.6, yl + 0.3), (-5.5, yl + 0.3), POWER)
+        is_rev = varrow((-2.3, 0.55), (-2.3, 1.3), CORE1)
+        r_x2 = label("= −U/N", 22, POWER).next_to(ux_lab, RIGHT, buff=0.1)
+        r_cpl2 = label("= 0", 22, MUTED).move_to(r_cpl)
+        self.play(Transform(i_arrow, i_rev), Transform(is_arrow, is_rev), Transform(r_x, r_x2), Transform(r_cpl, r_cpl2))
+        self.wait(1.5)
+
+        cap.show("The internal termination absorbs this sample, not the reverse wave itself: that continues to IN")
+        self.play(highlight(term, POWER))
+        onward = label("← continues to IN", 20, POWER).move_to(at(-1.0, yl + 0.35))
+        travel(self, path[::-1], POWER, run_time=1.6)
+        self.play(FadeIn(onward))
+        self.wait(1.5)
+
+        cap.show("The turns ratio N sets the coupling: about −10 dB for the SEDC-10-63+; "
+                 "finite directivity lets a little of the reverse wave through", MEAS)
+        self.play(FadeOut(onward), FadeOut(r_x), FadeOut(r_cpl),
+                  Transform(i_arrow, varrow((-5.5, yl + 0.3), (-4.6, yl + 0.3), RF)),
+                  Transform(is_arrow, varrow((-2.3, 1.3), (-2.3, 0.55), CORE1)))
+        summary = label("SEDC-10-63+: coupling ≈ −10 dB", 24, TEXT).move_to(at(1.5, -2.3))
+        self.play(FadeIn(summary))
         self.wait(2)
-
-        # --- backward wave -----------------------------------------------------------------------------
-        cap.show("Reflected wave OUT → IN: the main current turns, so does the M part. Now they add at ISO, the 50 Ω eats it.")
-        self.play(FadeOut(fwd_main), FadeOut(ml), FadeOut(add_l), FadeOut(cancel_r))
-        g, an = travel_anim([(5.6, ym), (-5.6, ym)], POWER, run_time=2.0)
-        bwd_main = Arrow(at(1.2, ym + 0.45), at(-1.2, ym + 0.45), buff=0, color=POWER, stroke_width=5, tip_length=0.2)
-        self.add(g)
-        self.play(an, GrowArrow(bwd_main))
-        self.remove(g)
-        _, ml2 = arrows(-1)
-        self.play(GrowArrow(ml2))
-        cancel_l = chip("cancel → CPL stays dark", MUTED, 22).move_to(at(-3.0, -3.1))
-        add_r = chip("add up → absorbed in 50 Ω", POWER, 22).move_to(at(3.0, -3.1))
-        g2, a2 = travel_anim([(xr, yc), (xr, yc - 1.05)], POWER, run_time=0.8, r=0.08)
-        self.add(g2)
-        self.play(a2, FadeIn(cancel_l), FadeIn(add_r))
-        self.remove(g2)
-        self.wait(2)
-
-        # --- summary ---------------------------------------------------------------------------------------
-        cap.show("So CPL sees only the forward wave, about 10 dB weaker. Turned around, the same part sees only the reflection.",
-                 MEAS)
-        self.play(FadeOut(VGroup(cl, ml2, bwd_main, cancel_l, add_r)))
-        summ = VGroup(label("SEDC-10-63+: coupling ≈ −10 dB", 24, TEXT, weight=BOLD),
-                      label("The cancellation is never perfect (directivity): a small leak limits the smallest S11", 20, MUTED)
-                      ).arrange(DOWN, buff=0.2).move_to(at(0, -3.05))
-        self.play(FadeIn(summ))
-        self.wait(3)
 
 
 # ---------------------------------------------------------------------------
@@ -229,25 +249,36 @@ class DirectionalCoupler(Scene):
         self.play(FadeIn(title, shift=DOWN * 0.2))
 
         # ---- Part A: principle -------------------------------------------------
-        y_main, y_cpl = 0.85, 0.45
-        box = RoundedRectangle(corner_radius=0.12, width=3.6, height=2.3, stroke_color=MEAS,
+        y_main = 0.85
+        box = RoundedRectangle(corner_radius=0.12, width=3.8, height=2.3, stroke_color=MEAS,
                                stroke_width=3, fill_color=PANEL, fill_opacity=1).move_to(at(0, 0.45))
-        name = label("SEDC-10-63+", 20, MUTED).move_to(at(0, 1.35))
-        main = Line(at(-1.8, y_main), at(1.8, y_main), color=RF, stroke_width=4)
-        cline = Line(at(-1.0, y_cpl), at(1.0, y_cpl), color=MEAS, stroke_width=3)
+        name = label("SEDC-10-63+ · transformer", 17, MUTED).move_to(at(0, 1.35))
+        main = Line(at(-1.9, y_main), at(1.9, y_main), color=RF, stroke_width=4)
+        # Functional transformer symbols (voltage and current sample), not the SEDC netlist: primaries tap the
+        # main line, the secondaries are in series between CPL and the internal 50 ohm.
+        xfs = VGroup(*[transformer_symbol().scale(0.4).move_to(at(x, 0.5)) for x in (-0.5, 0.5)])
+        y_cpl = xfs[0][1].get_top()[1]                     # secondary winding ends
+        xl0, xl1 = xfs[0][1].get_left()[0], xfs[0][1].get_right()[0]
+        xr0, xr1 = xfs[1][1].get_left()[0], xfs[1][1].get_right()[0]
+        cline = VGroup(xfs,
+                       *[Line(at(x, y_main), at(x, xfs[0][0].get_top()[1]), color=MEAS, stroke_width=2.5)
+                         for x in (-0.5, 0.5)],
+                       Line(at(-1.0, y_cpl), at(xl0, y_cpl), color=MEAS, stroke_width=3),
+                       Line(at(xl1, y_cpl), at(xr0, y_cpl), color=MEAS, stroke_width=3),
+                       Line(at(xr1, y_cpl), at(1.0, y_cpl), color=MEAS, stroke_width=3))
         cpl_out = Line(at(-1.0, y_cpl), at(-1.0, -0.7), color=MEAS, stroke_width=3)
         term = resistor(at(1.0, y_cpl), at(1.0, -0.45), MUTED)
         gnd = ground(at(1.0, -0.45), MUTED)
-        term_lbl = label("50 Ω", 20, MUTED).move_to(at(1.48, 0.0))
-        lbl_in = label("IN", 20, MUTED).move_to(at(-1.55, 1.1))
-        lbl_out = label("OUT", 20, MUTED).move_to(at(1.45, 1.1))
+        term_lbl = label("50 Ω", 20, MUTED).move_to(at(1.5, -0.03))
+        lbl_in = label("IN", 20, MUTED).move_to(at(-1.65, 1.1))
+        lbl_out = label("OUT", 20, MUTED).move_to(at(1.55, 1.1))
         lbl_cpl = label("CPL", 20, MEAS).move_to(at(-0.65, -0.3))
         coupler = VGroup(box, name, main, cline, cpl_out, term, gnd, term_lbl, lbl_in, lbl_out, lbl_cpl)
 
         src = block("Source", None, RF, 2.0, 0.9, sub_size=20).move_to(at(-5.2, y_main))
         dut = block("DUT", None, LINE, 2.0, 0.9, sub_size=20).move_to(at(5.2, y_main))
-        w1 = Line(at(-4.2, y_main), at(-1.8, y_main), color=RF, stroke_width=4)
-        w2 = Line(at(1.8, y_main), at(4.2, y_main), color=RF, stroke_width=4)
+        w1 = Line(at(-4.2, y_main), at(-1.9, y_main), color=RF, stroke_width=4)
+        w2 = Line(at(1.9, y_main), at(4.2, y_main), color=RF, stroke_width=4)
         det = block("Detector", "AD8318", MEAS, 2.2, 0.85, sub_size=20).move_to(at(-1.0, -1.65))
         w_det = Line(at(-1.0, -0.7), at(-1.0, -1.225), color=MEAS, stroke_width=3)
 

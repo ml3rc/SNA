@@ -31,6 +31,7 @@ Sources: `diagrams/*.drawio` (open in draw.io desktop or diagrams.net). Exports 
 | hw-07 | [Pads](diagrams/export/hw-07-pads.png) | 50→75 Ω minimum-loss pad, 5.6 dB T-pad, with the math |
 | hw-08 | [PCB stackup](diagrams/export/hw-08-pcb-stackup.png) | 4 layers, coplanar waveguide, layout rules |
 | hw-09 | [Schematic sheets](diagrams/export/hw-09-schematic-sheets.png) | The 6 Altium sheets and how they connect |
+| hw-10 | [Transformer coupler](diagrams/export/hw-10-transformer-coupler.png) | Simplified voltage/current sampling and sum/difference to separate directions |
 | fw-01 | [Dual core](diagrams/export/fw-01-dual-core.png) | Core 0 / core 1 split, queues, cancel |
 | fw-02 | [Layers](diagrams/export/fw-02-layers.png) | application → state → blocks → HAL |
 | fw-03 | [Modes](diagrams/export/fw-03-modes.png) | IDLE and the four modes |
@@ -108,7 +109,7 @@ in the scenes (every `Captions.show()` starts a step unless `step=False`).
 | [Reflections](animations/videos/Reflections.mp4) | 75 s | Pulse on matched / open / short / 100 Ω, why the reflection is + or − (current / voltage at the end), Γ formula and scale, power and dB table, S11 of 50 Ω ∥ 2 pF over frequency |
 | [SParameters](animations/videos/SParameters.mp4) | 53 s | Two-port, a/b waves, S11/S21/S12/S22, naming, matrix, dB scale, typical values, 1 GHz low-pass, power subtraction |
 | [PllSynthesis](animations/videos/PllSynthesis.mp4) | 19 s | PLL loop builds up, VCO locks to 4 GHz, ÷4 → 1 GHz, LD goes high |
-| [CouplerInside](animations/videos/CouplerInside.mp4) | 23 s | Coupled lines: C and M coupling add at CPL and cancel at ISO, reversed for the reflected wave |
+| [CouplerInside](animations/videos/CouplerInside.mp4) | 22 s | Transformer principle: voltage and current samples, both feed CPL and the internal termination; they add or cancel to separate forward and reverse waves |
 | [DirectionalCoupler](animations/videos/DirectionalCoupler.mp4) | 30 s | Coupler principle, one coupler + 6 SP4T, three readings → S11 / S21 |
 | [LogDetector](animations/videos/LogDetector.mp4) | 29 s | AD8318 curve, 16 samples → median, dB as a subtraction |
 | [ImpedancePads](animations/videos/ImpedancePads.mp4) | 20 s | 50 / 75 Ω switch, minimum-loss pad, impedances both ways |

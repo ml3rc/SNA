@@ -43,6 +43,10 @@ pin map: [PINMAP.md](../firmware/protocol/PINMAP.md). Diagrams are draw.io sourc
 
 ### Coupler bank → S-parameters
 
+The SEDC-10-63+ is a transformer-type directional coupler. Transformer voltage and current samples add for one direction and cancel for the other (simplified principle).
+
+![Transformer coupler principle](../presentation/diagrams/export/hw-10-transformer-coupler.png)
+
 ![Coupler paths](../presentation/diagrams/export/hw-06-coupler-paths.png)
 
 ### Pads

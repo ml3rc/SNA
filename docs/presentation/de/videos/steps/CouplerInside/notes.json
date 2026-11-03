@@ -1,17 +1,26 @@
 {
  "1": [
-  "Zwei Leitungen laufen ein kurzes Stück nah nebeneinander, ohne sich zu berühren"
+  "Der SEDC-10-63+ ist ein Directional Coupler mit Transformatoren"
  ],
  "2": [
-  "Sie koppeln doppelt: über das elektrische Feld (Kapazität C) und über das Magnetfeld (M)"
+  "Stromwandler: eine Windung in der Leitung, N Windungen zum Knoten X. Ein Strom-Sample I/N fliesst in X"
  ],
  "3": [
-  "Hinlaufende Welle IN → OUT: Am CPL-Ende zeigen beide Ströme in dieselbe Richtung, am ISO-Ende heben sie sich auf"
+  "Spannungswandler: N Windungen von der Leitung nach GND, eine Windung in Serie zwischen X und CPL. Sie addiert U/N"
  ],
  "4": [
-  "Reflektierte Welle OUT → IN: Der Hauptstrom dreht, damit auch der M-Anteil. Jetzt addieren sie sich bei ISO, die 50 Ω schlucken es."
+  "Am Knoten X fliesst das Strom-Sample in die 50-Ω-Loads. Auf dem Weg zu CPL addiert die Spannungswicklung U/N: CPL = Uₓ + U/N"
  ],
  "5": [
-  "CPL sieht also nur die hinlaufende Welle, etwa 10 dB schwächer. Umgedreht sieht derselbe Koppler nur die Reflexion."
+  "Hinlaufende Welle (U = Z₀I): Strom- und Spannungs-Sample gleichen sich bei X aus, Uₓ = 0. Die Terminierung bekommt nichts, CPL bekommt U/N"
+ ],
+ "6": [
+  "Rücklaufende Welle (U = −Z₀I): Der Strom und sein Sample drehen, Uₓ = −U/N. Bei CPL: −U/N + U/N = 0"
+ ],
+ "7": [
+  "Die interne Terminierung nimmt nur dieses Sample auf, nicht die rücklaufende Welle selbst: die läuft weiter zu IN"
+ ],
+ "8": [
+  "Das Windungsverhältnis N bestimmt die Kopplung: beim SEDC-10-63+ etwa −10 dB; wegen der endlichen Directivity kommt ein kleiner Teil der rücklaufenden Welle durch"
  ]
 }

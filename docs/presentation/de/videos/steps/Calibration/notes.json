@@ -3,10 +3,10 @@
   "Client-Assistent: 5 Roh-Sweeps mit bekannten Standards (pro Impedanz)"
  ],
  "2": [
-  "Rohes S11 mit Open und mit Short: reale Pfade haben Verlust und Welligkeit"
+  "Rohes S11 mit Open und mit Short: reale Pfade haben Verluste und Ripple"
  ],
  "3": [
-  "S11-Korrektur = Mittel aus Open und Short: die Welligkeit hebt sich auf"
+  "S11-Korrektur = Mittelwert aus Open und Short: der Ripple hebt sich auf"
  ],
  "4": [
   "S21-/S12-Korrektur = die Thru-Messung selbst"

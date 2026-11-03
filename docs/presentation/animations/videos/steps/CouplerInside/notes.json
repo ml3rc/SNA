@@ -1,17 +1,26 @@
 {
  "1": [
-  "Two lines run close together over a short distance, without touching"
+  "The SEDC-10-63+ is a transformer-type directional coupler"
  ],
  "2": [
-  "They couple twice: through the electric field (a capacitance C) and the magnetic field (M)"
+  "Current transformer: one turn in the line, N turns to node X. A current sample I/N flows into X"
  ],
  "3": [
-  "Forward wave IN → OUT: at the CPL end both currents point the same way, at the ISO end they cancel"
+  "Voltage transformer: N turns across the line, one turn in series between X and CPL. It adds U/N"
  ],
  "4": [
-  "Reflected wave OUT → IN: the main current turns, so does the M part. Now they add at ISO, the 50 Ω eats it."
+  "Both 50 Ω loads take the current sample at X. On the way to CPL the voltage winding adds U/N: CPL = Uₓ + U/N"
  ],
  "5": [
-  "So CPL sees only the forward wave, about 10 dB weaker. Turned around, the same part sees only the reflection."
+  "Forward wave (U = Z0I): the current and voltage samples balance at X, so Uₓ = 0. The termination gets nothing, CPL gets U/N"
+ ],
+ "6": [
+  "Reverse wave (U = −Z0I): the current and its sample flip, so Uₓ = −U/N. At CPL: −U/N + U/N = 0"
+ ],
+ "7": [
+  "The internal termination absorbs this sample, not the reverse wave itself: that continues to IN"
+ ],
+ "8": [
+  "The turns ratio N sets the coupling: about −10 dB for the SEDC-10-63+; finite directivity lets a little of the reverse wave through"
  ]
 }

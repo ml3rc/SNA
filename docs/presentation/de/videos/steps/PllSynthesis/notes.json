@@ -3,21 +3,21 @@
   "Ein 100-MHz-Quarzoszillator ist die Referenz"
  ],
  "2": [
-  "Der Phasendetektor vergleicht Referenz und Rückkopplung"
+  "Der Phase Detector vergleicht Referenz und Feedback"
  ],
  "3": [
-  "Ladungspumpe + Schleifenfilter machen aus dem Phasenfehler eine Abstimmspannung"
+  "Charge Pump + Loop Filter machen aus dem Phasenfehler die Tuning-Spannung"
  ],
  "4": [
-  "Die VCO-Frequenz wird durch N geteilt und zurückgeführt"
+  "Die VCO-Frequenz wird durch N geteilt und zurückgeführt (Feedback)"
  ],
  "5": [
-  "Die Schleife schließt sich: der VCO wird auf N × f_PFD gezogen"
+  "Der Loop schliesst sich: der VCO wird auf N × f_PFD gezogen"
  ],
  "6": [
   "Der Ausgangsteiler erreicht die tiefen Frequenzen"
  ],
  "7": [
-  "Fractional N (F/M) ergibt feine Frequenzschritte; der SNA misst 50 MHz – 6 GHz"
+  "Fractional-N (F/M) ergibt feine Frequenzschritte; das SNA misst 50 MHz – 6 GHz"
  ]
 }

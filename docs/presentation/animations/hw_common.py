@@ -75,6 +75,16 @@ def inductor(start, end, color=TEXT, n=3, stroke=3):
     return arcs
 
 
+def transformer_symbol(color=MEAS):
+    """IEC windings and magnetic core; a functional symbol, not a device netlist."""
+    upper = inductor(np.array([-0.6, 0.28, 0]), np.array([0.6, 0.28, 0]), color)
+    lower = inductor(np.array([-0.6, -0.28, 0]), np.array([0.6, -0.28, 0]), color)
+    lower.rotate(PI, about_point=np.array([0, -0.28, 0]))
+    core = VGroup(*[Line(np.array([-0.65, y, 0]), np.array([0.65, y, 0]),
+                        color=MUTED, stroke_width=2) for y in (-0.06, 0.06)])
+    return VGroup(upper, lower, core)
+
+
 def capacitor(top, bottom, color=TEXT, stroke=3, gap=0.09, plate=0.34):
     """Capacitor between two vertically aligned points (plates horizontal)."""
     t, b = np.array(top, dtype=float), np.array(bottom, dtype=float)

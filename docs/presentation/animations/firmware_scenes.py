@@ -17,7 +17,7 @@ from fw_common import *
 class MeasurementFlow(Scene):
     def construct(self):
         cap = Captions(self)
-        title = title_card("One measurement point", "S11 at 1 GHz, from click to chart")
+        title = title_card("One measurement point")
         self.play(FadeIn(title))
         self.wait(0.5)
         self.play(title.animate.scale(0.7).to_edge(UP, buff=0.2))
@@ -351,7 +351,7 @@ def cable(f):     # the DUT: a 75-ohm cable's true loss
 class Calibration(Scene):
     def construct(self):
         cap = Captions(self)
-        title = title_card("Calibration", "removing the analyzer's own losses")
+        title = title_card("Calibration")
         self.play(FadeIn(title))
         self.wait(0.5)
         self.play(title.animate.scale(0.7).to_edge(UP, buff=0.2))
