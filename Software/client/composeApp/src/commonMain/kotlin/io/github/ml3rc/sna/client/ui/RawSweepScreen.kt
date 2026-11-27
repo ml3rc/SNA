@@ -12,12 +12,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import io.github.ml3rc.sna.client.data.FileStore
+import io.github.ml3rc.sna.client.data.saveFile
 import io.github.ml3rc.sna.client.protocol.DetectorPath
 import io.github.ml3rc.sna.client.session.Session
 import io.github.ml3rc.sna.client.session.Tool
@@ -39,6 +42,7 @@ fun RawSweepScreen(session: Session, compactUi: Boolean = false) {
     val points by raw.points.collectAsState()
     val running by raw.running.collectAsState()
     val error by raw.error.collectAsState()
+    var exportError by remember { mutableStateOf<String?>(null) }
     val measured by raw.measured.collectAsState()
     val sweepRunning by session.sweep.running.collectAsState()
     val scope = rememberCoroutineScope()
@@ -89,11 +93,12 @@ fun RawSweepScreen(session: Session, compactUi: Boolean = false) {
                 }
                 OutlinedButton(enabled = running, onClick = { raw.abort() }) { Text("Abort") }
                 OutlinedButton(enabled = !running && points.any { p -> used.any { p.detectorRaw(it) != null } }, onClick = {
-                    scope.launch { FileStore.save("raw-detector-sweep.csv", raw.toCsv()) }
+                    scope.launch { exportError = saveFile("raw-detector-sweep.csv", raw.toCsv()) }
                 }) { Text("Export CSV") }
             }
             ErrorText(gate.reason, "raw-blocked")
             ErrorText(error, "raw-error")
+            ErrorText(exportError, "raw-export-error")
             val unlocked = points.count { it.measured && !it.locked }
             if (unlocked > 0) ErrorText("$unlocked points measured without confirmed source lock")
         }

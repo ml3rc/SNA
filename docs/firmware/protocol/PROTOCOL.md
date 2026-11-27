@@ -213,7 +213,9 @@ See LEDs and SDI button for the test itself.
 | `src_en` | `true`/`false`: the RF source as a whole (synthesizer, amplifier, attenuator) |
 
 - The source boots powered up and parked at 1 GHz and stays running so its temperature is stable; `src_en:false` is
-  the only way to turn it off, and the next sweep, generator start, `src_en:true` or `mode_exit` powers it up again.
+  the only way to turn it off, and the next sweep, generator start, `src_en:true` or `mode_exit` powers it up again
+  (`src_en:true` and `mode_exit` retune it to its last frequency with the power-up double write; `src_en:true` answers
+  `tune_failed` if that fails, and the source then stays terminated).
 - `port` 1/2 switches the source on only while it is enabled; otherwise the port is just remembered
   (`"source_on":false`). `port` 0 and `src_en:false` park a source that is on first.
 - `lpf`, `cplr` and `src_freq` need the output terminated (`output_active`; use `port` 0 first).

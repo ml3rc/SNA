@@ -105,10 +105,14 @@ Details, toolchain setup and tests: [firmware README](Software/firmware/README.m
   not measured limits.
 - Power meter readings are approximate, uncalibrated dBm.
 - The PCB has loss, and with this design it is not suitable for measurements that need to be accurate.
-- Android saves exports to app-private storage (no file picker).
 
 ## Acknowledgements
 
 The RF architecture, PCB stackup and several firmware details (e.g. the MAX2871 charge-pump
 linearity mode) follow [LibreVNA](https://github.com/jankae/LibreVNA), which also serves as the
 reference instrument for verification.
+
+## License
+
+[MIT](LICENSE), covering the software, the hardware design files and the documentation.
+The vendored [cJSON](Software/firmware/src/third_party/cJSON/) keeps its own MIT license.

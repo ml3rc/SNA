@@ -734,7 +734,12 @@ static void test_manual_invariants(void) {
     assert(rf_state_get_source() == RF_STATE_SOURCE_OFF && !source_enabled && !amp_enabled && hw_atten == 127);
     cmd("{\"cmd\":\"manual\",\"id\":1,\"block\":\"port\",\"value\":2}");
     assert(has("\"source_on\":false") && output_terminated() && rf_app_get_port() == 2); // remembered, source not on
+    // src_en:true powers the source up and retunes it with the power-up double write
+    // before anything can route it out.
+    freq_writes = 0;
     cmd("{\"cmd\":\"manual\",\"id\":1,\"block\":\"src_en\",\"value\":true}");
+    assert(has("\"ok\":true") && source_enabled && output_terminated());
+    assert(freq_writes == 2 && freq_write_gap_us >= 20000);
     cmd("{\"cmd\":\"manual\",\"id\":1,\"block\":\"port\",\"value\":1}");
     assert(has("\"source_on\":true") && !output_terminated() && rf_app_get_port() == 1);
     cmd("{\"cmd\":\"status\",\"id\":9}"); assert(has("\"mode\":\"manual\""));
@@ -851,7 +856,9 @@ static void test_modes(void) {
     assert(rf_app_manual_port(0) == RF_APP_OK && !rf_app_source_on() && rf_app_get_mode() == RF_APP_MANUAL);
     assert(rf_app_read_temp_c(&temp) == RF_APP_OK && temp == 25.0);
     assert(rf_app_manual_source(false) == RF_APP_OK && !source_enabled);
+    freq_writes = 0;
     assert(rf_app_mode_exit() == RF_APP_OK && source_enabled); assert_rf_off();
+    assert(freq_writes == 2 && freq_write_gap_us >= 20000); // powered up and programmed, not just CE high
     // Invalid values are rejected before anything else.
     assert(rf_app_manual_coupler(4) == RF_APP_ERR_BAD_ARGS && rf_app_manual_lpf(4) == RF_APP_ERR_BAD_ARGS);
     assert(rf_app_set_atten(128) == RF_APP_ERR_BAD_ARGS && rf_app_set_z(60) == RF_APP_ERR_BAD_ARGS);

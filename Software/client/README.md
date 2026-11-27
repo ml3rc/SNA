@@ -138,7 +138,7 @@ testing with the real device.
 - Desktop serial uses `TIMEOUT_READ_SEMI_BLOCKING` and asserts DTR; the firmware only talks to a
   host that asserts DTR. Android asserts DTR too and splits lines on raw bytes.
 - Android keeps the USB session in an activity ViewModel across rotation and window resizing.
-- Android's `FileStore` writes to app-private storage instead of a Storage Access Framework
-  picker.
+- Android's `FileStore` saves and opens through the Storage Access Framework pickers, registered by
+  `MainActivity` (`AndroidFileContext.register`) so a result also reaches a recreated activity.
 - Dropdowns use a plain `Box` + `OutlinedButton` + `DropdownMenu` (Material3's "Exposed"
   dropdown API has changed between Compose Multiplatform versions).

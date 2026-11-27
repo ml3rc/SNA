@@ -76,7 +76,9 @@ class AndroidSerialTransport(private val context: Context) : SerialTransport {
             override fun onReceive(ctx: Context?, intent: Intent?) {
                 runCatching { context.unregisterReceiver(this) }
                 if (!cont.isActive) return
-                if (intent?.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false) == true) {
+                // Ask the manager, not EXTRA_PERMISSION_GRANTED: the system cannot add extras to
+                // this FLAG_IMMUTABLE intent (Android 12+), so the extra would always read false.
+                if (manager.hasPermission(device)) {
                     cont.resume(Unit)
                 } else {
                     cont.cancel(IOException("USB permission denied"))

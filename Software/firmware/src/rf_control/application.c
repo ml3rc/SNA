@@ -119,12 +119,23 @@ rf_app_result_t rf_app_mode_enter(rf_app_mode_t next) {
     return RF_APP_OK;
 }
 
+// Leaves OFF (after `manual src_en:false`): powers the source up and retunes it
+// to its last frequency, which does the power-up double write. A source that is
+// already running is left as it is.
+static bool wake_source(void) {
+    if (rf_state_get_source() != RF_STATE_SOURCE_OFF) return true;
+    rf_state_set_source(RF_STATE_SOURCE_PARKED);
+    uint64_t freq_hz = rf_state_get_freq();
+    return rf_state_set_freq(freq_hz != 0 ? freq_hz : SNA_FREQ_DEFAULT);
+}
+
 rf_app_result_t rf_app_mode_exit(void) {
     if (sweep_active) return RF_APP_ERR_BUSY; // the caller ends the session first
     // IDLE is always the same hardware state: source running and parked (also
     // after `manual src_en:false`), generator and power measurement off.
     generator_on = false;
     power_running = false;
+    wake_source(); // a failed tune leaves it parked; the next sweep or generator start retries
     rf_state_set_source(RF_STATE_SOURCE_PARKED);
     mode = RF_APP_IDLE;
     return RF_APP_OK;
@@ -418,7 +429,7 @@ rf_app_result_t rf_app_manual_source(bool on) {
     if (r != RF_APP_OK) return r;
     // Switching on parks it; an already running source is left as it is.
     if (!on) rf_state_set_source(RF_STATE_SOURCE_OFF);
-    else if (rf_state_get_source() == RF_STATE_SOURCE_OFF) rf_state_set_source(RF_STATE_SOURCE_PARKED);
+    else if (!wake_source()) return RF_APP_ERR_TUNE_FAILED;
     return RF_APP_OK;
 }
 

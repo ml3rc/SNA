@@ -41,7 +41,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -178,10 +177,13 @@ class SnaClient(private val transport: SerialTransport, private val scope: Corou
         val deferred = CompletableDeferred<JsonObject>()
         pending.update { it + (id to Pending(deferred, kind)) }
         try {
-            return withTimeout(10_000) {
+            // A timeout is an ordinary failure, not a cancellation: withTimeout's
+            // TimeoutCancellationException would silently end callers' loops that rethrow
+            // CancellationException (the status poller, refresh collectors).
+            return withTimeoutOrNull(10_000) {
                 write(buildJsonObject { build(id) }, kind)
                 deferred.await()
-            }
+            } ?: throw SnaProtocolException("Device did not respond (timed out)", "timeout")
         } finally {
             pending.update { it - id }
         }
@@ -316,7 +318,8 @@ class SnaClient(private val transport: SerialTransport, private val scope: Corou
         try {
             write(payload, TrafficKind.COMMAND)
             while (true) {
-                val obj = withTimeout(60_000) { channel.receive() }
+                val obj = withTimeoutOrNull(60_000) { channel.receive() }
+                    ?: throw SnaProtocolException("Device did not respond (sweep timed out)", "timeout")
                 if ("done" in obj) {
                     if (!obj.isOk()) {
                         val error = obj.deviceError()

@@ -27,7 +27,7 @@ class SnaSessionViewModel(application: Application) : AndroidViewModel(applicati
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AndroidFileContext.appContext = applicationContext
+        AndroidFileContext.register(this)
         val owner = ViewModelProvider(this)[SnaSessionViewModel::class.java]
         setContent {
             App(app = owner.app, compactUi = true,

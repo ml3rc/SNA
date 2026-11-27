@@ -29,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import io.github.ml3rc.sna.client.data.FileStore
+import io.github.ml3rc.sna.client.data.saveFile
 import io.github.ml3rc.sna.client.data.SweepFile
 import io.github.ml3rc.sna.client.data.SweepFileIO
 import io.github.ml3rc.sna.client.data.Touchstone
@@ -76,6 +76,7 @@ internal fun SParameterSweepScreen(session: Session, compactUi: Boolean = false)
     val looping by sweep.looping.collectAsState()
     val scanIndex by sweep.scanIndex.collectAsState()
     val error by sweep.error.collectAsState()
+    var exportError by remember { mutableStateOf<String?>(null) }
     val reference by sweep.reference.reference.collectAsState()
     val rawRunning by session.rawSweep.running.collectAsState()
     val toolGate = rememberGate(session, Tool.SWEEP)
@@ -205,17 +206,18 @@ internal fun SParameterSweepScreen(session: Session, compactUi: Boolean = false)
                         else points.any { it.s11_db != null }, onClick = {
                         coroutineScope.launch {
                             val content = if (isTwoPort) Touchstone.formatS2P(points, measurementZ) else Touchstone.formatS1P(points, measurementZ)
-                            FileStore.save(if (isTwoPort) "sweep.s2p" else "sweep.s1p", content)
+                            exportError = saveFile(if (isTwoPort) "sweep.s2p" else "sweep.s1p", content)
                         }
                     }) { Text("Export Touchstone") }
                     OutlinedButton(enabled = !running && points.any { p -> SParam.entries.any { p.value(it) != null } }, onClick = {
                         coroutineScope.launch {
                             // f0/f1 describe the sweep's grid; only points that were actually measured are saved.
                             val file = SweepFile(z = measurementZ, f0 = points.first().f, f1 = points.last().f, points = points.filter { it.measured })
-                            FileStore.save("sweep.json", SweepFileIO.encode(file))
+                            exportError = saveFile("sweep.json", SweepFileIO.encode(file))
                         }
                     }) { Text("Export JSON") }
                 }
+                ErrorText(exportError, "sweep-export-error")
                 if (shownParams.any { it != SParam.S11 } && !Touchstone.hasCompleteTwoPortData(points)) {
                     Text("S2P export needs a sweep with all four S-parameters. JSON supports partial measurements.", style = MaterialTheme.typography.bodySmall)
                 }

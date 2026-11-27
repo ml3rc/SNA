@@ -44,7 +44,8 @@ typedef enum {
 } rf_state_source_t;
 // False (nothing changed) for OFF -> ON: the source would be routed out before
 // it is powered and programmed. Go through PARKED and rf_state_set_freq()
-// (the power-up double write) first. Also false for an invalid state.
+// (the power-up double write) first. Also false for PARKED -> ON while that
+// write has not happened yet, and for an invalid state.
 bool rf_state_set_source(rf_state_source_t state);
 rf_state_source_t rf_state_get_source(void);
 

@@ -74,6 +74,7 @@ bool rf_state_set_source(rf_state_source_t state) {
             break;
         case RF_STATE_SOURCE_ON:
             if (previous == RF_STATE_SOURCE_OFF) return false; // see state.h
+            if (atomic_load(&source_cold)) return false;        // powered up but not yet programmed
             // The reverse of parking: route first, then release the attenuator.
             rf_ctrl_port_switch_set(rf_state_get_port());
             rf_ctrl_atten_write(rf_state_get_atten());
